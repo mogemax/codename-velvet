@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +13,12 @@ namespace CodenameVelvet.Core.Events
     {
         private readonly List<GameEventListener<T>> listeners = new List<GameEventListener<T>>();
 
+        public event Action<T> OnRaised;
+
         public void Raise(T value)
         {
+            OnRaised?.Invoke(value);
+
             for (int i = listeners.Count - 1; i >= 0; i--)
             {
                 listeners[i].OnEventRaised(value);
