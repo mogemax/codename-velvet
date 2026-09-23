@@ -8,7 +8,8 @@ namespace CodenameVelvet.DebugTools
     /// WASD/arrows move ground position (X/Z) on the root transform.
     /// Space triggers a jump/roll arc that offsets ONLY the visual body's
     /// local Y position, leaving ground position (and therefore sort order)
-    /// unaffected. Not a real player controller.
+    /// unaffected. If no "Body" child exists, falls back to offsetting the
+    /// root transform itself. Not a real player controller.
     /// </summary>
     public class DebugJumpMover : MonoBehaviour
     {
@@ -26,7 +27,7 @@ namespace CodenameVelvet.DebugTools
             if (visualBody == null)
             {
                 var found = transform.Find("Body");
-                if (found != null) visualBody = found;
+                visualBody = found != null ? found : transform;
             }
 
             if (visualBody != null)
