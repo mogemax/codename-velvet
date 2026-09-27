@@ -1052,9 +1052,10 @@ GameObject:
   - component: {fileID: 6415415559426286430}
   - component: {fileID: 2911788274832327724}
   - component: {fileID: 9054924192160040842}
-  - component: {fileID: 1318738160292362738}
   - component: {fileID: 1830259525016605345}
-  - component: {fileID: 6129040790212274581}
+  - component: {fileID: 2637780850447554056}
+  - component: {fileID: 8513834304139540828}
+  - component: {fileID: 3346812512897519886}
   m_Layer: 0
   m_Name: RIG_V1_Prefab
   m_TagString: Player
@@ -1128,8 +1129,58 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 2
---- !u!136 &1318738160292362738
-CapsuleCollider:
+--- !u!114 &1830259525016605345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2855774334821328979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ea2f4a498d334274bc3804b7f51f8ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  moveSpeed: 5
+  acceleration: 20
+  deceleration: 25
+  invertVertical: 0
+  invertHorizontal: 0
+  animator: {fileID: 0}
+  spriteRoot: {fileID: -7552582706839291426, guid: 392abb0eb9faa40a6919841030bd8a29, type: 3}
+  paramMoveX: MoveX
+  paramMoveY: MoveY
+  paramSpeed: Speed
+  paramIsMoving: IsMoving
+--- !u!210 &2637780850447554056
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2855774334821328979}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_SortAtRoot: 1
+  m_Sort3DAs2D: 0
+--- !u!114 &8513834304139540828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2855774334821328979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8204536af008a48bdbc9c4284bdfdfea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DynamicSortingOrder
+  precisionMultiplier: 1000
+  manualOffset: 0
+--- !u!65 &3346812512897519886
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1146,45 +1197,9 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.218373
-  m_Height: 3.7485058
-  m_Direction: 1
-  m_Center: {x: 0, y: 2.2, z: 0}
---- !u!114 &1830259525016605345
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2855774334821328979}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ea2f4a498d334274bc3804b7f51f8ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  moveSpeed: 5
-  acceleration: 20
-  deceleration: 25
-  animator: {fileID: 0}
-  spriteRoot: {fileID: -7552582706839291426, guid: 392abb0eb9faa40a6919841030bd8a29, type: 3}
-  paramMoveX: MoveX
-  paramMoveY: MoveY
-  paramSpeed: Speed
---- !u!114 &6129040790212274581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2855774334821328979}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8dbe68f42d5a34607b34aa2aa934b485, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Billboard
-  targetCamera: {fileID: 0}
-  axisMode: 2
+  serializedVersion: 3
+  m_Size: {x: 2.6230624, y: 4.87091, z: 1}
+  m_Center: {x: 0.10925448, y: 2.517485, z: 0}
 --- !u!1 &2883543925894858800
 GameObject:
   m_ObjectHideFlags: 0

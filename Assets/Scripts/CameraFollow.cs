@@ -22,6 +22,9 @@ public class CameraFollow : MonoBehaviour
     [Tooltip("Si está activo, la cámara siempre rota para mirar exactamente al target, evitando desalineación entre Offset y Rotation. Recomendado: activado.")]
     [SerializeField] private bool alwaysLookAtTarget = true;
 
+    [Tooltip("Desplaza el PUNTO al que la cámara mira, sin mover la posición real de la cámara. Y positivo = la cámara mira más arriba del target, lo que hace que el personaje aparezca más ABAJO en pantalla.")]
+    [SerializeField] private Vector3 lookAtOffset = new Vector3(0f, 2f, 0f);
+
     [Header("Límites opcionales (para no salir del mapa)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
@@ -37,7 +40,7 @@ public class CameraFollow : MonoBehaviour
         }
 
         // Fuerza la rotación inicial mirando hacia el offset (ángulo isométrico)
-        transform.LookAt(target != null ? target.position : Vector3.zero);
+        transform.LookAt(target != null ? target.position + lookAtOffset : Vector3.zero);
     }
 
     private void LateUpdate()
@@ -66,6 +69,6 @@ public class CameraFollow : MonoBehaviour
         transform.position = smoothedPosition;
 
         if (alwaysLookAtTarget)
-            transform.LookAt(target);
+            transform.LookAt(target.position + lookAtOffset);
     }
 }
