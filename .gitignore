@@ -76,3 +76,22 @@ crashlytics-build.properties
 
 # GSD planning docs — kept local-only per project config
 /.planning/
+
+# AI assistant / agent tooling — local to each developer, not part of the project
+# Claude Code
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.mcp.json
+# Codex
+.codex/
+AGENTS.md
+# Other AI editors / assistants
+.cursor/
+.cursorrules
+.github/copilot-instructions.md
+# Code indexing tools (cocoindex keeps a ~190 MB SQLite index here)
+.cocoindex_code/
+
+# macOS
+.DS_Store
