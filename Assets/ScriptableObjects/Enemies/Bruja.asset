@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80b1a1aaba6db4e80ae1d95b4e6ee6a0, type: 3}
+  m_Name: Bruja
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyDefinition
+  displayName: Bruja
+  color: {r: 0.6, g: 0.3, b: 0.85, a: 1}
+  wanderSpeed: 1.5
+  chaseSpeed: 3
+  wanderRadius: 5
+  restTimeRange: {x: 1, y: 3}
+  detectionRange: 8
+  loseInterestRange: 12
+  retargetInterval: 0.25
+  attackRange: 2.2
+  attackDamage: 1
+  attackCooldown: 1
