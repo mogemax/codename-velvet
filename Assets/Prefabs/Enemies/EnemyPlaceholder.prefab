@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 482342608020965080}
   - component: {fileID: 2966222368331175446}
   - component: {fileID: 3929628460736908940}
+  - component: {fileID: 7967563379310962068}
   m_Layer: 0
   m_Name: EnemyPlaceholder
   m_TagString: Untagged
@@ -124,7 +125,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6, y: 6, z: 6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8368253433950923599}
@@ -191,6 +192,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.RigidbodyEnemyMover
   arrivalTolerance: 0.2
+  debugLogs: 1
 --- !u!114 &4435739704384355336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220,6 +222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyBrain
   definition: {fileID: 0}
+  debugLogs: 1
 --- !u!210 &2966222368331175446
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -247,3 +250,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DynamicSortingOrder
   precisionMultiplier: 100
   manualOffset: 0
+--- !u!114 &7967563379310962068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6078116864719495900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b624f7a994b14cef9c7b0029092c6c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyHealth
+  debugLogs: 1

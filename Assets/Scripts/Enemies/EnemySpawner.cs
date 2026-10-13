@@ -1,4 +1,5 @@
 using System;
+using CodenameVelvet.Core.Debugging;
 using UnityEngine;
 
 namespace CodenameVelvet.Enemies
@@ -11,6 +12,8 @@ namespace CodenameVelvet.Enemies
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
+        private const string LogCategory = "Spawner";
+
         /// <summary>How many enemies of one type to spawn.</summary>
         [Serializable]
         public class SpawnEntry
@@ -29,7 +32,12 @@ namespace CodenameVelvet.Enemies
         [Tooltip("Max random XZ offset from the spawn point, in units.")]
         [SerializeField] private float spawnJitter = 1f;
 
+        [Header("Debug")]
+        [Tooltip("Logs how many enemies of each type were spawned and skipped entries.")]
+        [SerializeField] private bool debugLogs = true;
+
         private int nextSpawnPointIndex;
+        private int spawnedCount; // Running index for unique instance names.
 
         private void Start()
         {
@@ -41,13 +49,21 @@ namespace CodenameVelvet.Enemies
             if (entries == null)
                 return;
 
-            foreach (SpawnEntry entry in entries)
+            for (int entryIndex = 0; entryIndex < entries.Length; entryIndex++)
             {
+                SpawnEntry entry = entries[entryIndex];
                 if (entry.Definition == null)
+                {
+                    if (debugLogs)
+                        VelvetLog.Warn(LogCategory, this, $"Entry {entryIndex} has no EnemyDefinition, skipped");
                     continue;
+                }
 
                 for (int i = 0; i < entry.Count; i++)
                     Spawn(entry.Definition);
+
+                if (debugLogs)
+                    VelvetLog.Info(LogCategory, this, $"Spawned {entry.Count} × {entry.Definition.DisplayName}");
             }
         }
 
@@ -57,7 +73,8 @@ namespace CodenameVelvet.Enemies
             Vector3 position = NextSpawnPosition() + new Vector3(jitter.x, 0f, jitter.y);
 
             EnemyBrain enemy = Instantiate(enemyPrefab, position, enemyPrefab.transform.rotation);
-            enemy.name = definition.DisplayName;
+            spawnedCount++;
+            enemy.name = $"{definition.DisplayName}#{spawnedCount}";
             enemy.Initialize(definition);
         }
 

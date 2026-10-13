@@ -14,6 +14,10 @@ namespace CodenameVelvet.Enemies
         [Tooltip("Placeholder tint applied to the enemy's child SpriteRenderers.")]
         [SerializeField] private Color color = Color.white;
 
+        [Header("Health")]
+        [Tooltip("Hit points of a freshly spawned enemy of this type. Minimum 1.")]
+        [SerializeField] private int maxHp = 3;
+
         [Header("Movement")]
         [SerializeField] private float wanderSpeed = 1.5f;
         [SerializeField] private float chaseSpeed = 3.5f;
@@ -38,6 +42,7 @@ namespace CodenameVelvet.Enemies
 
         public string DisplayName => displayName;
         public Color Color => color;
+        public int MaxHp => maxHp;
         public float WanderSpeed => wanderSpeed;
         public float ChaseSpeed => chaseSpeed;
         public float WanderRadius => wanderRadius;
@@ -51,6 +56,7 @@ namespace CodenameVelvet.Enemies
 
         private void OnValidate()
         {
+            maxHp = Mathf.Max(1, maxHp);
             wanderSpeed = Mathf.Max(0f, wanderSpeed);
             chaseSpeed = Mathf.Max(0f, chaseSpeed);
             wanderRadius = Mathf.Max(0f, wanderRadius);

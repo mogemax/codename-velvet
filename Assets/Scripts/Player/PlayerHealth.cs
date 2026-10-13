@@ -1,5 +1,6 @@
 using System.Collections;
 using CodenameVelvet.Combat;
+using CodenameVelvet.Core.Debugging;
 using CodenameVelvet.Core.Events;
 using UnityEngine;
 
@@ -13,12 +14,18 @@ namespace CodenameVelvet.Player
     /// </summary>
     public class PlayerHealth : MonoBehaviour, IDamageable
     {
+        private const string LogCategory = "Player";
+
         [SerializeField] private int maxHp = 3;
         [SerializeField] private float deathDelaySeconds = 2f;
         [SerializeField] private PlayerDiedEvent onPlayerDied;
 
         [Tooltip("Child hidden while dead. If empty, child Renderers are toggled instead.")]
         [SerializeField] private GameObject spriteRoot;
+
+        [Header("Debug")]
+        [Tooltip("Logs damage taken, death and respawn.")]
+        [SerializeField] private bool debugLogs = true;
 
         private PlayerHealthState healthState;
         private PlayerIdentity identity;
@@ -52,6 +59,9 @@ namespace CodenameVelvet.Player
 
             healthState.ApplyDamage(amount);
 
+            if (debugLogs)
+                VelvetLog.Info(LogCategory, this, $"Took {amount} damage, HP {healthState.CurrentHp}/{healthState.MaxHp}");
+
             if (healthState.IsDead)
                 StartCoroutine(DeathSequence());
         }
@@ -59,6 +69,9 @@ namespace CodenameVelvet.Player
         private IEnumerator DeathSequence()
         {
             isDying = true;
+
+            if (debugLogs)
+                VelvetLog.Info(LogCategory, this, $"Died, respawning in {deathDelaySeconds}s");
 
             if (movement != null)
             {
@@ -78,6 +91,9 @@ namespace CodenameVelvet.Player
             SetVisible(true);
             healthState.ResetToFull();
             isDying = false;
+
+            if (debugLogs)
+                VelvetLog.Info(LogCategory, this, $"Respawned at {spawnPoint}, HP {healthState.CurrentHp}/{healthState.MaxHp}");
 
             if (movement != null)
                 movement.SetControlEnabled(true);

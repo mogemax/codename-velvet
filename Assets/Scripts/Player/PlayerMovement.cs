@@ -43,6 +43,9 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Útil para otros scripts (ej. invulnerabilidad durante el dash).</summary>
     public bool IsDashing { get; private set; }
 
+    /// <summary>Última dirección de movimiento (hacia donde mira el jugador). Útil para ataques.</summary>
+    public Vector2 FacingDirection => lastMoveDir;
+
     private const string MoveActionName = "Move";
 
     private Rigidbody rb;

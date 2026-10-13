@@ -17,7 +17,14 @@ namespace CodenameVelvet.Enemies
         /// <summary>Starts or redirects movement toward a world point.</summary>
         void MoveTo(Vector3 destination, float speed);
 
-        /// <summary>Stops moving and clears the destination.</summary>
+        /// <summary>Stops moving, clears the destination and cancels any push.</summary>
         void Stop();
+
+        /// <summary>
+        /// Shoves the enemy with a planar <paramref name="velocity"/> (Y ignored) that
+        /// decays to zero over <paramref name="duration"/> seconds. While pushed the
+        /// destination is ignored; the push clears it, so the mover is stopped afterwards.
+        /// </summary>
+        void Push(Vector3 velocity, float duration);
     }
 }

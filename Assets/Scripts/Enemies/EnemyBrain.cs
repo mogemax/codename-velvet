@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using CodenameVelvet.Combat;
+using CodenameVelvet.Core.Debugging;
 using UnityEngine;
 
 namespace CodenameVelvet.Enemies
@@ -12,15 +13,24 @@ namespace CodenameVelvet.Enemies
     /// time, so pausing with Time.timeScale = 0 freezes the enemy.
     /// Wander → Chase (player within detection range) → attacks while in attack
     /// range → back to Wander when the target dies or escapes the lose-interest range.
+    /// A knockback pushes the enemy and stuns it: the loop pauses (no moving,
+    /// retargeting or attacking) and resumes the current state when the stun ends.
     /// </summary>
     [RequireComponent(typeof(EnemyTargetFinder))]
-    public class EnemyBrain : MonoBehaviour
+    public class EnemyBrain : MonoBehaviour, IKnockbackable
     {
+        private const string LogCategory = "Enemy";
+
         [Tooltip("Default definition; a spawner may override it via Initialize.")]
         [SerializeField] private EnemyDefinition definition;
 
+        [Header("Debug")]
+        [Tooltip("Logs spawn, state changes, attacks, knockback and stun. Never per frame.")]
+        [SerializeField] private bool debugLogs = true;
+
         private IEnemyMover mover;
         private EnemyTargetFinder targetFinder;
+        private EnemyHealth health;
         private System.Random random;
         private CancellationTokenSource loopCancellation;
 
@@ -31,18 +41,51 @@ namespace CodenameVelvet.Enemies
         private Transform targetTransform;
         private float nextSearchTime;
         private float nextAttackTime;
+        private float stunnedUntil;
+        private bool wasInAttackRange; // Debug-only: logs attack-range entry once.
 
         /// <summary>Sets the enemy type. Call right after instantiating, before Start.</summary>
         public void Initialize(EnemyDefinition enemyDefinition)
         {
             definition = enemyDefinition;
             ApplyColor();
+            InitializeHealth();
+        }
+
+        /// <summary>Pushes the enemy away on the XZ plane and stuns it for <paramref name="stunSeconds"/>.</summary>
+        public void ApplyKnockback(Vector3 direction, float force, float stunSeconds)
+        {
+            if (health != null && !health.IsAlive)
+            {
+                if (debugLogs)
+                    VelvetLog.Info(LogCategory, this, "Knockback ignored (dead)");
+                return;
+            }
+
+            direction.y = 0f;
+            Vector3 planarDirection = direction.normalized;
+
+            if (debugLogs)
+            {
+                if (mover == null)
+                    VelvetLog.Warn(LogCategory, this, "Knockback received but there is no IEnemyMover: no push");
+                else
+                    VelvetLog.Info(LogCategory, this, $"Knockback dir {planarDirection} force {force} stun {stunSeconds}s, expected push ≈ {force * stunSeconds * 0.5f:F2}u");
+            }
+            if (mover != null)
+                mover.Push(planarDirection * force, stunSeconds);
+
+            // Time.time based, so a pause (timeScale = 0) freezes the stun too.
+            stunnedUntil = Mathf.Max(stunnedUntil, Time.time + Mathf.Max(0f, stunSeconds));
         }
 
         private void Awake()
         {
             mover = GetComponent<IEnemyMover>();
             targetFinder = GetComponent<EnemyTargetFinder>();
+            health = GetComponent<EnemyHealth>();
+            if (health == null)
+                Debug.LogError($"{name}: EnemyBrain has no EnemyHealth component; this enemy can't take damage. Add one to the prefab.", this);
             // Seeded from Unity's RNG: enemies spawned on the same frame would
             // otherwise share a time-based seed and wander in lockstep.
             random = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
@@ -53,6 +96,11 @@ namespace CodenameVelvet.Enemies
             spawnPosition = transform.position;
             hasStarted = true;
             ApplyColor();
+            InitializeHealth();
+
+            if (debugLogs && definition != null)
+                VelvetLog.Info(LogCategory, this, $"Spawned as {definition.DisplayName} at {spawnPosition}, HP {(health != null ? health.CurrentHp : 0)}/{(health != null ? health.MaxHp : 0)}");
+
             StartLoop();
         }
 
@@ -140,6 +188,7 @@ namespace CodenameVelvet.Enemies
 
                 while (Time.time < restEnd)
                 {
+                    await WaitWhileStunnedAsync(token);
                     if (TryAcquireTarget())
                         return;
                     await Awaitable.NextFrameAsync(token);
@@ -157,14 +206,24 @@ namespace CodenameVelvet.Enemies
             float travelTime = EnemyAggroRules.PlanarDistance(transform.position, point) / Mathf.Max(0.01f, definition.WanderSpeed);
             float giveUpTime = Time.time + travelTime * 2f + 1f;
 
-            while (!mover.HasReachedDestination && Time.time < giveUpTime)
+            while (true)
             {
+                // Checked before arrival: a push clears the mover's destination.
+                if (IsStunned)
+                {
+                    // Resume the trip once the stun ends, without counting the stun against the give-up time.
+                    float stunStart = Time.time;
+                    await WaitWhileStunnedAsync(token);
+                    giveUpTime += Time.time - stunStart;
+                    mover.MoveTo(point, definition.WanderSpeed);
+                }
+
+                if (mover.HasReachedDestination || Time.time >= giveUpTime)
+                    return false;
                 if (TryAcquireTarget())
                     return true;
                 await Awaitable.NextFrameAsync(token);
             }
-
-            return false;
         }
 
         // ─────────────────────── CHASE / ATTACK ───────────────────────
@@ -174,6 +233,8 @@ namespace CodenameVelvet.Enemies
         {
             while (true)
             {
+                await WaitWhileStunnedAsync(token);
+
                 // Switch to a closer player if one entered detection range.
                 TryAcquireTarget();
 
@@ -184,18 +245,32 @@ namespace CodenameVelvet.Enemies
 
                 if (EnemyAggroRules.ShouldDropChase(targetAlive, distance, definition.LoseInterestRange))
                 {
+                    if (debugLogs)
+                        VelvetLog.Info(LogCategory, this, targetAlive
+                            ? $"Chase → Wander: target escaped ({distance:F2}u > {definition.LoseInterestRange}u)"
+                            : "Chase → Wander: target dead or gone");
                     ClearTarget();
                     mover.Stop();
                     return;
                 }
 
-                if (EnemyAggroRules.IsInAttackRange(distance, definition.AttackRange))
+                bool inAttackRange = EnemyAggroRules.IsInAttackRange(distance, definition.AttackRange);
+                if (debugLogs && inAttackRange != wasInAttackRange)
+                    VelvetLog.Info(LogCategory, this, inAttackRange
+                        ? $"Chase → Attack: {targetTransform.name} in range ({distance:F2}u)"
+                        : $"Attack → Chase: {targetTransform.name} left range ({distance:F2}u)");
+                wasInAttackRange = inAttackRange;
+
+                if (inAttackRange)
                 {
                     mover.Stop();
                     if (Time.time >= nextAttackTime)
                     {
                         target.ApplyDamage(definition.AttackDamage);
                         nextAttackTime = Time.time + definition.AttackCooldown;
+
+                        if (debugLogs)
+                            VelvetLog.Info(LogCategory, this, $"Hit {targetTransform.name} for {definition.AttackDamage} damage");
                     }
                 }
                 else
@@ -206,6 +281,20 @@ namespace CodenameVelvet.Enemies
 
                 await Awaitable.NextFrameAsync(token);
             }
+        }
+
+        // ─────────────────────── STUN ───────────────────────
+
+        private bool IsStunned => Time.time < stunnedUntil;
+
+        private async Awaitable WaitWhileStunnedAsync(CancellationToken token)
+        {
+            bool wasStunned = IsStunned;
+            while (IsStunned)
+                await Awaitable.NextFrameAsync(token);
+
+            if (debugLogs && wasStunned)
+                VelvetLog.Info(LogCategory, this, $"Stun ended at {transform.position}");
         }
 
         // ─────────────────────── TARGETING ───────────────────────
@@ -228,6 +317,11 @@ namespace CodenameVelvet.Enemies
             if (!EnemyAggroRules.ShouldStartChase(found.IsAlive, distance, definition.DetectionRange))
                 return false;
 
+            if (debugLogs && !ReferenceEquals(found, target))
+                VelvetLog.Info(LogCategory, this, targetTransform == null
+                    ? $"Wander → Chase: {foundTransform.name} at {distance:F2}u"
+                    : $"Retarget: {targetTransform.name} → {foundTransform.name} at {distance:F2}u");
+
             target = found;
             targetTransform = foundTransform;
             return true;
@@ -237,6 +331,15 @@ namespace CodenameVelvet.Enemies
         {
             target = null;
             targetTransform = null;
+            wasInAttackRange = false;
+        }
+
+        // ─────────────────────── HEALTH ───────────────────────
+
+        private void InitializeHealth()
+        {
+            if (definition != null && health != null)
+                health.Initialize(definition.MaxHp);
         }
 
         // ─────────────────────── VISUALS ───────────────────────
