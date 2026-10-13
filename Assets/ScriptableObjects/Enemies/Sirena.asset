@@ -21,6 +21,6 @@ MonoBehaviour:
   detectionRange: 6
   loseInterestRange: 9
   retargetInterval: 0.25
-  attackRange: 2.2
+  attackRange: 0.4
   attackDamage: 1
   attackCooldown: 1

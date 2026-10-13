@@ -11,8 +11,8 @@ namespace CodenameVelvet.Enemies
     /// nearest living player, and hit it on contact. Runs as one Awaitable loop
     /// per enable that is cancelled on disable/destroy; every wait uses scaled
     /// time, so pausing with Time.timeScale = 0 freezes the enemy.
-    /// Wander → Chase (player within detection range) → attacks while in attack
-    /// range → back to Wander when the target dies or escapes the lose-interest range.
+    /// Wander → Chase (player within detection range) → attacks while the gap between
+    /// both bodies is within attack range → back to Wander when the target dies or escapes the lose-interest range.
     /// A knockback pushes the enemy and stuns it: the loop pauses (no moving,
     /// retargeting or attacking) and resumes the current state when the stun ends.
     /// </summary>
@@ -31,6 +31,7 @@ namespace CodenameVelvet.Enemies
         private IEnemyMover mover;
         private EnemyTargetFinder targetFinder;
         private EnemyHealth health;
+        private Collider body;
         private System.Random random;
         private CancellationTokenSource loopCancellation;
 
@@ -39,6 +40,7 @@ namespace CodenameVelvet.Enemies
 
         private IDamageable target;
         private Transform targetTransform;
+        private Collider targetCollider;
         private float nextSearchTime;
         private float nextAttackTime;
         private float stunnedUntil;
@@ -84,6 +86,7 @@ namespace CodenameVelvet.Enemies
             mover = GetComponent<IEnemyMover>();
             targetFinder = GetComponent<EnemyTargetFinder>();
             health = GetComponent<EnemyHealth>();
+            body = GetComponent<Collider>();
             if (health == null)
                 Debug.LogError($"{name}: EnemyBrain has no EnemyHealth component; this enemy can't take damage. Add one to the prefab.", this);
             // Seeded from Unity's RNG: enemies spawned on the same frame would
@@ -254,11 +257,12 @@ namespace CodenameVelvet.Enemies
                     return;
                 }
 
-                bool inAttackRange = EnemyAggroRules.IsInAttackRange(distance, definition.AttackRange);
+                float gap = BodyDistance.PlanarGap(transform.position, body, targetTransform.position, targetCollider);
+                bool inAttackRange = EnemyAggroRules.IsInAttackRange(gap, definition.AttackRange);
                 if (debugLogs && inAttackRange != wasInAttackRange)
                     VelvetLog.Info(LogCategory, this, inAttackRange
-                        ? $"Chase → Attack: {targetTransform.name} in range ({distance:F2}u)"
-                        : $"Attack → Chase: {targetTransform.name} left range ({distance:F2}u)");
+                        ? $"Chase → Attack: {targetTransform.name} in range (gap {gap:F2}u, centres {distance:F2}u)"
+                        : $"Attack → Chase: {targetTransform.name} left range (gap {gap:F2}u, centres {distance:F2}u)");
                 wasInAttackRange = inAttackRange;
 
                 if (inAttackRange)
@@ -270,7 +274,7 @@ namespace CodenameVelvet.Enemies
                         nextAttackTime = Time.time + definition.AttackCooldown;
 
                         if (debugLogs)
-                            VelvetLog.Info(LogCategory, this, $"Hit {targetTransform.name} for {definition.AttackDamage} damage");
+                            VelvetLog.Info(LogCategory, this, $"Hit {targetTransform.name} for {definition.AttackDamage} damage (gap {gap:F2}u)");
                     }
                 }
                 else
@@ -310,7 +314,7 @@ namespace CodenameVelvet.Enemies
             nextSearchTime = Time.time + definition.RetargetInterval;
 
             Vector3 origin = transform.position;
-            if (!targetFinder.TryFindNearest(origin, definition.DetectionRange, out IDamageable found, out Transform foundTransform))
+            if (!targetFinder.TryFindNearest(origin, definition.DetectionRange, out IDamageable found, out Transform foundTransform, out Collider foundCollider))
                 return false;
 
             float distance = EnemyAggroRules.PlanarDistance(origin, foundTransform.position);
@@ -324,6 +328,7 @@ namespace CodenameVelvet.Enemies
 
             target = found;
             targetTransform = foundTransform;
+            targetCollider = foundCollider;
             return true;
         }
 
@@ -331,6 +336,7 @@ namespace CodenameVelvet.Enemies
         {
             target = null;
             targetTransform = null;
+            targetCollider = null;
             wasInAttackRange = false;
         }
 
@@ -368,8 +374,10 @@ namespace CodenameVelvet.Enemies
             Gizmos.color = new Color(1f, 0.5f, 0f);
             Gizmos.DrawWireSphere(transform.position, definition.LoseInterestRange);
 
+            // Attack range is a gap from this body's surface, so the reach grows with its size.
+            Collider gizmoBody = body != null ? body : GetComponent<Collider>();
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, definition.AttackRange);
+            Gizmos.DrawWireSphere(transform.position, definition.AttackRange + BodyDistance.PlanarRadius(gizmoBody));
         }
     }
 }

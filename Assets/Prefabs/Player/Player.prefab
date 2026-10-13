@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerMeleeAttack
   damage: 1
-  range: 2.5
+  range: 1
   arcDegrees: 150
   cooldown: 0.4
   knockbackForce: 22

@@ -35,7 +35,8 @@ namespace CodenameVelvet.Enemies
         [SerializeField] private float retargetInterval = 0.25f;
 
         [Header("Attack")]
-        [SerializeField] private float attackRange = 1.2f;
+        [Tooltip("Gap between bodies (surface to surface, on the ground plane) at which the enemy hits. 0 = touching.")]
+        [SerializeField] private float attackRange = 0.4f;
         [SerializeField] private int attackDamage = 1;
         [Tooltip("Seconds between hits.")]
         [SerializeField] private float attackCooldown = 1f;

@@ -4,8 +4,10 @@ namespace CodenameVelvet.Enemies
 {
     /// <summary>
     /// Pure aggro decisions for an enemy. All distances are measured on the XZ
-    /// ground plane (see <see cref="PlanarDistance"/>), so height differences
-    /// between enemy and player never affect detection or attacks.
+    /// ground plane, so height differences between enemy and player never affect
+    /// detection or attacks. Detection and lose-interest use the centre-to-centre
+    /// <see cref="PlanarDistance"/>; attacks use the gap between the two bodies'
+    /// surfaces (computed by the caller), so attack range is independent of body size.
     /// Chasing uses hysteresis: a chase starts inside the detection range but is
     /// only dropped beyond the (larger) lose-interest range, so a target hovering
     /// at the detection edge does not make the enemy flicker between states.
@@ -32,10 +34,13 @@ namespace CodenameVelvet.Enemies
             return !targetAlive || distance > loseInterestRange;
         }
 
-        /// <summary>Attack range is inclusive: exactly at the edge counts as in range.</summary>
-        public static bool IsInAttackRange(float distance, float attackRange)
+        /// <summary>
+        /// <paramref name="gap"/> is the planar distance between the bodies' surfaces
+        /// (0 when touching). Inclusive: exactly at the edge counts as in range.
+        /// </summary>
+        public static bool IsInAttackRange(float gap, float attackRange)
         {
-            return distance <= attackRange;
+            return gap <= attackRange;
         }
     }
 }

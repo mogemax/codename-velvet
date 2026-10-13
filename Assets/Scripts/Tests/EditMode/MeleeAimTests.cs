@@ -17,12 +17,22 @@ namespace CodenameVelvet.Tests
             Assert.That(actual.y, Is.EqualTo(expected.y).Within(Tolerance));
         }
 
+        /// <summary>Point-sized bodies: each gap is simply the planar centre distance.</summary>
+        private static Vector2 AimAtPoints(Vector3 attacker, Vector2 facing, Vector3[] candidates, float range)
+        {
+            var gaps = new float[candidates.Length];
+            for (int i = 0; i < candidates.Length; i++)
+                gaps[i] = new Vector2(candidates[i].x - attacker.x, candidates[i].z - attacker.z).magnitude;
+
+            return MeleeAim.ChooseAimDirection(attacker, facing, candidates, gaps, range);
+        }
+
         [Test]
         public void NearestCandidate_Wins()
         {
             var candidates = new[] { new Vector3(0f, 0f, 2f), new Vector3(-1f, 0f, 0f) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.right, candidates, Range);
 
             AssertDirection(Vector2.left, aim);
         }
@@ -32,7 +42,7 @@ namespace CodenameVelvet.Tests
         {
             var candidates = new[] { new Vector3(1f, 0f, 1f) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.down, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.down, candidates, Range);
 
             AssertDirection(new Vector2(1f, 1f).normalized, aim);
         }
@@ -42,7 +52,7 @@ namespace CodenameVelvet.Tests
         {
             var candidates = new[] { new Vector3(0f, 0f, Range + 0.01f) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.right, candidates, Range);
 
             AssertDirection(Vector2.right, aim);
         }
@@ -52,7 +62,7 @@ namespace CodenameVelvet.Tests
         {
             var candidates = new[] { new Vector3(0f, 0f, Range) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.right, candidates, Range);
 
             AssertDirection(Vector2.up, aim);
         }
@@ -60,7 +70,7 @@ namespace CodenameVelvet.Tests
         [Test]
         public void NoCandidates_ReturnsFacing()
         {
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, new Vector3[0], Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.right, new Vector3[0], Range);
 
             AssertDirection(Vector2.right, aim);
         }
@@ -68,7 +78,7 @@ namespace CodenameVelvet.Tests
         [Test]
         public void ZeroFacing_WithNoCandidates_ReturnsDown()
         {
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.zero, new Vector3[0], Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.zero, new Vector3[0], Range);
 
             AssertDirection(Vector2.down, aim);
         }
@@ -79,7 +89,7 @@ namespace CodenameVelvet.Tests
             // 10 units above but 1 unit away on the ground plane: in range, aims along +X.
             var candidates = new[] { new Vector3(1f, 10f, 0f) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.up, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.up, candidates, Range);
 
             AssertDirection(Vector2.right, aim);
         }
@@ -89,7 +99,7 @@ namespace CodenameVelvet.Tests
         {
             var candidates = new[] { new Vector3(0f, 3f, 0f), new Vector3(0f, 0f, -2f) };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.right, candidates, Range);
 
             AssertDirection(Vector2.down, aim);
         }
@@ -99,9 +109,32 @@ namespace CodenameVelvet.Tests
         {
             var candidates = new[] { Origin };
 
-            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.left, candidates, Range);
+            Vector2 aim = AimAtPoints(Origin, Vector2.left, candidates, Range);
 
             AssertDirection(Vector2.left, aim);
+        }
+
+        [Test]
+        public void SmallestGap_Wins_OverNearestCentre()
+        {
+            // The big body's centre is farther away but its surface is closer.
+            var candidates = new[] { new Vector3(0f, 0f, 1f), new Vector3(-3f, 0f, 0f) };
+            var gaps = new[] { 0.8f, 0.2f };
+
+            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, gaps, 1f);
+
+            AssertDirection(Vector2.left, aim);
+        }
+
+        [Test]
+        public void GapBeyondRange_IsIgnored_EvenWhenCentreIsClose()
+        {
+            var candidates = new[] { new Vector3(0f, 0f, 0.5f) };
+            var gaps = new[] { 1.01f };
+
+            Vector2 aim = MeleeAim.ChooseAimDirection(Origin, Vector2.right, candidates, gaps, 1f);
+
+            AssertDirection(Vector2.right, aim);
         }
     }
 }

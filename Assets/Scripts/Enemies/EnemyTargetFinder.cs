@@ -27,18 +27,22 @@ namespace CodenameVelvet.Enemies
         /// <summary>
         /// Looks for the nearest player (tagged "Player", with a living
         /// <see cref="IDamageable"/>) within <paramref name="range"/> of
-        /// <paramref name="origin"/>, measured on the XZ plane.
+        /// <paramref name="origin"/>, measured centre to centre on the XZ plane.
+        /// <paramref name="targetCollider"/> is the collider that matched, so callers
+        /// can measure the gap to the player's body.
         /// </summary>
-        public bool TryFindNearest(Vector3 origin, float range, out IDamageable target, out Transform targetTransform)
+        public bool TryFindNearest(Vector3 origin, float range, out IDamageable target, out Transform targetTransform, out Collider targetCollider)
         {
             target = null;
             targetTransform = null;
+            targetCollider = null;
             float nearestDistance = float.MaxValue;
 
             int count = Physics.OverlapSphereNonAlloc(origin, range, hits, searchMask);
             for (int i = 0; i < count; i++)
             {
-                IDamageable candidate = hits[i].GetComponentInParent<IDamageable>();
+                Collider hit = hits[i];
+                IDamageable candidate = hit.GetComponentInParent<IDamageable>();
                 hits[i] = null; // Don't keep scene objects alive through the buffer.
 
                 if (candidate is not Component owner || !owner.CompareTag(PlayerTag) || !candidate.IsAlive)
@@ -51,6 +55,7 @@ namespace CodenameVelvet.Enemies
                 nearestDistance = distance;
                 target = candidate;
                 targetTransform = owner.transform;
+                targetCollider = hit;
             }
 
             return target != null;
