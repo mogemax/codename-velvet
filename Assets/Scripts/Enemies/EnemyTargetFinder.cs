@@ -1,0 +1,59 @@
+using CodenameVelvet.Combat;
+using UnityEngine;
+
+namespace CodenameVelvet.Enemies
+{
+    /// <summary>
+    /// Finds the nearest living player around a point with a non-allocating
+    /// overlap query. Works for any number of local players because it only
+    /// inspects what is physically nearby — no global player list or tag lookup.
+    /// </summary>
+    public class EnemyTargetFinder : MonoBehaviour
+    {
+        private const string PlayerTag = "Player";
+
+        [Tooltip("Layers scanned for players. Narrow it to the player layer once one exists.")]
+        [SerializeField] private LayerMask searchMask = ~0;
+        [Tooltip("Max colliders inspected per search. Raise it if busy scenes miss players.")]
+        [SerializeField] private int maxHits = 32;
+
+        private Collider[] hits;
+
+        private void Awake()
+        {
+            hits = new Collider[Mathf.Max(1, maxHits)];
+        }
+
+        /// <summary>
+        /// Looks for the nearest player (tagged "Player", with a living
+        /// <see cref="IDamageable"/>) within <paramref name="range"/> of
+        /// <paramref name="origin"/>, measured on the XZ plane.
+        /// </summary>
+        public bool TryFindNearest(Vector3 origin, float range, out IDamageable target, out Transform targetTransform)
+        {
+            target = null;
+            targetTransform = null;
+            float nearestDistance = float.MaxValue;
+
+            int count = Physics.OverlapSphereNonAlloc(origin, range, hits, searchMask);
+            for (int i = 0; i < count; i++)
+            {
+                IDamageable candidate = hits[i].GetComponentInParent<IDamageable>();
+                hits[i] = null; // Don't keep scene objects alive through the buffer.
+
+                if (candidate is not Component owner || !owner.CompareTag(PlayerTag) || !candidate.IsAlive)
+                    continue;
+
+                float distance = EnemyAggroRules.PlanarDistance(origin, owner.transform.position);
+                if (distance >= nearestDistance)
+                    continue;
+
+                nearestDistance = distance;
+                target = candidate;
+                targetTransform = owner.transform;
+            }
+
+            return target != null;
+        }
+    }
+}
