@@ -1,11 +1,15 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Movimiento top-down/isométrico en 8 direcciones + Dash, estilo Cult of the Lamb.
 /// Usa Rigidbody (no Kinematic) para colisiones correctas contra el escenario.
 /// El sprite/rig debe estar en un hijo del objeto con este script.
+/// El input llega del PlayerInput del mismo objeto (Behavior = Send Messages),
+/// así cada jugador lee únicamente su propio dispositivo.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movimiento")]
@@ -18,7 +22,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool invertHorizontal = false;
 
     [Header("Dash")]
-    [SerializeField] private KeyCode dashKey = KeyCode.Space;
     [Tooltip("Velocidad durante el dash.")]
     [SerializeField] private float dashSpeed = 16f;
     [Tooltip("Duración del dash en segundos.")]
@@ -33,9 +36,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform spriteRoot;    // Hijo que se voltea (Scale.x) o rota
 
     [Header("Animator - nombres de parámetros")]
-    [SerializeField] private string paramMoveX = "MoveX";
-    [SerializeField] private string paramMoveY = "MoveY";
-    [SerializeField] private string paramSpeed = "Speed";
     [SerializeField] private string paramIsMoving = "IsMoving";
     [SerializeField] private string paramDashTrigger = "Dash";     // Trigger: dispara la animación
     [SerializeField] private string paramIsDashing = "IsDashing";  // Bool: true mientras dura el dash
@@ -43,15 +43,26 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Útil para otros scripts (ej. invulnerabilidad durante el dash).</summary>
     public bool IsDashing { get; private set; }
 
+    private const string MoveActionName = "Move";
+
     private Rigidbody rb;
+    private PlayerInput playerInput;
+    private Vector2 rawMoveInput;   // Último valor recibido de la acción Move
     private Vector2 inputDir;
     private Vector2 currentVelocity;
     private Vector2 lastMoveDir = Vector2.down; // Para mantener animación Idle mirando última dirección
+    private bool controlEnabled = true;
 
     // Estado del dash
     private Vector2 dashDir;
     private float dashTimeLeft;
     private float dashCooldownLeft;
+    private bool dashRequested;     // Se consume en el siguiente Update (equivale al GetKeyDown anterior)
+
+    // Hashes de los parámetros del Animator (evita buscar strings cada frame)
+    private int isMovingHash;
+    private int dashTriggerHash;
+    private int isDashingHash;
 
     private void Awake()
     {
@@ -60,7 +71,13 @@ public class PlayerMovement : MonoBehaviour
         // Evita atravesar paredes a alta velocidad durante el dash
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
+        playerInput = GetComponent<PlayerInput>();
+
         if (animator == null) animator = GetComponentInChildren<Animator>();
+
+        isMovingHash = Animator.StringToHash(paramIsMoving);
+        dashTriggerHash = Animator.StringToHash(paramDashTrigger);
+        isDashingHash = Animator.StringToHash(paramIsDashing);
     }
 
     private void Update()
@@ -73,14 +90,60 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (IsDashing) DashMove();
-        else MoveCharacter();
+        if (IsDashing)
+        {
+            DashMove();
+            // El tiempo del dash corre en el paso de física, igual que su velocidad,
+            // para que la distancia recorrida no dependa de los FPS.
+            dashTimeLeft -= Time.fixedDeltaTime;
+            if (dashTimeLeft <= 0f) EndDash();
+        }
+        else
+        {
+            MoveCharacter();
+        }
+    }
+
+    // ─────────────────────── INPUT (PlayerInput · Send Messages) ───────────────────────
+
+    private void OnMove(InputValue value)
+    {
+        if (!controlEnabled) return;
+        rawMoveInput = value.Get<Vector2>();
+    }
+
+    private void OnDash(InputValue value)
+    {
+        if (!controlEnabled || !value.isPressed) return;
+        dashRequested = true;
+    }
+
+    /// <summary>
+    /// Activa/desactiva el control del jugador (ej. mientras está muerto).
+    /// Al desactivarlo se descarta el input pendiente; al reactivarlo se lee el
+    /// valor actual de Move para no quedarse quieto si ya tenía una dirección presionada.
+    /// </summary>
+    public void SetControlEnabled(bool isEnabled)
+    {
+        controlEnabled = isEnabled;
+        dashRequested = false;
+
+        rawMoveInput = isEnabled ? ReadCurrentMoveValue() : Vector2.zero;
+        if (!isEnabled) inputDir = Vector2.zero;
+    }
+
+    private Vector2 ReadCurrentMoveValue()
+    {
+        InputAction move = playerInput != null && playerInput.actions != null
+            ? playerInput.actions.FindAction(MoveActionName)
+            : null;
+        return move != null ? move.ReadValue<Vector2>() : Vector2.zero;
     }
 
     private void ReadInput()
     {
-        float x = Input.GetAxisRaw("Horizontal"); // A/D o flechas
-        float y = Input.GetAxisRaw("Vertical");   // W/S o flechas
+        float x = rawMoveInput.x;
+        float y = rawMoveInput.y;
 
         if (invertHorizontal) x *= -1f;
         if (invertVertical) y *= -1f;
@@ -96,17 +159,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleDash()
     {
-        if (IsDashing)
-        {
-            dashTimeLeft -= Time.deltaTime;
-            if (dashTimeLeft <= 0f) EndDash();
-            return;
-        }
+        // Igual que GetKeyDown: una pulsación solo cuenta el frame en que llega;
+        // si cae durante un dash o en cooldown, se descarta (no se acumula).
+        bool requested = dashRequested;
+        dashRequested = false;
+
+        if (IsDashing) return; // El fin del dash se controla en FixedUpdate
 
         if (dashCooldownLeft > 0f)
             dashCooldownLeft -= Time.deltaTime;
 
-        if (Input.GetKeyDown(dashKey) && dashCooldownLeft <= 0f)
+        if (requested && dashCooldownLeft <= 0f)
             TryStartDash();
     }
 
@@ -123,9 +186,25 @@ public class PlayerMovement : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetBool(paramIsDashing, true);
-            animator.SetTrigger(paramDashTrigger);
+            animator.SetBool(isDashingHash, true);
+            animator.SetTrigger(dashTriggerHash);
         }
+    }
+
+    /// <summary>
+    /// Corta un dash en curso sin aplicar la velocidad de salida ni el cooldown
+    /// (ej. el jugador muere a mitad del dash).
+    /// </summary>
+    public void CancelDash()
+    {
+        if (!IsDashing) return;
+
+        IsDashing = false;
+        dashTimeLeft = 0f;
+        currentVelocity = Vector2.zero;
+
+        if (animator != null)
+            animator.SetBool(isDashingHash, false);
     }
 
     private void EndDash()
@@ -138,7 +217,7 @@ public class PlayerMovement : MonoBehaviour
         currentVelocity = dashDir * moveSpeed;
 
         if (animator != null)
-            animator.SetBool(paramIsDashing, false);
+            animator.SetBool(isDashingHash, false);
     }
 
     private void DashMove()
@@ -168,15 +247,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (animator == null) return;
 
-        animator.SetFloat(paramMoveX, lastMoveDir.x);
-        animator.SetFloat(paramMoveY, lastMoveDir.y);
-        animator.SetFloat(paramSpeed, IsDashing ? dashSpeed : currentVelocity.magnitude);
+        // El personaje solo voltea izquierda/derecha (FlipSprite), así que el Animator
+        // no necesita dirección ni velocidad: solo IsMoving / Dash / IsDashing.
 
         // true mientras se presiona una tecla de movimiento (input crudo, no velocidad),
         // así el cambio a Walk es inmediato al presionar y a Idle inmediato al soltar.
         // Durante el dash se pone en false para que no compita con la animación de Dash.
         bool isMoving = !IsDashing && inputDir.sqrMagnitude > 0.01f;
-        animator.SetBool(paramIsMoving, isMoving);
+        animator.SetBool(isMovingHash, isMoving);
     }
 
     private void FlipSprite()
