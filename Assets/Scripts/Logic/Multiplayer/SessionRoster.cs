@@ -12,7 +12,7 @@ namespace CodenameVelvet.Multiplayer
     /// </summary>
     public class SessionRoster
     {
-        public const int DefaultMaxPlayers = 5;
+        public const int DefaultMaxPlayers = 4;
 
         private readonly RosterEntry[] slots;
 

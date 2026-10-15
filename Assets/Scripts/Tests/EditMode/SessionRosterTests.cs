@@ -17,13 +17,13 @@ namespace CodenameVelvet.Tests
         }
 
         [Test]
-        public void NewRoster_IsEmptyUnlockedWithFiveSlots()
+        public void NewRoster_IsEmptyUnlockedWithFourSlots()
         {
             var roster = new SessionRoster();
 
             Assert.That(roster.Count, Is.EqualTo(0));
             Assert.That(roster.IsLocked, Is.False);
-            Assert.That(roster.MaxPlayers, Is.EqualTo(5));
+            Assert.That(roster.MaxPlayers, Is.EqualTo(4));
             Assert.That(roster.Entries, Is.Empty);
         }
 

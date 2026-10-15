@@ -59,22 +59,8 @@ namespace CodenameVelvet.Tests
             AssertRect(new Rect(0.5f, 0f, 0.5f, 0.5f), rects[3]);
         }
 
-        [Test]
-        public void FivePlayers_AreThreeOnTopAndTwoCenteredBelow()
-        {
-            const float third = 1f / 3f;
-            Rect[] rects = SplitScreenLayout.ComputeRects(5);
-
-            Assert.That(rects, Has.Length.EqualTo(5));
-            AssertRect(new Rect(0f, 0.5f, third, 0.5f), rects[0]);
-            AssertRect(new Rect(third, 0.5f, third, 0.5f), rects[1]);
-            AssertRect(new Rect(2f * third, 0.5f, third, 0.5f), rects[2]);
-            AssertRect(new Rect(third / 2f, 0f, third, 0.5f), rects[3]);
-            AssertRect(new Rect(0.5f, 0f, third, 0.5f), rects[4]);
-        }
-
         [TestCase(0)]
-        [TestCase(6)]
+        [TestCase(5)]
         [TestCase(-1)]
         public void OutOfRangeCount_Throws(int playerCount)
         {
