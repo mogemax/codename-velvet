@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
@@ -9,7 +10,8 @@ namespace CodenameVelvet.Player
     /// <summary>
     /// Per-player HP, death and respawn. Composes <see cref="PlayerHealthState"/>
     /// for the math; this class only decides what dying means in the scene.
-    /// Death is announced outward only through <see cref="PlayerDiedEvent"/>.
+    /// Death is announced scene-wide through <see cref="PlayerDiedEvent"/> (after the delay)
+    /// and to this player's own components through <see cref="Died"/> (immediately).
     /// Rule: every reference here is to this GameObject's own components.
     /// </summary>
     public class PlayerHealth : MonoBehaviour, IDamageable
@@ -34,6 +36,12 @@ namespace CodenameVelvet.Player
         private Renderer[] hiddenRenderers;
         private Vector3 spawnPoint;
         private bool isDying;
+
+        /// <summary>
+        /// Raised once per death, at the start of the death sequence while the player
+        /// is still at the death spot (before hiding and respawn).
+        /// </summary>
+        public event Action Died;
 
         public int CurrentHp => healthState.CurrentHp;
         public int MaxHp => healthState.MaxHp;
@@ -72,6 +80,8 @@ namespace CodenameVelvet.Player
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Died, respawning in {deathDelaySeconds}s");
+
+            Died?.Invoke();
 
             if (movement != null)
             {

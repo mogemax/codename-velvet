@@ -9,7 +9,8 @@ namespace CodenameVelvet.Player
     /// <summary>
     /// Sword swing: hits every living non-player <see cref="IDamageable"/> inside a
     /// planar arc around the aim direction (the nearest valid target in range when aim
-    /// assist is on, otherwise the last movement direction, same as the dash), then knocks back and stuns whatever also implements
+    /// assist is on, enemies before anything else, otherwise the last movement direction,
+    /// same as the dash), then knocks back and stuns whatever also implements
     /// <see cref="IKnockbackable"/>. Input arrives from this object's PlayerInput
     /// (Send Messages) through the "Attack" action, so each player reads only their device.
     /// </summary>
@@ -55,6 +56,11 @@ namespace CodenameVelvet.Player
         private readonly List<Component> candidateOwners = new List<Component>();
         private readonly List<Vector3> candidatePositions = new List<Vector3>();
         private readonly List<float> candidateGaps = new List<float>();
+        // Enemy = candidate that can be knocked back; index-aligned with the lists above.
+        private readonly List<bool> candidateIsEnemy = new List<bool>();
+        // Enemy-only subset handed to the aim assist, so enemies win over nodes.
+        private readonly List<Vector3> enemyPositions = new List<Vector3>();
+        private readonly List<float> enemyGaps = new List<float>();
         private float nextAttackTime;
 
         private void Awake()
@@ -107,9 +113,7 @@ namespace CodenameVelvet.Player
             Vector2 facing = movement.FacingDirection;
 
             int count = CollectCandidates(origin);
-            Vector2 aim = aimAssist
-                ? MeleeAim.ChooseAimDirection(origin, facing, candidatePositions, candidateGaps, range)
-                : facing;
+            Vector2 aim = aimAssist ? ChooseAssistedAim(origin, facing) : facing;
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Swing aim {DescribeAim(origin, aim)} {aim}");
@@ -136,6 +140,9 @@ namespace CodenameVelvet.Player
             candidateOwners.Clear();
             candidatePositions.Clear();
             candidateGaps.Clear();
+            candidateIsEnemy.Clear();
+            enemyPositions.Clear();
+            enemyGaps.Clear();
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Swing facing {facing}: {count} collider(s) in range, {struckCount} target(s) hit");
@@ -167,13 +174,36 @@ namespace CodenameVelvet.Player
                 candidateOwners.Add(owner);
                 candidatePositions.Add(owner.transform.position);
                 candidateGaps.Add(BodyDistance.PlanarGap(origin, body, owner.transform.position, hit));
+                candidateIsEnemy.Add(owner.GetComponentInParent<IKnockbackable>() != null);
             }
 
             struckThisSwing.Clear();
             return count;
         }
 
-        /// <summary>Debug-only: "assist → name" when the aim points at a candidate, otherwise "facing".</summary>
+        /// <summary>
+        /// Aims at the nearest enemy in range; only when there is none, at the nearest of
+        /// all candidates (e.g. resource nodes); otherwise along <paramref name="facing"/>.
+        /// </summary>
+        private Vector2 ChooseAssistedAim(Vector3 origin, Vector2 facing)
+        {
+            bool enemyInRange = false;
+            for (int i = 0; i < candidateTargets.Count; i++)
+            {
+                if (!candidateIsEnemy[i])
+                    continue;
+
+                enemyPositions.Add(candidatePositions[i]);
+                enemyGaps.Add(candidateGaps[i]);
+                enemyInRange |= candidateGaps[i] <= range;
+            }
+
+            return enemyInRange
+                ? MeleeAim.ChooseAimDirection(origin, facing, enemyPositions, enemyGaps, range)
+                : MeleeAim.ChooseAimDirection(origin, facing, candidatePositions, candidateGaps, range);
+        }
+
+        /// <summary>Debug-only: "assist → enemy/node name" when the aim points at a candidate, otherwise "facing".</summary>
         private string DescribeAim(Vector3 origin, Vector2 aim)
         {
             if (!aimAssist)
@@ -184,7 +214,7 @@ namespace CodenameVelvet.Player
                 Vector3 position = candidatePositions[i];
                 Vector2 toTarget = new Vector2(position.x - origin.x, position.z - origin.z);
                 if (candidateGaps[i] <= range && (toTarget.normalized - aim).sqrMagnitude < 1e-6f)
-                    return $"assist → {candidateOwners[i].name}";
+                    return $"assist → {(candidateIsEnemy[i] ? "enemy" : "node")} {candidateOwners[i].name}";
             }
 
             return "facing";
