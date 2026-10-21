@@ -62,6 +62,19 @@ namespace CodenameVelvet.Multiplayer
             return true;
         }
 
+        /// <summary>Records the lobby's character pick; only before the roster is locked.</summary>
+        public bool AssignCharacter(int slotIndex, int characterIndex)
+        {
+            if (characterIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(characterIndex), characterIndex, "Character index must be non-negative.");
+
+            if (IsLocked || !TryGetEntry(slotIndex, out RosterEntry entry))
+                return false;
+
+            entry.CharacterIndex = characterIndex;
+            return true;
+        }
+
         public bool TryGetEntry(int slotIndex, out RosterEntry entry)
         {
             entry = IsValidSlot(slotIndex) ? slots[slotIndex] : null;
