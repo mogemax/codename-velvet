@@ -2,25 +2,31 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Actualiza el Sorting Order de un Sorting Group según la posición Z del objeto,
-/// para que los personajes que estén más "adelante" (más cerca de la cámara)
-/// se dibujen encima de los que estén más "atrás", como en Cult of the Lamb.
+/// Ordena personajes 2D en un mundo 3D como si fueran objetos 3D: el que está más cerca
+/// de la cámara (Z más negativa, la cámara mira hacia +Z) se dibuja encima, y el que está
+/// más lejos queda detrás. Va en el MISMO objeto que el Sorting Group (raíz del Player o del Enemy)
+/// y usa la posición de ese objeto (los pies del personaje) como referencia.
 ///
-/// Colócalo en el MISMO objeto que tiene el componente Sorting Group
-/// (el objeto raíz del Player o del Enemy).
+/// Todos los personajes usan la misma escala (<see cref="UnitsPerOrder"/>) para que sus valores
+/// sean comparables, y el resultado se mantiene dentro del rango que acepta Unity (±32767):
+/// antes se multiplicaba por 1000 y a partir de Z = ±33 todos se topaban en el mismo valor,
+/// así que Unity los dibujaba en cualquier orden.
 /// </summary>
 [RequireComponent(typeof(SortingGroup))]
 public class DynamicSortingOrder : MonoBehaviour
 {
-    [Header("Ajuste de precisión")]
-    [Tooltip("Multiplica la posición Z antes de redondear a entero. Súbelo si notas que dos objetos muy cerca en Z comparten el mismo Sorting Order.")]
-    [SerializeField] private float precisionMultiplier = 100f;
+    /// <summary>Pasos de Sorting Order por unidad de Z. 100 = precisión de 1 cm en un mapa de ±320 unidades.</summary>
+    public const float UnitsPerOrder = 100f;
+    private const int MaxOrder = 32000; // margen bajo el límite de Unity para los offsets manuales
 
     [Header("Offset manual (opcional)")]
     [Tooltip("Suma un valor fijo al resultado, útil si necesitas forzar que algo específico siempre esté delante o detrás de todo lo demás.")]
     [SerializeField] private int manualOffset = 0;
 
     private SortingGroup sortingGroup;
+
+    public static int OrderForZ(float z, int offset = 0) =>
+        Mathf.Clamp(Mathf.RoundToInt(-z * UnitsPerOrder), -MaxOrder, MaxOrder) + offset;
 
     private void Awake()
     {
@@ -29,10 +35,6 @@ public class DynamicSortingOrder : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Z más NEGATIVO (más cerca de la cámara, según el offset (0,10,-8) que usamos)
-        // debe dibujarse ENCIMA → Sorting Order más alto.
-        // Por eso invertimos el signo: a menor Z, mayor Sorting Order.
-        int order = Mathf.RoundToInt(-transform.position.z * precisionMultiplier) + manualOffset;
-        sortingGroup.sortingOrder = order;
+        sortingGroup.sortingOrder = OrderForZ(transform.position.z, manualOffset);
     }
 }

@@ -16,6 +16,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float acceleration = 20f;
     [SerializeField] private float deceleration = 25f;
+    [Tooltip("Aceleración al cambiar de dirección. Más alto = vueltas más secas, sin derrape.")]
+    [SerializeField] private float turnAcceleration = 90f;
+    [Tooltip("Qué tanto debe cambiar la dirección para usar Turn Acceleration (1 = cualquier cambio, 0 = solo giros de más de 90°).")]
+    [Range(-1f, 1f)]
+    [SerializeField] private float turnThreshold = 0.7f;
     [Tooltip("Actívalo si arriba/abajo se ven invertidos respecto a la cámara.")]
     [SerializeField] private bool invertVertical = false;
     [Tooltip("Actívalo si izquierda/derecha se ven invertidos respecto a la cámara.")]
@@ -34,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Animator animator;      // Animator del rig/sprite
     [SerializeField] private Transform spriteRoot;    // Hijo que se voltea (Scale.x) o rota
+    [Tooltip("Actívalo si el arte original del personaje mira hacia la derecha; desactívalo si mira a la izquierda.")]
+    [SerializeField] private bool artFacesRight = true;
 
     [Header("Animator - nombres de parámetros")]
     [SerializeField] private string paramIsMoving = "IsMoving";
@@ -236,7 +243,23 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 targetVelocity = inputDir * moveSpeed;
 
-        float accel = inputDir.sqrMagnitude > 0.01f ? acceleration : deceleration;
+        bool hasInput = inputDir.sqrMagnitude > 0.01f;
+        float accel = deceleration;
+
+        if (hasInput)
+        {
+            accel = acceleration;
+
+            // Si ya nos movemos y la nueva dirección se aleja de la actual, usamos la
+            // aceleración de giro para que el cambio sea inmediato y no "derrape".
+            if (currentVelocity.sqrMagnitude > 0.01f)
+            {
+                float alignment = Vector2.Dot(currentVelocity.normalized, inputDir);
+                if (alignment < turnThreshold)
+                    accel = turnAcceleration;
+            }
+        }
+
         currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, accel * Time.fixedDeltaTime);
 
         // Mapeo 2D -> plano 3D (X, Z). Si tu mundo usa X/Y en vez de X/Z, ajusta aquí.
@@ -270,7 +293,10 @@ public class PlayerMovement : MonoBehaviour
         if (Mathf.Abs(xDir) > 0.01f)
         {
             Vector3 scale = spriteRoot.localScale;
-            scale.x = Mathf.Abs(scale.x) * (xDir < 0 ? 1f : -1f);
+            // Si el arte mira a la derecha, se invierte (scale.x negativo) solo al ir a la izquierda.
+            bool movingRight = xDir > 0f;
+            bool keepOriginal = movingRight == artFacesRight;
+            scale.x = Mathf.Abs(scale.x) * (keepOriginal ? 1f : -1f);
             spriteRoot.localScale = scale;
         }
     }
