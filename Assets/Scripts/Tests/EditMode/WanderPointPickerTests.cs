@@ -67,5 +67,53 @@ namespace CodenameVelvet.Tests
             Assert.Throws<ArgumentNullException>(
                 () => WanderPointPicker.PickPoint(Center, 1f, null));
         }
+
+        [Test]
+        public void PickPointInArea_AlwaysInsideRectangleOnCenterHeight()
+        {
+            var half = new Vector2(6f, 3f);
+            var random = new System.Random(2024);
+            for (int i = 0; i < Samples; i++)
+            {
+                Vector3 p = WanderPointPicker.PickPointInArea(Center, half, random);
+                Assert.That(Mathf.Abs(p.x - Center.x), Is.LessThanOrEqualTo(half.x + Tolerance));
+                Assert.That(Mathf.Abs(p.z - Center.z), Is.LessThanOrEqualTo(half.y + Tolerance));
+                Assert.That(p.y, Is.EqualTo(Center.y));
+            }
+        }
+
+        [Test]
+        public void PickPointInArea_NegativeExtents_Throws()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                WanderPointPicker.PickPointInArea(Center, new Vector2(-1f, 2f), new System.Random(1)));
+        }
+
+        [Test]
+        public void ClampToArea_PointOutside_IsPulledToEdgeMinusMargin()
+        {
+            Vector3 outside = new Vector3(Center.x + 50f, 9f, Center.z - 50f);
+            Vector3 clamped = WanderPointPicker.ClampToArea(outside, Center, new Vector2(5f, 4f), 1f);
+
+            Assert.That(clamped.x, Is.EqualTo(Center.x + 4f).Within(Tolerance));
+            Assert.That(clamped.z, Is.EqualTo(Center.z - 3f).Within(Tolerance));
+            Assert.That(clamped.y, Is.EqualTo(9f), "Y must not be clamped");
+        }
+
+        [Test]
+        public void ClampToArea_PointInside_IsUnchanged()
+        {
+            Vector3 inside = Center + new Vector3(1f, 0f, -1f);
+            Vector3 clamped = WanderPointPicker.ClampToArea(inside, Center, new Vector2(5f, 4f), 0.5f);
+            Assert.That(clamped, Is.EqualTo(inside));
+        }
+
+        [Test]
+        public void ClampToArea_MarginLargerThanArea_CollapsesToCenter()
+        {
+            Vector3 clamped = WanderPointPicker.ClampToArea(Center + Vector3.one * 3f, Center, new Vector2(1f, 1f), 5f);
+            Assert.That(clamped.x, Is.EqualTo(Center.x).Within(Tolerance));
+            Assert.That(clamped.z, Is.EqualTo(Center.z).Within(Tolerance));
+        }
     }
 }
