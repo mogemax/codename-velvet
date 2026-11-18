@@ -1,5 +1,0 @@
-﻿<Solution>
-  <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="CodenameVelvet.Tests.EditMode.csproj" />
-  <Project Path="CodenameVelvet.Logic.csproj" />
-</Solution>

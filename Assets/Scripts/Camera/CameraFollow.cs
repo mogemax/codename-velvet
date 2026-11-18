@@ -15,8 +15,8 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Vector3 offset = new Vector3(0f, 10f, -8f);
 
     [Header("Suavizado")]
+    [Tooltip("Qué tan rápido alcanza al jugador. Más alto = más pegada. Igual a cualquier FPS.")]
     [SerializeField] private float smoothSpeed = 8f;
-    [SerializeField] private bool useFixedUpdate = true;
 
     [Header("Enfoque")]
     [Tooltip("Si está activo, la cámara siempre rota para mirar exactamente al target, evitando desalineación entre Offset y Rotation. Recomendado: activado.")]
@@ -30,6 +30,12 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Vector2 minBounds;
     [SerializeField] private Vector2 maxBounds;
 
+    /// <summary>Asigna a quién sigue (pantalla dividida: una cámara por jugador). Llamar antes de Start.</summary>
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+    }
+
     private void Start()
     {
         if (target == null)
@@ -39,21 +45,16 @@ public class CameraFollow : MonoBehaviour
             if (player != null) target = player.transform;
         }
 
+        // Empieza ya en su lugar (sin "volar" desde donde quedó en la escena).
+        if (target != null) transform.position = target.position + offset;
+
         // Fuerza la rotación inicial mirando hacia el offset (ángulo isométrico)
         transform.LookAt(target != null ? target.position + lookAtOffset : Vector3.zero);
     }
 
+    // LateUpdate: el Rigidbody del jugador interpola su posición cada frame, así que la cámara
+    // la lee ya actualizada. Seguirlo en FixedUpdate (50 Hz) se ve a tirones en pantallas de 60+ Hz.
     private void LateUpdate()
-    {
-        if (!useFixedUpdate) FollowTarget();
-    }
-
-    private void FixedUpdate()
-    {
-        if (useFixedUpdate) FollowTarget();
-    }
-
-    private void FollowTarget()
     {
         if (target == null) return;
 
@@ -65,8 +66,9 @@ public class CameraFollow : MonoBehaviour
             desiredPosition.z = Mathf.Clamp(desiredPosition.z, minBounds.y, maxBounds.y);
         }
 
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.position = smoothedPosition;
+        // Suavizado exponencial: el mismo recorrido por segundo sin importar los FPS.
+        float t = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, t);
 
         if (alwaysLookAtTarget)
             transform.LookAt(target.position + lookAtOffset);

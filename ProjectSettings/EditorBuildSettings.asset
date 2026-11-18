@@ -20,6 +20,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Dev/Dev_Enemies.unity
     guid: 75becdd35af7342e7946b0d3a3d0113e
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 8c41cf8655f6d2847bcda62b6baa5bd3
+  - enabled: 1
+    path: Assets/Scenes/Game_Map.unity
+    guid: b0dd574113e434e3ca9d11b00ac4adac
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

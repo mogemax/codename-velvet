@@ -36,6 +36,16 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Si no hay input, hace dash hacia la última dirección en la que miraba.")]
     [SerializeField] private bool dashWithoutInput = true;
 
+    [Header("Suelo")]
+    [Tooltip("Capas que cuentan como suelo. Vacío = capa 'Ground'.")]
+    [SerializeField] private LayerMask groundMask;
+    [Tooltip("Pendiente máxima caminable (grados). Más inclinado cuenta como pared.")]
+    [SerializeField, Range(0f, 89f)] private float maxSlopeAngle = 50f;
+    [Tooltip("Hasta qué distancia bajo los pies se sigue pegado al suelo (bajar escalones sin flotar).")]
+    [SerializeField, Min(0f)] private float groundSnapDistance = 0.4f;
+    [Tooltip("Multiplica la gravedad al caer para que no se sienta flotante.")]
+    [SerializeField, Min(1f)] private float fallGravityMultiplier = 2.5f;
+
     [Header("Referencias")]
     [SerializeField] private Animator animator;      // Animator del rig/sprite
     [SerializeField] private Transform spriteRoot;    // Hijo que se voltea (Scale.x) o rota
@@ -54,8 +64,13 @@ public class PlayerMovement : MonoBehaviour
     public Vector2 FacingDirection => lastMoveDir;
 
     private const string MoveActionName = "Move";
+    private const float GroundProbeSkin = 0.05f; // la esfera del sondeo empieza un poco arriba de los pies
 
     private Rigidbody rb;
+    private Collider body;
+    private bool isGrounded;
+    private Vector3 groundNormal = Vector3.up;
+    private float groundGap; // distancia entre los pies y el suelo detectado
     private PlayerInput playerInput;
     private Vector2 rawMoveInput;   // Último valor recibido de la acción Move
     private Vector2 inputDir;
@@ -80,6 +95,11 @@ public class PlayerMovement : MonoBehaviour
         rb.freezeRotation = true; // Evita que el Rigidbody rote el personaje por física
         // Evita atravesar paredes a alta velocidad durante el dash
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        // Sin interpolación el personaje se mueve a 50 Hz y se ve a tirones en pantallas de 60+ Hz.
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        body = GetComponent<Collider>();
+        if (groundMask.value == 0) groundMask = LayerMask.GetMask("Ground");
 
         playerInput = GetComponent<PlayerInput>();
 
@@ -100,6 +120,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ProbeGround();
+
         if (IsDashing)
         {
             DashMove();
@@ -232,9 +254,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void DashMove()
     {
-        // Mismo mapeo 2D -> 3D (X, Z) que el movimiento normal. Se conserva la Y (gravedad).
-        Vector3 v = new Vector3(dashDir.x * dashSpeed, rb.linearVelocity.y, dashDir.y * dashSpeed);
-        rb.linearVelocity = v;
+        ApplyPlanarVelocity(dashDir * dashSpeed);
     }
 
     // ─────────────────────── MOVIMIENTO ───────────────────────
@@ -262,9 +282,61 @@ public class PlayerMovement : MonoBehaviour
 
         currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, accel * Time.fixedDeltaTime);
 
-        // Mapeo 2D -> plano 3D (X, Z). Si tu mundo usa X/Y en vez de X/Z, ajusta aquí.
-        Vector3 worldVelocity = new Vector3(currentVelocity.x, 0f, currentVelocity.y);
-        rb.linearVelocity = new Vector3(worldVelocity.x, rb.linearVelocity.y, worldVelocity.z);
+        ApplyPlanarVelocity(currentVelocity);
+    }
+
+    // ───────────────────────── SUELO ─────────────────────────
+
+    /// <summary>
+    /// Lanza una esfera hacia abajo desde los pies. Solo cuenta como suelo una superficie
+    /// caminable (pendiente ≤ maxSlopeAngle) a menos de groundSnapDistance.
+    /// </summary>
+    private void ProbeGround()
+    {
+        isGrounded = false;
+        groundNormal = Vector3.up;
+        if (body == null) return;
+
+        Bounds bounds = body.bounds;
+        float radius = Mathf.Min(bounds.extents.x, bounds.extents.z) * 0.9f;
+        Vector3 origin = new Vector3(bounds.center.x, bounds.min.y + radius + GroundProbeSkin, bounds.center.z);
+
+        if (!Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit,
+                GroundProbeSkin + groundSnapDistance, groundMask, QueryTriggerInteraction.Ignore))
+            return;
+
+        if (Vector3.Angle(hit.normal, Vector3.up) > maxSlopeAngle) return;
+
+        isGrounded = true;
+        groundNormal = hit.normal;
+        groundGap = Mathf.Max(0f, hit.distance - GroundProbeSkin);
+    }
+
+    /// <summary>
+    /// Aplica la velocidad del plano XZ (input 2D → mundo X/Z) y decide la Y aquí, no la física:
+    /// <list type="bullet">
+    /// <item>En el suelo: sigue la pendiente y se pega al suelo (no flota al bajar escalones).</item>
+    /// <item>En el aire: solo puede caer. Como no hay salto, cualquier velocidad hacia arriba viene
+    /// de empujar contra un borde y se descarta (eso era lo que lo hacía "volar").</item>
+    /// </list>
+    /// </summary>
+    private void ApplyPlanarVelocity(Vector2 planar)
+    {
+        Vector3 velocity = new Vector3(planar.x, 0f, planar.y);
+
+        if (isGrounded)
+        {
+            velocity = Vector3.ProjectOnPlane(velocity, groundNormal);
+            velocity.y -= groundGap / Time.fixedDeltaTime;
+        }
+        else
+        {
+            float fallSpeed = Mathf.Min(rb.linearVelocity.y, 0f);
+            fallSpeed += Physics.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
+            velocity.y = fallSpeed;
+        }
+
+        rb.linearVelocity = velocity;
     }
 
     // ─────────────────────── ANIMACIÓN ───────────────────────
