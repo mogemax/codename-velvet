@@ -9,8 +9,8 @@ namespace CodenameVelvet.DayNight
     }
 
     /// <summary>
-    /// Reloj puro del ciclo: alterna Día → Noche → Día… con duraciones fijas y cuenta las noches.
-    /// No sabe nada de Unity; quien lo usa le pasa el tiempo transcurrido.
+    /// Pure day/night clock: alternates Day → Night → Day… with fixed durations and counts the nights.
+    /// The caller feeds it the elapsed time.
     /// </summary>
     public sealed class DayNightClock
     {
@@ -29,18 +29,18 @@ namespace CodenameVelvet.DayNight
 
         public DayPhase Phase { get; private set; } = DayPhase.Day;
 
-        /// <summary>0 durante el primer día; sube a 1 al caer la primera noche.</summary>
+        /// <summary>0 during the first day; becomes 1 when the first night falls.</summary>
         public int NightNumber { get; private set; }
 
-        /// <summary>Segundos que faltan para el cambio de fase.</summary>
+        /// <summary>Seconds left until the phase changes.</summary>
         public float Remaining { get; private set; }
 
         public float PhaseDuration => Phase == DayPhase.Day ? daySeconds : nightSeconds;
 
-        /// <summary>0 al empezar la fase, 1 al terminarla.</summary>
+        /// <summary>0 when the phase starts, 1 when it ends.</summary>
         public float PhaseProgress => 1f - Remaining / PhaseDuration;
 
-        /// <summary>Avanza el reloj. Devuelve true si cambió de fase (el sobrante pasa a la fase siguiente).</summary>
+        /// <summary>Advances the clock. Returns true when the phase changed; leftover time carries into the next phase.</summary>
         public bool Advance(float seconds)
         {
             if (seconds < 0f) throw new ArgumentOutOfRangeException(nameof(seconds));
@@ -57,7 +57,7 @@ namespace CodenameVelvet.DayNight
             return changed;
         }
 
-        /// <summary>Termina la fase actual de inmediato (dev mode).</summary>
+        /// <summary>Ends the current phase immediately.</summary>
         public void SkipPhase() => EnterNextPhase();
 
         private void EnterNextPhase()

@@ -71,8 +71,6 @@ namespace CodenameVelvet.Player
             hits = new Collider[Mathf.Max(1, maxHits)];
         }
 
-        // ─────────────────────── INPUT (PlayerInput · Send Messages) ───────────────────────
-
         private void OnAttack(InputValue value)
         {
             if (!value.isPressed)

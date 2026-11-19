@@ -3,8 +3,8 @@ using System;
 namespace CodenameVelvet.DayNight
 {
     /// <summary>
-    /// Qué tan peligrosa es una noche: crece con cada noche sobrevivida y con cada jugador extra (CYCLE-02).
-    /// <c>(1 + porNoche·(noche−1)) · (1 + porJugador·(jugadores−1))</c>, con tope.
+    /// How dangerous a night is: grows with every night survived and every extra player (CYCLE-02).
+    /// <c>(1 + perNight·(night−1)) · (1 + perPlayer·(players−1))</c>, capped.
     /// </summary>
     public static class NightThreat
     {
@@ -15,14 +15,14 @@ namespace CodenameVelvet.DayNight
             return Math.Min(Math.Max(1f, max), byNight * byPlayers);
         }
 
-        /// <summary>Enemigos a mantener con esa amenaza (redondeo normal, nunca negativo).</summary>
+        /// <summary>Enemies to keep alive for that threat (rounded half away from zero, never negative).</summary>
         public static int EnemyCount(int baseCount, float multiplier)
         {
             return (int)Math.Round(Math.Max(0, baseCount) * Math.Max(0f, multiplier), MidpointRounding.AwayFromZero);
         }
     }
 
-    /// <summary>Lo que se anuncia en cada cambio de fase.</summary>
+    /// <summary>Announced on every phase change.</summary>
     public readonly struct DayNightState
     {
         public DayNightState(DayPhase phase, int nightNumber, float threatMultiplier)
@@ -35,7 +35,7 @@ namespace CodenameVelvet.DayNight
         public DayPhase Phase { get; }
         public int NightNumber { get; }
 
-        /// <summary>1 de día; de noche, el resultado de <see cref="NightThreat.Multiplier"/>.</summary>
+        /// <summary>1 by day; at night, the result of <see cref="NightThreat.Multiplier"/>.</summary>
         public float ThreatMultiplier { get; }
 
         public bool IsNight => Phase == DayPhase.Night;

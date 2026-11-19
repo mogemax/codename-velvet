@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80b1a1aaba6db4e80ae1d95b4e6ee6a0, type: 3}
   m_Name: Sirena
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyDefinition
-  displayName: Sirena
+  displayName: Siren
   color: {r: 0.2, g: 0.8, b: 0.9, a: 1}
   wanderSpeed: 1.5
   chaseSpeed: 4.5

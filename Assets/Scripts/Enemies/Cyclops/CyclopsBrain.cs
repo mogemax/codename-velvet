@@ -8,74 +8,74 @@ using UnityEngine;
 namespace CodenameVelvet.Enemies
 {
     /// <summary>
-    /// Cerebro del cíclope (jefe). Estados:
+    /// Cyclops (boss) brain. States:
     /// <list type="bullet">
-    /// <item>Deambular: camina a puntos aleatorios dentro de su zona (un BoxCollider trigger, o un radio
-    /// alrededor del spawn) y solo elige puntos con suelo debajo, para no caerse del mundo.</item>
-    /// <item>Descansar: de vez en cuando se detiene y reproduce uno de sus idles al azar (parámetro IdleVariant).</item>
-    /// <item>Perseguir: al detectar a un jugador camina hacia él, sin salirse de la zona.</item>
-    /// <item>Atacar: con el jugador cerca elige uno de los ataques disponibles (por rango, cooldown y peso),
-    /// se compromete con él (no se puede interrumpir) y espera a recuperarse.</item>
+    /// <item>Wander: walks to random points inside its zone (a trigger BoxCollider, or a radius around
+    /// the spawn) and only picks points with ground below, so it never walks off the world.</item>
+    /// <item>Rest: now and then stops and plays one of its idles at random (IdleVariant parameter).</item>
+    /// <item>Chase: walks toward a detected player without leaving the zone.</item>
+    /// <item>Attack: with a player close, picks one of the available attacks (by range, cooldown and weight),
+    /// commits to it (it cannot be interrupted) and waits to recover.</item>
     /// </list>
-    /// Igual que <see cref="EnemyBrain"/>: un solo bucle Awaitable por activación, cancelado al desactivarse,
-    /// y todos los tiempos usan Time.time (se congela con la pausa).
+    /// Same as <see cref="EnemyBrain"/>: one Awaitable loop per enable, cancelled on disable, and every timer
+    /// uses Time.time (frozen while paused).
     /// </summary>
     [RequireComponent(typeof(EnemyTargetFinder))]
     public class CyclopsBrain : MonoBehaviour, IKnockbackable
     {
         private const string LogCategory = "Cyclops";
 
-        [Header("Vida")]
+        [Header("Health")]
         [SerializeField, Min(1)] private int maxHp = 20;
 
-        [Header("Zona")]
-        [Tooltip("BoxCollider (trigger) que delimita por dónde puede andar. Vacío = radio alrededor del spawn.")]
+        [Header("Zone")]
+        [Tooltip("Trigger BoxCollider that bounds where it can walk. Empty = a radius around the spawn.")]
         [SerializeField] private BoxCollider wanderArea;
         [SerializeField, Min(0f)] private float fallbackWanderRadius = 8f;
-        [Tooltip("Distancia que deja al borde de la zona (normalmente ~ el radio de su cuerpo).")]
+        [Tooltip("Distance kept from the zone edge (usually about its body radius).")]
         [SerializeField, Min(0f)] private float areaMargin = 1.5f;
-        [Tooltip("Capas que cuentan como suelo al revisar que un punto no esté en el vacío.")]
+        [Tooltip("Layers that count as ground when checking a point is not over the void.")]
         [SerializeField] private LayerMask groundMask = ~0;
         [SerializeField, Min(1)] private int maxPointAttempts = 12;
 
-        [Header("Deambular")]
+        [Header("Wander")]
         [SerializeField, Min(0f)] private float wanderSpeed = 1.8f;
-        [Tooltip("Distancia máxima de cada caminata. Puntos cercanos = llega seguido y descansa seguido (aunque la zona sea enorme).")]
+        [Tooltip("Max length of each walk. Short walks = it arrives and rests often, even in a huge zone.")]
         [SerializeField, Min(1f)] private float maxWanderStep = 12f;
-        [Tooltip("Probabilidad (0-1) de detenerse a hacer un idle al llegar a cada punto.")]
+        [Tooltip("Chance (0-1) of stopping to play an idle at each point.")]
         [SerializeField, Range(0f, 1f)] private float restChance = 0.6f;
         [SerializeField] private Vector2 restTimeRange = new Vector2(2.5f, 6f);
-        [Tooltip("Peso de cada idle: índice 0 = estado Idle, 1 = Idle_V1.")]
+        [Tooltip("Weight of each idle: index 0 = Idle state, 1 = Idle_V1.")]
         [SerializeField] private float[] idleWeights = { 1f, 1f };
 
-        [Header("Persecución")]
+        [Header("Chase")]
         [SerializeField, Min(0f)] private float chaseSpeed = 3.5f;
         [SerializeField, Min(0f)] private float detectionRange = 30f;
-        [Tooltip("Deja de perseguir más allá de esta distancia. Siempre >= detección.")]
+        [Tooltip("Stops chasing beyond this distance. Always >= detection range.")]
         [SerializeField, Min(0f)] private float loseInterestRange = 50f;
         [SerializeField, Min(0f)] private float retargetInterval = 0.25f;
 
-        [Header("Ataques")]
+        [Header("Attacks")]
         [SerializeField] private List<CyclopsAttack> attacks = new List<CyclopsAttack>();
-        [Tooltip("Pausa mínima entre el final de un ataque y el inicio del siguiente.")]
+        [Tooltip("Minimum pause between the end of an attack and the start of the next.")]
         [SerializeField, Min(0f)] private float timeBetweenAttacks = 0.6f;
-        [Tooltip("Si está activo, el golpe ocurre cuando la animación llama al Animation Event 'AnimationEvent_Impact' (con el windup como límite de seguridad).")]
+        [Tooltip("When enabled, the hit lands when the clip fires the 'AnimationEvent_Impact' Animation Event (the windup is the safety limit).")]
         [SerializeField] private bool useAnimationEvents = false;
 
-        [Header("Golpes recibidos")]
-        [Tooltip("0 = el knockback lo empuja completo, 1 = no lo mueve.")]
+        [Header("Hits taken")]
+        [Tooltip("0 = knockback pushes it fully, 1 = it does not move.")]
         [SerializeField, Range(0f, 1f)] private float knockbackResistance = 0.8f;
-        [Tooltip("Mientras ataca (incluida la recuperación) no se le puede empujar ni aturdir (super armor).")]
+        [Tooltip("While attacking (recovery included) it cannot be pushed or stunned (super armor).")]
         [SerializeField] private bool superArmorWhileAttacking = true;
-        [Tooltip("Se llama cuando queda aturdido tras el golpe (no se mueve ni ataca durante el Recovery): VFX, sonido.")]
+        [Tooltip("Called when it is dazed after its hit (no moving or attacking during the recovery): VFX, sound.")]
         [SerializeField] private UnityEngine.Events.UnityEvent onDazedStart = new UnityEngine.Events.UnityEvent();
         [SerializeField] private UnityEngine.Events.UnityEvent onDazedEnd = new UnityEngine.Events.UnityEvent();
 
-        [Header("Animator y visual")]
+        [Header("Animator and visuals")]
         [SerializeField] private Animator animator;
-        [Tooltip("Hijo que se voltea con Scale.x según hacia dónde va.")]
+        [Tooltip("Child flipped with Scale.x to face where it goes.")]
         [SerializeField] private Transform spriteRoot;
-        [Tooltip("Actívalo si el dibujo original mira a la derecha.")]
+        [Tooltip("Enable when the original art faces right.")]
         [SerializeField] private bool artFacesRight = false;
 
         [Header("Debug")]
@@ -111,14 +111,12 @@ namespace CodenameVelvet.Enemies
         private bool isAttacking;
         private bool isDazed;
         private bool impactSignaled;
-        private Vector3 facing = Vector3.back; // hacia la cámara
-        private bool restBeforeWandering = true; // al empezar y después de perder al jugador, primero descansa
+        private Vector3 facing = Vector3.back; // toward the camera
+        private bool restBeforeWandering = true; // rests first on start and after losing the player
 
         public bool IsAttacking => isAttacking;
-        /// <summary>True mientras se recupera de un ataque: se queda quieto, sin moverse ni atacar.</summary>
+        /// <summary>True while recovering from an attack: it stays still, no moving or attacking.</summary>
         public bool IsDazed => isDazed;
-
-        // ─────────────────────── LIFETIME ───────────────────────
 
         private void Reset()
         {
@@ -141,7 +139,7 @@ namespace CodenameVelvet.Enemies
                 foreach (var p in animator.parameters) animatorParams.Add(p.nameHash);
 
             if (health != null) health.Initialize(maxHp);
-            else Debug.LogWarning($"{name}: CyclopsBrain sin EnemyHealth; no podrá recibir daño.", this);
+            else Debug.LogWarning($"{name}: CyclopsBrain has no EnemyHealth; it cannot take damage.", this);
         }
 
         private void Start()
@@ -149,7 +147,7 @@ namespace CodenameVelvet.Enemies
             spawnPosition = transform.position;
             hasStarted = true;
             if (debugLogs)
-                VelvetLog.Info(LogCategory, this, $"Listo en {spawnPosition}, HP {maxHp}, zona {(wanderArea != null ? wanderArea.name : $"radio {fallbackWanderRadius}")}, {attacks.Count} ataques");
+                VelvetLog.Info(LogCategory, this, $"Ready at {spawnPosition}, HP {maxHp}, zone {(wanderArea != null ? wanderArea.name : $"radius {fallbackWanderRadius}")}, {attacks.Count} attacks");
             StartLoop();
         }
 
@@ -163,7 +161,7 @@ namespace CodenameVelvet.Enemies
             if (animator == null) return;
             Vector3 v = rb != null ? rb.linearVelocity : Vector3.zero;
             v.y = 0f;
-            bool moving = !isAttacking && v.sqrMagnitude > 0.01f; // durante la embestida se mueve, pero sigue en la animación de ataque
+            bool moving = !isAttacking && v.sqrMagnitude > 0.01f; // the lunge moves it, but it stays in the attack animation
             SetBool(IsMovingHash, moving);
             SetBool(IsAttackingHash, isAttacking);
             SetFloat(SpeedHash, v.magnitude);
@@ -175,14 +173,12 @@ namespace CodenameVelvet.Enemies
             }
         }
 
-        // ─────────────────────── LOOP ───────────────────────
-
         private void StartLoop()
         {
             StopLoop();
             if (mover == null)
             {
-                Debug.LogError($"{name}: CyclopsBrain necesita un IEnemyMover (p. ej. RigidbodyEnemyMover).", this);
+                Debug.LogError($"{name}: CyclopsBrain needs an IEnemyMover (e.g. RigidbodyEnemyMover).", this);
                 return;
             }
             loopCancellation = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
@@ -214,8 +210,6 @@ namespace CodenameVelvet.Enemies
             catch (Exception e) { Debug.LogException(e, this); }
         }
 
-        // ─────────────────────── DEAMBULAR / DESCANSAR ───────────────────────
-
         private async Awaitable WanderAsync(CancellationToken token)
         {
             if (restBeforeWandering)
@@ -232,7 +226,7 @@ namespace CodenameVelvet.Enemies
             }
         }
 
-        /// <returns>True si encontró un objetivo en el camino.</returns>
+        /// <returns>True when a target was found on the way.</returns>
         private async Awaitable<bool> WalkToWanderPointAsync(CancellationToken token)
         {
             Vector3 point = PickWanderPoint();
@@ -255,14 +249,14 @@ namespace CodenameVelvet.Enemies
             }
         }
 
-        /// <returns>True si encontró un objetivo mientras descansaba.</returns>
+        /// <returns>True when a target was found while resting.</returns>
         private async Awaitable<bool> RestAsync(CancellationToken token)
         {
             mover.Stop();
             int variant = Mathf.Max(0, WeightedRandom.Pick(idleWeights, random));
             SetInt(IdleVariantHash, variant);
             float end = Time.time + Mathf.Lerp(restTimeRange.x, restTimeRange.y, (float)random.NextDouble());
-            if (debugLogs) VelvetLog.Info(LogCategory, this, $"Descansa con idle {variant} por {end - Time.time:F1}s");
+            if (debugLogs) VelvetLog.Info(LogCategory, this, $"Rests with idle {variant} for {end - Time.time:F1}s");
 
             while (Time.time < end)
             {
@@ -272,8 +266,6 @@ namespace CodenameVelvet.Enemies
             }
             return false;
         }
-
-        // ─────────────────────── PERSEGUIR / ATACAR ───────────────────────
 
         private async Awaitable CombatAsync(CancellationToken token)
         {
@@ -289,7 +281,7 @@ namespace CodenameVelvet.Enemies
 
                 if (EnemyAggroRules.ShouldDropChase(alive, distance, loseInterestRange))
                 {
-                    if (debugLogs) VelvetLog.Info(LogCategory, this, alive ? $"Pierde interés ({distance:F1}u)" : "Objetivo muerto o desaparecido");
+                    if (debugLogs) VelvetLog.Info(LogCategory, this, alive ? $"Loses interest ({distance:F1}u)" : "Target dead or gone");
                     ClearTarget();
                     restBeforeWandering = true;
                     mover.Stop();
@@ -305,7 +297,7 @@ namespace CodenameVelvet.Enemies
                 }
                 else if (gap <= ClosestAttackReach())
                 {
-                    // Ya está encima pero todo está en cooldown: se queda plantado mirando al jugador.
+                    // Close enough but every attack is on cooldown: stand still facing the player.
                     mover.Stop();
                     Face(targetTransform.position - transform.position);
                 }
@@ -331,7 +323,7 @@ namespace CodenameVelvet.Enemies
             return index >= 0 ? attacks[index] : null;
         }
 
-        /// <summary>El alcance del ataque más corto: se acerca hasta ahí aunque los de mayor alcance estén en cooldown.</summary>
+        /// <summary>Reach of the shortest attack: it closes in that far even while longer-reach attacks are on cooldown.</summary>
         private float ClosestAttackReach()
         {
             float reach = float.MaxValue;
@@ -343,18 +335,18 @@ namespace CodenameVelvet.Enemies
         {
             mover.Stop();
             Face(targetTransform.position - transform.position);
-            Vector3 lockedFacing = facing; // la dirección no cambia a mitad del ataque
+            Vector3 lockedFacing = facing; // direction is fixed for the whole attack
 
             isAttacking = true;
             impactSignaled = false;
             SetBool(IsAttackingHash, true);
             SetTrigger(Animator.StringToHash(attack.animatorTrigger));
-            if (debugLogs) VelvetLog.Info(LogCategory, this, $"Ataca: {attack.name}");
+            if (debugLogs) VelvetLog.Info(LogCategory, this, $"Attacks: {attack.name}");
 
             try
             {
-                // Preparación: hasta el Animation Event (si se usa) o hasta que pase el windup.
-                // Si el ataque tiene embestida, a partir de lungeStart avanza hacia adelante y llega justo al golpe.
+                // Windup: until the Animation Event (when used) or until the windup elapses.
+                // A lunge starts at lungeStart and arrives exactly at the hit.
                 float start = Time.time;
                 float impactTime = start + attack.windup;
                 float safety = impactTime + 1.5f;
@@ -374,7 +366,7 @@ namespace CodenameVelvet.Enemies
 
                 Impact(attack, lockedFacing);
 
-                // Recuperación: se queda aturdido (quieto, sin moverse ni atacar) durante el Recovery
+                // Recovery: dazed (still, no moving or attacking)
                 SetDazed(true);
                 float recoverEnd = Time.time + attack.recovery;
                 while (Time.time < recoverEnd)
@@ -394,11 +386,11 @@ namespace CodenameVelvet.Enemies
         {
             if (isDazed == value) return;
             isDazed = value;
-            if (debugLogs) VelvetLog.Info(LogCategory, this, value ? "Aturdido tras el ataque" : "Se recupera");
+            if (debugLogs) VelvetLog.Info(LogCategory, this, value ? "Dazed after the attack" : "Recovered");
             (value ? onDazedStart : onDazedEnd)?.Invoke();
         }
 
-        /// <summary>Llamar desde un Animation Event del clip de ataque en el cuadro del golpe.</summary>
+        /// <summary>Called by an Animation Event on the attack clip, at the hit frame.</summary>
         public void AnimationEvent_Impact() => impactSignaled = true;
 
         private void Impact(CyclopsAttack attack, Vector3 forward)
@@ -424,19 +416,17 @@ namespace CodenameVelvet.Enemies
                 owner.GetComponentInParent<IKnockbackable>()?.ApplyKnockback(push, attack.knockbackForce, attack.knockbackStun);
             }
 
-            if (debugLogs) VelvetLog.Info(LogCategory, this, $"{attack.name}: impacto en {center}, radio {attack.impactRadius}, golpeó a {hitCount}");
+            if (debugLogs) VelvetLog.Info(LogCategory, this, $"{attack.name}: impact at {center}, radius {attack.impactRadius}, hit {hitCount}");
             attack.onImpact?.Invoke(center);
             lastImpact = (center, attack.impactRadius, Time.time);
         }
-
-        // ─────────────────────── KNOCKBACK / STUN ───────────────────────
 
         public void ApplyKnockback(Vector3 direction, float force, float stunSeconds)
         {
             if (health != null && !health.IsAlive) return;
             if (isAttacking && superArmorWhileAttacking)
             {
-                if (debugLogs) VelvetLog.Info(LogCategory, this, "Knockback ignorado (super armor)");
+                if (debugLogs) VelvetLog.Info(LogCategory, this, "Knockback ignored (super armor)");
                 return;
             }
             direction.y = 0f;
@@ -452,8 +442,6 @@ namespace CodenameVelvet.Enemies
             while (IsStunned) await Awaitable.NextFrameAsync(token);
         }
 
-        // ─────────────────────── OBJETIVO ───────────────────────
-
         private bool TryAcquireTarget()
         {
             if (Time.time < nextSearchTime) return false;
@@ -465,7 +453,7 @@ namespace CodenameVelvet.Enemies
             if (!EnemyAggroRules.ShouldStartChase(found.IsAlive, distance, detectionRange)) return false;
 
             if (debugLogs && !ReferenceEquals(found, target))
-                VelvetLog.Info(LogCategory, this, $"Detecta a {foundTransform.name} a {distance:F1}u");
+                VelvetLog.Info(LogCategory, this, $"Detects {foundTransform.name} at {distance:F1}u");
             target = found;
             targetTransform = foundTransform;
             targetCollider = foundCollider;
@@ -478,8 +466,6 @@ namespace CodenameVelvet.Enemies
             targetTransform = null;
             targetCollider = null;
         }
-
-        // ─────────────────────── ZONA ───────────────────────
 
         private bool GetZone(out Vector3 center, out Vector2 halfExtents)
         {
@@ -501,14 +487,14 @@ namespace CodenameVelvet.Enemies
             Vector3 candidate = transform.position;
             for (int i = 0; i < maxPointAttempts; i++)
             {
-                // Un paso corto desde donde está (dentro de la zona), en vez de cruzar todo el mapa de un jalón
+                // A short step from where it stands (inside the zone) instead of crossing the whole zone at once
                 candidate = hasArea
                     ? WanderPointPicker.ClampToArea(WanderPointPicker.PickPoint(transform.position, maxWanderStep, random), center, half, areaMargin)
                     : WanderPointPicker.PickPoint(spawnPosition, fallbackWanderRadius, random);
-                if (EnemyAggroRules.PlanarDistance(transform.position, candidate) < maxWanderStep * 0.25f) continue; // muy cerca: no vale la pena
+                if (EnemyAggroRules.PlanarDistance(transform.position, candidate) < maxWanderStep * 0.25f) continue; // too close to be worth a walk
                 if (HasGround(candidate)) return candidate;
             }
-            if (debugLogs) VelvetLog.Warn(LogCategory, this, "No encontré un punto con suelo; se queda donde está");
+            if (debugLogs) VelvetLog.Warn(LogCategory, this, "No point with ground found; staying put");
             return transform.position;
         }
 
@@ -532,8 +518,6 @@ namespace CodenameVelvet.Enemies
             return false;
         }
 
-        // ─────────────────────── VISUAL / ANIMATOR ───────────────────────
-
         private void Face(Vector3 direction)
         {
             direction.y = 0f;
@@ -552,27 +536,25 @@ namespace CodenameVelvet.Enemies
         private void SetTrigger(int h)
         {
             if (animator != null && animatorParams.Contains(h)) animator.SetTrigger(h);
-            else if (debugLogs) VelvetLog.Warn(LogCategory, this, "El Animator no tiene el trigger del ataque");
+            else if (debugLogs) VelvetLog.Warn(LogCategory, this, "The Animator has no trigger for this attack");
         }
 
         private static List<CyclopsAttack> DefaultAttacks() => new List<CyclopsAttack>
         {
             new CyclopsAttack
             {
-                name = "Puñetazo al suelo", animatorTrigger = "AttackPunch", weight = 1f,
+                name = "Ground Punch", animatorTrigger = "AttackPunch", weight = 1f,
                 minGap = 1f, maxGap = 7f, windup = 1.3f, recovery = 3.2f, cooldown = 6f,
                 lungeDistance = 6f, lungeStart = 0.6f,
                 damage = 2, impactRadius = 2.8f, impactForwardOffset = 2.5f, knockbackForce = 10f, knockbackStun = 0.6f,
             },
             new CyclopsAttack
             {
-                name = "Pisotón", animatorTrigger = "AttackStomp", weight = 1.5f,
+                name = "Stomp", animatorTrigger = "AttackStomp", weight = 1.5f,
                 minGap = 0f, maxGap = 1.5f, windup = 1.1f, recovery = 1.2f, cooldown = 3f,
                 damage = 1, impactRadius = 3.5f, impactForwardOffset = 0.5f, knockbackForce = 11f, knockbackStun = 0.4f,
             },
         };
-
-        // ─────────────────────── GIZMOS ───────────────────────
 
         private (Vector3 c, float r, float t) lastImpact;
 

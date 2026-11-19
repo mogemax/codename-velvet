@@ -113,9 +113,6 @@ PrefabInstance:
       addedObject: {fileID: 3118266681711218212}
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7797271585366233977}
-    - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 7973355822883228542}
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
@@ -294,36 +291,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DynamicSortingOrder
   manualOffset: 0
---- !u!114 &7797271585366233977
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2571990011580710253}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50fa22b3b666b4fcc93d5397abfd4c80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyChase
-  target: {fileID: 0}
-  detectionRange: 30
-  loseInterestRange: 10
-  stopDistance: 0.8
-  wanderRadius: 100
-  wanderArriveThreshold: 0.3
-  pauseDurationRange: {x: 1.5, y: 4}
-  wanderSpeed: 5
-  moveSpeed: 30
-  acceleration: 20
-  deceleration: 0
-  animator: {fileID: 0}
-  spriteRoot: {fileID: 9146104601714820110}
-  paramMoveX: MoveX
-  paramMoveY: MoveY
-  paramSpeed: Speed
-  paramIsMoving: IsMoving
-  showGizmos: 1
 --- !u!114 &7973355822883228542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,7 +366,7 @@ MonoBehaviour:
   loseInterestRange: 50
   retargetInterval: 0.25
   attacks:
-  - name: "Pisot\xF3n"
+  - name: Stomp
     animatorTrigger: AttackStomp
     weight: 1.5
     minGap: 0

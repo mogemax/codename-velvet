@@ -10,10 +10,9 @@ using UnityEngine.InputSystem;
 namespace CodenameVelvet.Multiplayer
 {
     /// <summary>
-    /// Crea a los jugadores del nivel a partir del roster que dejó el lobby: cada uno con sus propios
-    /// dispositivos, su slot (PlayerIdentity), su spawn point y su cámara con su parte de la pantalla
-    /// (<see cref="SplitScreenLayout"/>). Si la escena se abre directo (roster vacío) crea un jugador
-    /// con el primer dispositivo disponible para poder probar sin pasar por el lobby.
+    /// Creates the level's players from the roster the lobby left: each with their own devices, slot
+    /// (PlayerIdentity), spawn point and camera covering their part of the screen (<see cref="SplitScreenLayout"/>).
+    /// When the scene is opened directly (empty roster) it creates one player on the first available device.
     /// </summary>
     public class PlayerSpawner : MonoBehaviour
     {
@@ -28,7 +27,7 @@ namespace CodenameVelvet.Multiplayer
         [SerializeField] private CameraFollow cameraPrefab;
 
         [Header("Scene")]
-        [Tooltip("Uno por slot, en orden de slot.")]
+        [Tooltip("One per slot, in slot order.")]
         [SerializeField] private Transform[] spawnPoints = new Transform[0];
         [SerializeField] private MatchFlow matchFlow;
 
@@ -43,7 +42,7 @@ namespace CodenameVelvet.Multiplayer
 
             if (entries.Count == 0)
             {
-                VelvetLog.Info(LogCategory, this, "Roster vacío: jugador de prueba con el primer dispositivo");
+                VelvetLog.Info(LogCategory, this, "Empty roster: test player on the first device");
                 Spawn(slot: 0, characterIndex: 0, devices: new InputDevice[0], scheme: null, viewports[0]);
                 return;
             }
@@ -53,7 +52,7 @@ namespace CodenameVelvet.Multiplayer
                 RosterEntry entry = entries[i];
                 InputDevice[] devices = entry.DeviceIds
                     .Select(InputSystem.GetDeviceById)
-                    .Where(device => device != null) // se desconectó entre el lobby y el nivel
+                    .Where(device => device != null) // unplugged between the lobby and the level
                     .ToArray();
                 Spawn(entry.SlotIndex, entry.CharacterIndex, devices, entry.ControlScheme, viewports[i]);
             }
@@ -82,7 +81,7 @@ namespace CodenameVelvet.Multiplayer
             spawned.Add(player);
 
             VelvetLog.Info(LogCategory, this,
-                $"P{slot + 1} ({character?.DisplayName ?? "sin personaje"}) con {string.Join(", ", player.devices.Select(d => d.displayName))}");
+                $"P{slot + 1} ({character?.DisplayName ?? "no character"}) with {string.Join(", ", player.devices.Select(d => d.displayName))}");
         }
 
         private Camera CreateCamera(Transform target, Rect viewport, bool isFirst)
@@ -94,7 +93,7 @@ namespace CodenameVelvet.Multiplayer
             Camera cam = follow.GetComponent<Camera>();
             cam.rect = viewport;
 
-            // Unity solo admite un AudioListener activo.
+            // Unity supports a single active AudioListener.
             if (!isFirst && follow.TryGetComponent(out AudioListener listener))
                 Destroy(listener);
 

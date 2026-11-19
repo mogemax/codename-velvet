@@ -7,10 +7,9 @@ using UnityEngine.Rendering;
 using UnityEngine.U2D;
 
 /// <summary>
-/// Evita que CUALQUIER parte del personaje atraviese el suelo en un clip.
-/// Calcula la malla deformada real de todos los sprites (igual que el Sprite Skin),
-/// busca el punto más bajo en cada cuadro y, si queda debajo del suelo, sube el hueso HIP
-/// lo justo para que quede apoyado. El suelo es el punto más bajo del personaje en reposo.
+/// Keeps EVERY part of the character above the ground in a clip. Computes the real deformed mesh of
+/// every sprite (like Sprite Skin), finds the lowest point of each frame and, when it is below the
+/// ground, raises the HIP bone just enough. The ground is the character's lowest point at rest.
 /// </summary>
 public static class VelvetGroundSolver
 {
@@ -20,15 +19,15 @@ public static class VelvetGroundSolver
 
     class SkinData { public string name; public Transform[] bones; public Vector3[] verts; public BoneWeight[] w; public Matrix4x4[] bind; }
 
-    [MenuItem("Tools/Velvet/Dash: que nada atraviese el suelo")]
+    [MenuItem("Tools/Velvet/Dash: Keep Above Ground")]
     public static void SolveDash() => Solve(DashPath);
 
-    public static void Solve(string clipPath) => Solve(PrefabPath, clipPath, "Logs/velvet_suelo_dash.txt");
+    public static void Solve(string clipPath) => Solve(PrefabPath, clipPath, "Logs/velvet_ground_dash.txt");
 
     public static void Solve(string prefabPath, string clipPath, string logPath)
     {
         var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
-        if (clip == null) { Debug.LogError($"[Suelo] No encontré {clipPath}."); return; }
+        if (clip == null) { Debug.LogError($"[Ground] {clipPath} not found."); return; }
         var report = new StringBuilder();
 
         GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
@@ -40,11 +39,11 @@ public static class VelvetGroundSolver
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
                 if (t.GetComponent<SpriteRenderer>() == null &&
                     System.Text.RegularExpressions.Regex.Replace(t.name.Trim(), @"_\d+$", "") == "HIP") { hip = t; break; }
-            if (hip == null) { Debug.LogError("[Suelo] No encontré HIP."); return; }
+            if (hip == null) { Debug.LogError("[Ground] HIP bone not found."); return; }
             string hipPath = AnimationUtility.CalculateTransformPath(hip, root.transform);
 
             float ground = MinY(root.transform, skins);
-            report.AppendLine($"{clip.name}: sprites {skins.Count}, suelo (reposo) {ground:F3}");
+            report.AppendLine($"{clip.name}: sprites {skins.Count}, ground (rest) {ground:F3}");
 
             var yBinding = EditorCurveBinding.FloatCurve(hipPath, typeof(Transform), "m_LocalPosition.y");
             var yCurve = AnimationUtility.GetEditorCurve(clip, yBinding);
@@ -60,7 +59,7 @@ public static class VelvetGroundSolver
                 }
             }
 
-            // Cuánto hay que subir (en unidades del PLAYER) en cada muestra
+            // Lift needed per sample, in the animated root's units
             var lift = new float[Samples + 1];
             var names = new string[Samples + 1];
             for (int i = 0; i <= Samples; i++)
@@ -71,12 +70,12 @@ public static class VelvetGroundSolver
                 lift[i] = Mathf.Max(0f, ground - m);
                 names[i] = lowestName;
             }
-            // Margen entre muestras: toma el máximo con las vecinas para no dejar huecos
+            // Take the max with the neighbours so nothing dips between samples
             var safe = new float[Samples + 1];
             for (int i = 0; i <= Samples; i++)
                 safe[i] = Mathf.Max(lift[i], lift[Mathf.Max(0, i - 1)], lift[Mathf.Min(Samples, i + 1)]);
 
-            // Convertir la subida (espacio del PLAYER) a espacio local del padre del HIP
+            // Convert the lift from root space to the HIP parent's local space
             Vector3 upLocal = hip.parent.InverseTransformVector(root.transform.TransformVector(Vector3.up));
             float scaleY = upLocal.y;
 
@@ -87,7 +86,7 @@ public static class VelvetGroundSolver
                 float time = clip.length * i / Samples;
                 curve.AddKey(new Keyframe(time, yCurve.Evaluate(time) + safe[i] * scaleY));
                 maxLift = Mathf.Max(maxLift, safe[i]);
-                if (lift[i] > 0f) report.AppendLine($"t={time:F3} punto más bajo {ground - lift[i]:F3} ({names[i]}) -> sube {lift[i]:F3}");
+                if (lift[i] > 0f) report.AppendLine($"t={time:F3} lowest point {ground - lift[i]:F3} ({names[i]}) -> lift {lift[i]:F3}");
             }
             for (int i = 0; i < curve.length; i++)
             {
@@ -98,15 +97,15 @@ public static class VelvetGroundSolver
             EditorUtility.SetDirty(clip);
             AssetDatabase.SaveAssets();
 
-            // Verificación con el clip ya corregido
+            // Verify with the corrected clip.
             float worst = float.MaxValue;
             for (int i = 0; i <= Samples * 2; i++)
             {
                 clip.SampleAnimation(root, clip.length * i / (Samples * 2));
                 worst = Mathf.Min(worst, MinY(root.transform, skins) - ground);
             }
-            report.AppendLine($"Subida máxima {maxLift:F3}. Verificación: lo más que algo queda bajo el suelo = {Mathf.Max(0f, -worst):F4}");
-            Debug.Log($"[Suelo] {clip.name} corregido. Subida máx {maxLift:F2}. Peor penetración tras corregir: {Mathf.Max(0f, -worst):F4}");
+            report.AppendLine($"Max lift {maxLift:F3}. Verification: deepest point below ground = {Mathf.Max(0f, -worst):F4}");
+            Debug.Log($"[Ground] {clip.name} fixed. Max lift {maxLift:F2}. Worst penetration after the fix: {Mathf.Max(0f, -worst):F4}");
         }
         finally
         {

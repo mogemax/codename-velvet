@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CodenameVelvet.DayNight
 {
-    /// <summary>Texto en pantalla: en qué fase vamos y cuánto falta para el cambio (CYCLE-01).</summary>
+    /// <summary>On-screen label with the current phase and the time left until it changes (CYCLE-01).</summary>
     public class DayNightIndicator : MonoBehaviour
     {
         [SerializeField] private DayNightCycle cycle;
@@ -20,14 +20,14 @@ namespace CodenameVelvet.DayNight
 
             DayNightState state = cycle.State;
             int seconds = Mathf.CeilToInt(cycle.Remaining);
-            if (seconds == shownSeconds && state.IsNight == shownNight) return; // solo reescribe al cambiar
+            if (seconds == shownSeconds && state.IsNight == shownNight) return; // rewrite only on change
 
             shownSeconds = seconds;
             shownNight = state.IsNight;
             string time = $"{seconds / 60}:{seconds % 60:00}";
             label.text = state.IsNight
-                ? $"NOCHE {state.NightNumber}  ·  amanece en {time}"
-                : $"DÍA {state.NightNumber + 1}  ·  la noche llega en {time}";
+                ? $"NIGHT {state.NightNumber}  ·  dawn in {time}"
+                : $"DAY {state.NightNumber + 1}  ·  night falls in {time}";
             label.color = state.IsNight ? nightColor : dayColor;
         }
     }

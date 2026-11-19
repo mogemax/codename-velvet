@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CodenameVelvet.Enemies
 {
-    /// <summary>Al morir este enemigo (el jefe) la partida termina en victoria.</summary>
+    /// <summary>Ends the match in victory when this enemy (the boss) dies.</summary>
     [RequireComponent(typeof(EnemyHealth))]
     public class BossVictory : MonoBehaviour
     {
@@ -15,7 +15,7 @@ namespace CodenameVelvet.Enemies
         {
             health = GetComponent<EnemyHealth>();
             if (matchFlow == null)
-                Debug.LogWarning($"{name}: BossVictory sin MatchFlow; matarlo no terminará la partida.", this);
+                Debug.LogWarning($"{name}: BossVictory has no MatchFlow; killing it will not end the match.", this);
         }
 
         private void OnEnable() => health.Died += HandleDied;

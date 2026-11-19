@@ -30,8 +30,8 @@ namespace CodenameVelvet.Multiplayer
         [Header("Scene")]
         [Tooltip("One per roster slot, in slot order.")]
         [SerializeField] private LobbySlotView[] slotViews = new LobbySlotView[0];
-        [SerializeField] private CambioEscenaAnimado startTransition;
-        [SerializeField] private CambioEscenaAnimado backTransition;
+        [SerializeField] private SceneTransition startTransition;
+        [SerializeField] private SceneTransition backTransition;
 
         [Header("Debug")]
         [SerializeField] private bool debugLogs = true;
@@ -69,8 +69,6 @@ namespace CodenameVelvet.Multiplayer
         }
 
         private void Start() => Refresh();
-
-        // ─────────────────────── Player commands (from LobbyPlayer) ───────────────────────
 
         public void Cycle(int slot, int direction)
         {
@@ -127,8 +125,6 @@ namespace CodenameVelvet.Multiplayer
             LeaveScene(backTransition);
         }
 
-        // ─────────────────────── Join / leave ───────────────────────
-
         private void HandlePlayerJoined(PlayerInput input)
         {
             int[] deviceIds = input.devices.Select(device => device.deviceId).ToArray();
@@ -182,14 +178,12 @@ namespace CodenameVelvet.Multiplayer
             GoBack();
         }
 
-        private void LeaveScene(CambioEscenaAnimado transition)
+        private void LeaveScene(SceneTransition transition)
         {
             isLeaving = true;
             playerInputManager.DisableJoining();
-            transition.IrASiguienteMenu();
+            transition.GoToNextScene();
         }
-
-        // ─────────────────────── View ───────────────────────
 
         private void Refresh()
         {

@@ -119,8 +119,6 @@ namespace CodenameVelvet.Enemies
             StopLoop();
         }
 
-        // ─────────────────────── LOOP LIFETIME ───────────────────────
-
         private void StartLoop()
         {
             StopLoop();
@@ -175,8 +173,6 @@ namespace CodenameVelvet.Enemies
             }
         }
 
-        // ─────────────────────── WANDER ───────────────────────
-
         /// <summary>Walks between random points around the spawn until a target is acquired.</summary>
         private async Awaitable WanderAsync(CancellationToken token)
         {
@@ -228,8 +224,6 @@ namespace CodenameVelvet.Enemies
                 await Awaitable.NextFrameAsync(token);
             }
         }
-
-        // ─────────────────────── CHASE / ATTACK ───────────────────────
 
         /// <summary>Follows and hits the current target until the chase is dropped.</summary>
         private async Awaitable ChaseAsync(CancellationToken token)
@@ -287,8 +281,6 @@ namespace CodenameVelvet.Enemies
             }
         }
 
-        // ─────────────────────── STUN ───────────────────────
-
         private bool IsStunned => Time.time < stunnedUntil;
 
         private async Awaitable WaitWhileStunnedAsync(CancellationToken token)
@@ -300,8 +292,6 @@ namespace CodenameVelvet.Enemies
             if (debugLogs && wasStunned)
                 VelvetLog.Info(LogCategory, this, $"Stun ended at {transform.position}");
         }
-
-        // ─────────────────────── TARGETING ───────────────────────
 
         /// <summary>
         /// Throttled to one search per retarget interval. Replaces the current target
@@ -340,15 +330,11 @@ namespace CodenameVelvet.Enemies
             wasInAttackRange = false;
         }
 
-        // ─────────────────────── HEALTH ───────────────────────
-
         private void InitializeHealth()
         {
             if (definition != null && health != null)
                 health.Initialize(definition.MaxHp);
         }
-
-        // ─────────────────────── VISUALS ───────────────────────
 
         private void ApplyColor()
         {

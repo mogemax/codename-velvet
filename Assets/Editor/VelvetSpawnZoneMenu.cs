@@ -6,8 +6,8 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// GameObject ▸ Velvet ▸ Spawn Zone: crea una <see cref="SpawnZone"/> lista para usar (los 3 enemigos y los
-/// 3 recursos con el mismo peso) sobre el piso que está viendo la Scene view. Luego solo se mueve/escala la caja.
+/// GameObject ▸ Velvet ▸ Spawn Zone: creates a ready-to-use <see cref="SpawnZone"/> (the 3 enemy types and the
+/// 3 resource nodes, equal weights) on the ground under the Scene view pivot.
 /// </summary>
 public static class VelvetSpawnZoneMenu
 {
@@ -24,7 +24,7 @@ public static class VelvetSpawnZoneMenu
         "Assets/Prefabs/Gathering/Roca.prefab",
         "Assets/Prefabs/Gathering/VetaMineral.prefab",
     };
-    private static readonly Vector3 DefaultSize = new Vector3(40f, 10f, 40f); // alto = rango de alturas de piso válidas
+    private static readonly Vector3 DefaultSize = new Vector3(40f, 10f, 40f); // height = range of valid floor heights
 
     [MenuItem("GameObject/Velvet/Spawn Zone", false, 10)]
     public static void Create(MenuCommand command)

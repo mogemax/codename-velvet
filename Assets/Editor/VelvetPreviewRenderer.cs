@@ -6,8 +6,8 @@ using UnityEngine.Rendering;
 using UnityEngine.U2D;
 
 /// <summary>
-/// Renderiza cuadros de un clip del PLAYER a un PNG (tira de cuadros) para revisar la animación
-/// sin entrar a Play. Deforma las mallas igual que el Sprite Skin.
+/// Renders frames of a clip to a PNG strip to review an animation without entering Play mode.
+/// Deforms the meshes the same way Sprite Skin does.
 /// </summary>
 public static class VelvetPreviewRenderer
 {
@@ -22,13 +22,13 @@ public static class VelvetPreviewRenderer
     public static void Render(string clipPath, int frames, string outPath, bool includeRest = true) =>
         Render(PrefabPath, clipPath, frames, outPath, includeRest);
 
-    [MenuItem("Tools/Velvet/Preview/Cíclope Idle")] public static void CyclopsIdle() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/Idle_V1.anim", 4, "Logs/preview_cyclops_idle.png");
-    [MenuItem("Tools/Velvet/Preview/Cíclope Walk")] public static void CyclopsWalk() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Walk.anim", 8, "Logs/preview_cyclops_walk.png");
+    [MenuItem("Tools/Velvet/Preview/Cyclops Idle")] public static void CyclopsIdle() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/Idle_V1.anim", 4, "Logs/preview_cyclops_idle.png");
+    [MenuItem("Tools/Velvet/Preview/Cyclops Walk")] public static void CyclopsWalk() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Walk.anim", 8, "Logs/preview_cyclops_walk.png");
 
-    [MenuItem("Tools/Velvet/Preview/Cíclope Walk pose to pose")] public static void CyclopsWalkPoses() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Walk_Poses.anim", 8, "Logs/preview_cyclops_walk_poses.png");
+    [MenuItem("Tools/Velvet/Preview/Cyclops Walk Pose to Pose")] public static void CyclopsWalkPoses() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Walk_Poses.anim", 8, "Logs/preview_cyclops_walk_poses.png");
 
-    [MenuItem("Tools/Velvet/Preview/Cíclope Puñetazo")] public static void CyclopsPunch() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Attack_Punch.anim", 12, "Logs/preview_cyclops_punch.png");
-    [MenuItem("Tools/Velvet/Preview/Cíclope Pisotón")] public static void CyclopsStomp() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Attack_Stomp.anim", 10, "Logs/preview_cyclops_stomp.png");
+    [MenuItem("Tools/Velvet/Preview/Cyclops Punch")] public static void CyclopsPunch() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Attack_Punch.anim", 12, "Logs/preview_cyclops_punch.png");
+    [MenuItem("Tools/Velvet/Preview/Cyclops Stomp")] public static void CyclopsStomp() => Render("Assets/Assets/BOSS/CYCLOPS 2.prefab", "Assets/Assets/BOSS/CYCLOPS_Attack_Stomp.anim", 10, "Logs/preview_cyclops_stomp.png");
 
     public static void Render(string prefabPath, string clipPath, int frames, string outPath, bool includeRest = true)
     {
@@ -62,10 +62,10 @@ public static class VelvetPreviewRenderer
             }
             skins.Sort((a, b) => a.sr.sortingOrder.CompareTo(b.sr.sortingOrder));
 
-            // Poses: reposo + cuadros del clip
+            // Poses: rest pose plus the clip frames.
             var poses = new List<List<Vector3[]>>();
             var labels = new List<string>();
-            if (includeRest) { poses.Add(Deform(root.transform, skins)); labels.Add("reposo"); }
+            if (includeRest) { poses.Add(Deform(root.transform, skins)); labels.Add("rest"); }
             for (int f = 0; clip != null && f < frames; f++)
             {
                 float t = clip.length * f / frames;
@@ -74,7 +74,7 @@ public static class VelvetPreviewRenderer
                 labels.Add(t.ToString("F2"));
             }
 
-            // Encuadre común
+            // Shared framing for every cell.
             float minX = float.MaxValue, maxX = float.MinValue, minY = float.MaxValue, maxY = float.MinValue;
             float ground = float.MaxValue;
             foreach (var v in poses[0]) foreach (var p in v) ground = Mathf.Min(ground, p.y);
@@ -96,7 +96,7 @@ public static class VelvetPreviewRenderer
             for (int i = 0; i < n; i++)
             {
                 float ox = cellW * i;
-                // línea de suelo y separador
+                // Ground line and cell separator.
                 cmd.DrawMesh(Quad(left + ox, ground - cellH * 0.004f, cellW, cellH * 0.008f, new Color(0.85f, 0.2f, 0.2f), created), Matrix4x4.identity, lineMat);
                 cmd.DrawMesh(Quad(left + ox, bottom, cellW * 0.003f, cellH, new Color(0.7f, 0.7f, 0.7f), created), Matrix4x4.identity, lineMat);
                 for (int s = 0; s < skins.Count; s++)

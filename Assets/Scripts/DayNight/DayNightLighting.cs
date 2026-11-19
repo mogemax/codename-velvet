@@ -3,27 +3,27 @@ using UnityEngine;
 namespace CodenameVelvet.DayNight
 {
     /// <summary>
-    /// Oscurece la escena de noche: mezcla la luz direccional y la luz ambiental entre sus valores de día
-    /// (los que tiene la escena) y los de noche, en una transición suave al cambiar de fase.
-    /// Nota: el material de sprites por defecto puede no reaccionar a la luz; entonces solo se oscurece el mapa.
+    /// Darkens the scene at night: blends the directional light and the ambient intensity between their
+    /// day values (whatever the scene has) and their night values, with a smooth transition on each change.
+    /// The default sprite material may ignore lights; in that case only the map darkens.
     /// </summary>
     public class DayNightLighting : MonoBehaviour
     {
         [SerializeField] private DayNightCycle cycle;
         [SerializeField] private Light sun;
 
-        [Header("Noche")]
+        [Header("Night")]
         [SerializeField] private Color nightSunColor = new Color(0.45f, 0.55f, 0.9f);
-        [Tooltip("Intensidad de la luz de noche respecto a la de día.")]
+        [Tooltip("Night light intensity relative to the day one.")]
         [SerializeField, Range(0f, 1f)] private float nightSunFactor = 0.25f;
-        [Tooltip("Luz ambiental de noche respecto a la de día.")]
+        [Tooltip("Night ambient intensity relative to the day one.")]
         [SerializeField, Range(0f, 1f)] private float nightAmbientFactor = 0.35f;
         [SerializeField, Min(0.01f)] private float transitionSeconds = 8f;
 
         private Color daySunColor;
         private float daySunIntensity;
         private float dayAmbientIntensity;
-        private float nightness; // 0 = día, 1 = noche
+        private float nightness; // 0 = day, 1 = night
 
         private void Awake()
         {

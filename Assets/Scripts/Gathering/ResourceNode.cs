@@ -38,16 +38,16 @@ namespace CodenameVelvet.Gathering
 
         public bool IsAlive => definition != null && !isDepleted;
 
-        /// <summary>Se lanza al agotarse (después de ocultarse).</summary>
+        /// <summary>Raised on depletion, after the node hides.</summary>
         public event Action<ResourceNode> Depleted;
 
         /// <summary>
-        /// True = no reaparece solo; quien lo creó (p. ej. una SpawnZone) llama a <see cref="RespawnAt"/>.
-        /// False (por defecto) = reaparece en el mismo lugar según la definición.
+        /// True = never respawns by itself; its owner (e.g. a SpawnZone) calls <see cref="RespawnAt"/>.
+        /// False (default) = respawns in place according to the definition.
         /// </summary>
         public bool ExternalRespawn { get; set; }
 
-        /// <summary>Lo mueve a <paramref name="position"/> y lo restaura completo.</summary>
+        /// <summary>Moves the node to <paramref name="position"/> and restores it fully.</summary>
         public void RespawnAt(Vector3 position)
         {
             StopRespawn();
@@ -132,8 +132,6 @@ namespace CodenameVelvet.Gathering
             return transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
         }
 
-        // ─────────────────────── DEPLETION ───────────────────────
-
         private void Deplete()
         {
             isDepleted = true;
@@ -182,8 +180,6 @@ namespace CodenameVelvet.Gathering
             foreach (Collider nodeCollider in colliders)
                 nodeCollider.enabled = present;
         }
-
-        // ─────────────────────── RESPAWN ───────────────────────
 
         private void StartRespawn()
         {

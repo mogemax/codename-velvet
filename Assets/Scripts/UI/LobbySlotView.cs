@@ -59,15 +59,15 @@ namespace CodenameVelvet.UI
             switch (state)
             {
                 case LobbySlotState.Choosing:
-                    return "A / Espacio: confirmar\nB / Esc: salir";
+                    return "A / Space: confirm\nB / Esc: leave";
                 case LobbySlotState.Locked when isHost && canStart:
-                    return "¡Listo!\nStart / Enter: comenzar";
+                    return "Ready!\nStart / Enter: start";
                 case LobbySlotState.Locked when isHost:
-                    return "¡Listo!\nEsperando a los demás";
+                    return "Ready!\nWaiting for the others";
                 case LobbySlotState.Locked:
-                    return "¡Listo!\nB / Esc: cambiar";
+                    return "Ready!\nB / Esc: change";
                 default:
-                    return "Presiona A o Espacio\npara unirte";
+                    return "Press A or Space\nto join";
             }
         }
     }

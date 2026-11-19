@@ -7,13 +7,12 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 /// <summary>
-/// Genera animaciones procedurales (Idle, Walk, Dash) para el rig del PLAYER,
-/// arma el Animator Controller con los parámetros de PlayerMovement y lo conecta al prefab.
-/// Menú: Tools > Velvet > Generar animaciones del Player
+/// Generates the procedural PLAYER animations (Idle, Walk, Dash), builds the Animator Controller with
+/// PlayerMovement's parameters and assigns it to the prefab.
 ///
-/// Convención (personaje mirando a la derecha):
-///  - Huesos que apuntan hacia ABAJO (brazos, piernas): rotación + = la punta va hacia adelante.
-///  - Huesos que apuntan hacia ARRIBA (cuerpo, cabeza, orejas): rotación + = la punta va hacia atrás.
+/// Sign convention (character facing right):
+///  - Bones pointing DOWN (arms, legs): positive rotation = tip moves forward.
+///  - Bones pointing UP (body, head, ears): positive rotation = tip moves backward.
 /// </summary>
 public static class VelvetPlayerIdleGenerator
 {
@@ -28,9 +27,9 @@ public static class VelvetPlayerIdleGenerator
     class Track
     {
         public string bone; public Channel channel; public Func<float, float> f;
-        public float[] poses; // keys por pose (ciclo en loop), alternativa a f
-        public float[] times; // si existe: tiempo de cada key (clip sin loop)
-        public bool autoSign;  // + = la punta va hacia adelante, sin importar hacia dónde apunte el hueso
+        public float[] poses; // one key per pose (looping cycle), alternative to f
+        public float[] times; // when set: time of each key (non-looping clip)
+        public bool autoSign;  // + = tip moves forward, whichever way the bone points
         public Track(string b, Channel c, Func<float, float> fn) { bone = b; channel = c; f = fn; }
     }
 
@@ -51,7 +50,7 @@ public static class VelvetPlayerIdleGenerator
 
     static float S(float u, float cycles, float phase) => Mathf.Sin(TwoPi * (u * cycles) + phase);
 
-    // ───────────── IDLE: respiración ─────────────
+    // IDLE: breathing
     static ClipDef Idle()
     {
         var c = new ClipDef { name = "PLAYER_Idle", duration = 2.4f, loop = true, samples = 12 };
@@ -66,7 +65,7 @@ public static class VelvetPlayerIdleGenerator
         foreach (var r in rot) { var rr = r; c.Rot(rr.b, u => rr.amp * S(u, 1, -TwoPi * rr.ph)); }
         c.PosY("BODY", u => -0.12f * (1f - Mathf.Cos(TwoPi * u)) * 0.5f);
 
-        // Capa: vaivén suave con retraso respecto a la respiración
+        // Cape: gentle sway, lagging behind the breathing
         (string b, float amp, float ph)[] cape =
         {
             ("CAPE_1", 1.5f, 0.12f), ("CAPE_2", 2.5f, 0.25f),
@@ -77,17 +76,17 @@ public static class VelvetPlayerIdleGenerator
         return c;
     }
 
-    // ───────────── WALK: pose to pose (Contact → Recoil → Passing → High-Point) ─────────────
-    // 8 poses por ciclo: 0 Contact, 1 Recoil, 2 Passing, 3 High-Point (paso de la pierna L al frente)
-    //                    4 Contact, 5 Recoil, 6 Passing, 7 High-Point (paso de la pierna R al frente)
-    // Cada arreglo describe el lado "A"; el lado opuesto usa el mismo arreglo desfasado 4 poses.
+    // WALK: pose to pose (Contact → Recoil → Passing → High-Point)
+    // 8 poses per cycle: 0 Contact, 1 Recoil, 2 Passing, 3 High-Point (L leg steps forward)
+    //                   4 Contact, 5 Recoil, 6 Passing, 7 High-Point (R leg steps forward)
+    // Each array describes side "A"; the opposite side uses the same array shifted by 4 poses.
     static readonly float[] Thigh = { 25f, 15f,  0f, -18f, -25f, -12f,  12f,  30f };
     static readonly float[] Knee  = {  0f,-15f, -5f,   0f,  -5f, -35f, -60f, -20f };
     static readonly float[] Foot  = { 15f,  0f,  0f, -20f, -25f, -15f, -10f,  10f };
     static readonly float[] Arm1  = { 22f, 26f,  5f, -15f, -22f, -26f,  -5f,  15f };
     static readonly float[] Arm2  = { 25f, 30f, 15f,  10f,   8f,  10f,  15f,  20f };
     static readonly float[] Hand  = {  5f, 10f,  0f,  -5f,  -5f,  -8f,   0f,   5f };
-    // Por paso (se repite 2 veces por ciclo)
+    // Per step (repeats twice per cycle)
     static readonly float[] HipY    = { 0f, -0.45f, 0.05f, 0.45f };
     static readonly float[] BodyRot = { -5f, -6.5f, -5f, -4f };
     static readonly float[] HeadRot = { 0f, -2f, -1f, 1f };
@@ -112,27 +111,27 @@ public static class VelvetPlayerIdleGenerator
     {
         var c = new ClipDef { name = "PLAYER_Walk", duration = 0.8f, loop = true, samples = 8 };
 
-        // Pierna L = lado A (al frente en el Contact del frame 0); pierna R desfasada medio ciclo
+        // L leg = side A (forward at the frame-0 Contact); R leg is half a cycle behind
         c.Poses("L LEG 1", Thigh);            c.Poses("R LEG 1", Shift(Thigh, 4));
         c.Poses("L BOOT FRONT", Knee);        c.Poses("R BOOT FRONT", Shift(Knee, 4));
         c.Poses("L FOOT", Foot);              c.Poses("R FOOT", Shift(Foot, 4));
 
-        // Brazos opuestos a la pierna de su mismo lado: el brazo R va con la pierna L
+        // Arms oppose the leg on their side: the R arm moves with the L leg
         c.Poses("R ARM 1", Arm1);             c.Poses("L ARM 1", Shift(Arm1, 4));
         c.Poses("R ARM 2", Arm2);             c.Poses("L ARM 2", Shift(Arm2, 4));
         c.Poses("R HAND", Hand);              c.Poses("R HAND_1", Shift(Hand, 4));
 
-        // Cuerpo: baja en el Recoil, sube en el High-Point
+        // Body: down on the Recoil, up on the High-Point
         c.PosesY("HIP", Twice(HipY));
         c.Poses("BODY", Twice(BodyRot));
         c.Poses("HEAD", Twice(HeadRot));
 
-        // Orejas con retraso (follow-through)
+        // Ears lag behind (follow-through)
         c.Poses("L EAR", Twice(EarRot));      c.Poses("R EAR", Twice(EarRot));
         c.Poses("L EAR TIP", Twice(EarTip));  c.Poses("R EAR TIP", Twice(EarTip));
 
-        // Capa: las 3 cadenas se mueven IGUAL (si cada una va distinto, la malla se pliega entre ellas
-        // y aparece un triángulo). Poca flexión entre _1 y _2 para que no se doble a la mitad.
+        // Cape: the 3 chains move the SAME (otherwise the mesh folds between them into a triangle).
+        // Little bend between _1 and _2 so it does not fold in half.
         float[] cape1 = Twice(new[] { -3f, -2f, -3.5f, -4.5f });
         float[] cape2 = Twice(new[] { -1f, -2f, -0.5f, 0.5f });
         foreach (var side in new[] { "", "L_", "R_" })
@@ -143,11 +142,11 @@ public static class VelvetPlayerIdleGenerator
         return c;
     }
 
-    // ───────────── DASH: clavado + rodada (dive roll) ─────────────
-    // 0 Neutral · 1 Anticipación (se agacha, brazos atrás) · 2 Clavado (cuerpo estirado, brazos al frente)
-    // 3 Manos al piso, empieza a encogerse · 4 Rueda sobre la espalda (bolita) · 5 Sale de la vuelta
-    // 6 Aterriza en cuclillas · 7 Se impulsa para seguir corriendo (rodilla arriba)
-    // La altura final la ajusta el solver de suelo: los valores de HIP Y negativos solo "piden" agacharse.
+    // DASH: dive roll
+    // 0 Neutral · 1 Anticipation (crouch, arms back) · 2 Dive (body stretched, arms forward)
+    // 3 Hands on the floor, starts tucking · 4 Rolls over the back (tucked) · 5 Comes out of the roll
+    // 6 Lands crouched · 7 Pushes off to keep running (knee up)
+    // The ground solver sets the final height: negative HIP Y values only "ask" to crouch.
     static readonly float[] DashTimes = { 0f, 0.09f, 0.26f, 0.39f, 0.51f, 0.64f, 0.76f, 0.90f };
 
     static ClipDef Dash()
@@ -156,14 +155,14 @@ public static class VelvetPlayerIdleGenerator
         var T = DashTimes;
 
         //                         0     1      2      3      4      5      6      7
-        // Clavado más horizontal y más largo (0.07 → 0.20), rodada compacta pegada al piso
+        // Flatter, longer dive (0.07 → 0.20); compact roll close to the floor
         c.Keys ("HIP",  T, new[] { 0f,   5f,  -80f, -150f, -240f, -320f, -360f, -360f });
         c.KeysY("HIP",  T, new[] { 0f, -1.5f,  2.0f,  0f,   -3f,   -3f,  -1.5f, -0.3f });
 
         c.Keys("BODY",  T, new[] { 0f, -30f,   -5f,  -40f,  -50f,  -45f,  -22f,  -12f });
         c.Keys("HEAD",  T, new[] { 0f, -10f,   12f,  -45f,  -60f,  -50f,    0f,    3f });
 
-        // Piernas: estiradas atrás en el clavado, bien recogidas (rodillas al pecho) al rodar
+        // Legs: stretched back in the dive, tucked (knees to chest) in the roll
         c.Keys("R LEG 1",      T, new[] { 0f,  45f, -40f,  60f,  105f,  100f,   50f,   45f });
         c.Keys("L LEG 1",      T, new[] { 0f,  40f, -50f,  55f,  100f,   98f,   45f,  -15f });
         c.Keys("R BOOT FRONT", T, new[] { 0f, -75f,  -5f, -90f, -135f, -135f,  -85f,  -60f });
@@ -171,7 +170,7 @@ public static class VelvetPlayerIdleGenerator
         c.Keys("R FOOT",       T, new[] { 0f,   5f, -25f,  10f,   20f,   20f,   10f,   10f });
         c.Keys("L FOOT",       T, new[] { 0f,   5f, -30f,  10f,   20f,   20f,   10f,   -5f });
 
-        // Brazos: al frente en el clavado (bien estirados) → abrazan fuerte las piernas al rodar
+        // Arms: stretched forward in the dive → hug the legs in the roll
         c.Keys("R ARM 1", T, new[] { 0f, -45f, 165f, 100f,  65f,  45f, -10f, -30f });
         c.Keys("L ARM 1", T, new[] { 0f, -50f, 158f,  95f,  60f,  40f,  10f,  35f });
         c.Keys("R ARM 2", T, new[] { 0f,  10f,   5f,  80f, 100f,  90f,  40f,  40f });
@@ -179,13 +178,13 @@ public static class VelvetPlayerIdleGenerator
         c.Keys("R HAND",   T, new[] { 0f, 0f, -10f, 30f, 30f, 20f, 5f, 5f });
         c.Keys("R HAND_1", T, new[] { 0f, 0f, -10f, 30f, 30f, 20f, 5f, 5f });
 
-        // Orejas: hacia atrás en el clavado y APLASTADAS contra la cabeza al rodar
+        // Ears: back in the dive and FLAT against the head in the roll
         c.Keys("L EAR",     T, new[] { 0f,  5f, 45f, 70f, 85f, 75f, -10f, 12f });
         c.Keys("R EAR",     T, new[] { 0f,  5f, 45f, 70f, 85f, 75f, -10f, 12f });
         c.Keys("L EAR TIP", T, new[] { 0f, -5f, 30f, 45f, 50f, 45f,   5f, -8f });
         c.Keys("R EAR TIP", T, new[] { 0f, -5f, 30f, 45f, 50f, 45f,   5f, -8f });
 
-        // Capa: ondea hacia atrás en el clavado, se envuelve al cuerpo al rodar, latigazo al aterrizar
+        // Cape: waves back in the dive, wraps the body in the roll, whips on landing
         //                            0    1     2     3     4     5     6     7
         float[] dCape1 = { 0f,  8f, -55f, -15f, -10f,  -8f, -20f,  5f };
         float[] dCape2 = { 0f,  5f, -30f, -20f, -15f, -10f, -30f,  8f };
@@ -197,7 +196,7 @@ public static class VelvetPlayerIdleGenerator
         return c;
     }
 
-    [MenuItem("Tools/Velvet/Regenerar solo el Dash")]
+    [MenuItem("Tools/Velvet/Player Animations/Regenerate Dash Only")]
     public static void GenerateDashOnly()
     {
         GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -205,16 +204,16 @@ public static class VelvetPlayerIdleGenerator
         {
             GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
-            if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP."); return; }
+            if (hip == null) { Debug.LogError("[Anim] HIP bone not found."); return; }
             BuildClip(Dash(), root.transform, hip);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Anim] Dash regenerado (clavado + rodada).");
+            Debug.Log("[Anim] Dash regenerated (dive roll).");
         }
         finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
         VelvetGroundSolver.Solve("Assets/Animators/Animations/PLAYER_Dash.anim");
     }
 
-    [MenuItem("Tools/Velvet/Generar animaciones del Player")]
+    [MenuItem("Tools/Velvet/Player Animations/Generate All")]
     public static void Generate()
     {
         GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -222,7 +221,7 @@ public static class VelvetPlayerIdleGenerator
         {
             GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
-            if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP dentro de PLAYER."); return; }
+            if (hip == null) { Debug.LogError("[Anim] HIP bone not found inside PLAYER."); return; }
 
             AnimationClip idle = BuildClip(Idle(), root.transform, hip);
             AnimationClip walk = BuildClip(Walk(), root.transform, hip);
@@ -245,7 +244,7 @@ public static class VelvetPlayerIdleGenerator
 
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Anim] Listo: Idle, Walk y Dash conectados al prefab PLAYER.");
+            Debug.Log("[Anim] Done: Idle, Walk and Dash assigned to the PLAYER prefab.");
         }
         finally
         {
@@ -260,7 +259,7 @@ public static class VelvetPlayerIdleGenerator
         {
             var tr = trackDef;
             Transform t = FindBone(hip, tr.bone);
-            if (t == null) { Debug.LogWarning($"[Anim] {def.name}: no encontré el hueso '{tr.bone}', lo salto."); continue; }
+            if (t == null) { Debug.LogWarning($"[Anim] {def.name}: bone '{tr.bone}' not found, skipped."); continue; }
             string path = AnimationUtility.CalculateTransformPath(t, root);
 
             if (tr.channel == Channel.Rotation)
@@ -268,7 +267,7 @@ public static class VelvetPlayerIdleGenerator
                 Vector3 e = t.localEulerAngles;
                 if (tr.autoSign)
                 {
-                    // Hueso colgando (apunta hacia abajo): + ya es "hacia adelante". Si apunta hacia arriba, se invierte.
+                    // A hanging bone (pointing down) already moves forward with +; a bone pointing up is inverted.
                     float sign = root.InverseTransformDirection(t.right).y < 0f ? 1f : -1f;
                     if (tr.poses != null) { var pv = (float[])tr.poses.Clone(); for (int k = 0; k < pv.Length; k++) pv[k] *= sign; tr = new Track(tr.bone, tr.channel, null) { poses = pv, times = tr.times }; }
                     else { var f0 = tr.f; tr = new Track(tr.bone, tr.channel, u => sign * f0(u)); }
@@ -294,7 +293,7 @@ public static class VelvetPlayerIdleGenerator
         var existing = AssetDatabase.LoadAssetAtPath<AnimationClip>(path2);
         if (existing != null)
         {
-            // Conserva el archivo (y su GUID) y solo reemplaza el contenido
+            // Keep the file (and its GUID) and only replace the contents
             EditorUtility.CopySerialized(clip, existing);
             EditorUtility.SetDirty(existing);
             return existing;
@@ -358,8 +357,8 @@ public static class VelvetPlayerIdleGenerator
         c.AddParameter(name, type);
     }
 
-    // Busca un hueso por nombre, ignorando los sprites (que comparten nombre)
-    // y tolerando el sufijo "_1" que agrega el importador de PSD.
+    // Finds a bone by name, skipping sprites (they share names)
+    // and tolerating the "_1" suffix the PSD importer adds.
     static Transform FindBone(Transform parent, string baseName)
     {
         var all = new List<Transform>();
@@ -380,7 +379,7 @@ public static class VelvetPlayerIdleGenerator
     static AnimationCurve Constant(float v, float duration) =>
         new AnimationCurve(new Keyframe(0f, v), new Keyframe(duration, v));
 
-    // Keys en tiempos libres con tangentes ClampedAuto (suaves y sin pasarse de la pose)
+    // Keys at arbitrary times with ClampedAuto tangents (smooth, no overshoot)
     static AnimationCurve FromTimedKeys(float baseValue, float[] t, float[] v)
     {
         var curve = new AnimationCurve();
@@ -393,8 +392,8 @@ public static class VelvetPlayerIdleGenerator
         return curve;
     }
 
-    // Una key por pose, repartidas parejo en la duración, con tangentes tipo Catmull-Rom
-    // que dan vuelta al final para que el loop no tenga saltos.
+    // One key per pose, evenly spread over the duration, with Catmull-Rom style tangents
+    // that wrap around so the loop has no seams.
     static AnimationCurve FromPoses(float baseValue, float[] v, ClipDef def)
     {
         int n = v.Length;
@@ -409,7 +408,7 @@ public static class VelvetPlayerIdleGenerator
         return new AnimationCurve(keys);
     }
 
-    [MenuItem("Tools/Velvet/Regenerar solo el Walk")]
+    [MenuItem("Tools/Velvet/Player Animations/Regenerate Walk Only")]
     public static void GenerateWalkOnly()
     {
         GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -417,16 +416,16 @@ public static class VelvetPlayerIdleGenerator
         {
             GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
-            if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP."); return; }
+            if (hip == null) { Debug.LogError("[Anim] HIP bone not found."); return; }
             BuildClip(Walk(), root.transform, hip);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Anim] Walk regenerado (pose to pose).");
+            Debug.Log("[Anim] Walk regenerated (pose to pose).");
         }
         finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
     }
 
-    // Muestrea f(u) (u = 0..1) y pone tangentes a partir de la derivada, para curvas suaves
-    // que además ciclan perfecto en los clips con loop.
+    // Samples f(u) (u = 0..1) with tangents from the derivative: smooth curves
+    // that also loop seamlessly.
     static AnimationCurve FromFunc(float baseValue, Func<float, float> f, ClipDef def)
     {
         var keys = new Keyframe[def.samples + 1];

@@ -9,7 +9,7 @@ namespace CodenameVelvet.Characters
     [CreateAssetMenu(menuName = "Characters/Character Definition", fileName = "New CharacterDefinition")]
     public class CharacterDefinition : ScriptableObject
     {
-        [SerializeField] private string displayName = "Personaje";
+        [SerializeField] private string displayName = "Character";
         [Tooltip("Placeholder look: lobby portrait background and tint of the character's sprites.")]
         [SerializeField] private Color color = Color.white;
         [Tooltip("Optional. When empty the lobby shows a plain color swatch.")]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using CodenameVelvet.Core.Debugging;
 using CodenameVelvet.DayNight;
 using CodenameVelvet.Spawning;
 using UnityEngine;
@@ -9,17 +10,18 @@ using UnityEngine.SceneManagement;
 namespace CodenameVelvet.DebugTools
 {
     /// <summary>
-    /// Dev mode global (F1). Solo existe en el Editor y en Development Builds: se crea solo al iniciar
-    /// y nunca llega a un build final. Mientras está activo:
+    /// Global dev mode toggled with F1. Only exists in the Editor and development builds: it creates itself
+    /// on startup and never ships in a release build. While active:
     /// <list type="bullet">
-    /// <item>Cada jugador recibe <see cref="PlayerDevMode"/> (velocidad, invulnerable, recursos, fantasma).</item>
-    /// <item>Las SpawnZones se dibujan en pantalla.</item>
-    /// <item>F2 salta a la siguiente fase del ciclo día/noche.</item>
-    /// <item>Un letrero avisa que está prendido.</item>
+    /// <item>Every player gets <see cref="PlayerDevMode"/> (speed, invulnerable, full inventory, ghost).</item>
+    /// <item>SpawnZones are drawn on screen.</item>
+    /// <item>F2 skips to the next day/night phase.</item>
+    /// <item>A label shows that it is on.</item>
     /// </list>
     /// </summary>
     public class DevMode : MonoBehaviour
     {
+        private const string LogCategory = "DevMode";
         private const string OutlineName = "DevMode Outline";
         private static readonly Color OutlineColor = new Color(0.2f, 1f, 0.4f, 0.9f);
         private const float OutlineWidth = 0.25f;
@@ -33,7 +35,7 @@ namespace CodenameVelvet.DebugTools
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
-            IsActive = false; // por si el Editor no recarga el dominio entre Plays
+            IsActive = false; // the Editor may skip the domain reload between Play sessions
             Changed = null;
             if (!Debug.isDebugBuild) return;
 
@@ -63,13 +65,13 @@ namespace CodenameVelvet.DebugTools
         private void SetActive(bool active)
         {
             IsActive = active;
-            Debug.Log($"[DevMode] {(active ? "ON" : "OFF")}");
+            VelvetLog.Info(LogCategory, this, active ? "ON" : "OFF");
             if (active) AttachToPlayers();
             SetZoneOutlines(active);
             Changed?.Invoke(active);
         }
 
-        // Los jugadores los crea el PlayerSpawner en su Start: se espera un frame tras cargar la escena.
+        // PlayerSpawner creates the players in its Start, so wait one frame after the scene loads.
         private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (IsActive) StartCoroutine(ApplyNextFrame());
@@ -86,10 +88,8 @@ namespace CodenameVelvet.DebugTools
         {
             foreach (PlayerMovement player in FindObjectsByType<PlayerMovement>(FindObjectsSortMode.None))
                 if (!player.TryGetComponent(out PlayerDevMode _))
-                    player.gameObject.AddComponent<PlayerDevMode>(); // se aplica solo en su OnEnable
+                    player.gameObject.AddComponent<PlayerDevMode>(); // applies itself in OnEnable
         }
-
-        // ─────────────────────── SpawnZones visibles ───────────────────────
 
         private void SetZoneOutlines(bool visible)
         {
@@ -101,7 +101,7 @@ namespace CodenameVelvet.DebugTools
             }
         }
 
-        /// <summary>Contorno de la caja con un solo LineRenderer (16 puntos recorren las 12 aristas).</summary>
+        /// <summary>Box outline drawn with a single LineRenderer (16 points cover the 12 edges).</summary>
         private void CreateOutline(Transform zone, BoxCollider box)
         {
             if (outlineMaterial == null) outlineMaterial = new Material(Shader.Find("Sprites/Default"));
@@ -119,9 +119,9 @@ namespace CodenameVelvet.DebugTools
             Vector3 P(float x, float y, float z) => c + new Vector3(x * e.x, y * e.y, z * e.z);
             Vector3[] points =
             {
-                P(-1, -1, -1), P(1, -1, -1), P(1, -1, 1), P(-1, -1, 1), P(-1, -1, -1), // base
-                P(-1, 1, -1), P(1, 1, -1), P(1, 1, 1), P(-1, 1, 1), P(-1, 1, -1),      // tapa
-                P(-1, 1, 1), P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(1, 1, -1), P(1, -1, -1), // verticales
+                P(-1, -1, -1), P(1, -1, -1), P(1, -1, 1), P(-1, -1, 1), P(-1, -1, -1), // bottom
+                P(-1, 1, -1), P(1, 1, -1), P(1, 1, 1), P(-1, 1, 1), P(-1, 1, -1),      // top
+                P(-1, 1, 1), P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(1, 1, -1), P(1, -1, -1), // verticals
             };
             line.positionCount = points.Length;
             line.SetPositions(points);
@@ -137,9 +137,9 @@ namespace CodenameVelvet.DebugTools
                 alignment = TextAnchor.UpperCenter,
                 normal = { textColor = new Color(1f, 0.85f, 0.2f) },
             };
-            // Abajo: arriba va el indicador de día/noche.
+            // Bottom of the screen: the day/night indicator sits at the top.
             GUI.Label(new Rect(0f, Screen.height - 48f, Screen.width, 40f),
-                "DEV MODE (F1): fantasma · invulnerable · ×2.5 velocidad · recursos llenos · F2 día/noche", labelStyle);
+                "DEV MODE (F1): ghost · invulnerable · ×2.5 speed · full inventory · F2 day/night", labelStyle);
         }
     }
 }

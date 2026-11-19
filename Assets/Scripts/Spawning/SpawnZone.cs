@@ -12,24 +12,24 @@ using UnityEngine;
 namespace CodenameVelvet.Spawning
 {
     /// <summary>
-    /// Zona del mapa que mantiene su propia población de enemigos y nodos de recursos en puntos aleatorios.
-    /// El área es el BoxCollider (trigger) de este objeto: en XZ dice dónde, y en Y qué alturas de piso valen
-    /// (así nada aparece encima de un pilar que sobresale de la caja).
+    /// Map area that keeps its own population of enemies and resource nodes at random points.
+    /// The area is this object's trigger BoxCollider: XZ says where, Y says which floor heights are valid
+    /// (so nothing spawns on top of a pillar sticking out of the box).
     /// <list type="bullet">
-    /// <item>Al empezar llena enemigos y recursos (puede ser a la vista).</item>
-    /// <item>Enemigo muerto → otro aparece tras <see cref="enemyRespawnDelay"/> segundos.</item>
-    /// <item>Nodo agotado → reaparece tras <see cref="nodeRespawnSeconds"/> en otro punto de la zona.</item>
-    /// <item>Lo que reaparece nunca lo hace a la vista de ninguna cámara ni cerca de un jugador.</item>
-    /// <item>Con <see cref="dayNightEvent"/>: de día mantiene <see cref="dayEnemies"/>; de noche <see cref="maxEnemies"/>
-    /// escalado por la amenaza. Al amanecer, los que sobran desaparecen cuando nadie los ve.</item>
+    /// <item>On start it fills enemies and nodes (in view is allowed).</item>
+    /// <item>A dead enemy is replaced after <see cref="enemyRespawnDelay"/> seconds.</item>
+    /// <item>A depleted node comes back after <see cref="nodeRespawnSeconds"/> somewhere else in the zone.</item>
+    /// <item>Respawns never happen in view of any camera or near a player.</item>
+    /// <item>With <see cref="dayNightEvent"/>: keeps <see cref="dayEnemies"/> by day and <see cref="maxEnemies"/>
+    /// scaled by the night threat at night. At dawn the extra enemies are removed while nobody sees them.</item>
     /// </list>
-    /// Todos los tiempos son escalados: con el juego congelado (game over) nada reaparece.
+    /// Every timer uses scaled time, so nothing respawns while the game is frozen (game over).
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
     public class SpawnZone : MonoBehaviour
     {
         private const string LogCategory = "SpawnZone";
-        private const float SkyHeight = 500f; // el raycast baja desde aquí sobre la caja
+        private const float SkyHeight = 500f; // placement rays start this far above the box
 
         [Serializable]
         public class EnemyEntry
@@ -45,39 +45,39 @@ namespace CodenameVelvet.Spawning
             [Min(0f)] public float weight = 1f;
         }
 
-        [Header("Enemigos")]
+        [Header("Enemies")]
         [SerializeField] private EnemyBrain enemyPrefab;
         [SerializeField] private EnemyEntry[] enemies = new EnemyEntry[0];
-        [Tooltip("Enemigos a mantener (de noche, en la noche 1 con 1 jugador; sube con la amenaza).")]
+        [Tooltip("Enemies kept alive (at night: night 1 with 1 player; grows with the threat).")]
         [SerializeField, Min(0)] private int maxEnemies = 6;
-        [Tooltip("Enemigos a mantener de día. Solo se usa si hay Day Night Event.")]
+        [Tooltip("Enemies kept alive by day. Only used with a Day Night Event.")]
         [SerializeField, Min(0)] private int dayEnemies = 2;
-        [Tooltip("Vacío = siempre maxEnemies (sin ciclo día/noche).")]
+        [Tooltip("Empty = always maxEnemies (no day/night cycle).")]
         [SerializeField] private DayNightEvent dayNightEvent;
-        [Tooltip("Segundos (mín, máx) para reponer un enemigo muerto.")]
+        [Tooltip("Seconds (min, max) before a dead enemy is replaced.")]
         [SerializeField] private Vector2 enemyRespawnDelay = new Vector2(20f, 40f);
 
-        [Header("Recursos")]
+        [Header("Resources")]
         [SerializeField] private NodeEntry[] nodes = new NodeEntry[0];
         [SerializeField, Min(0)] private int maxNodes = 4;
         [SerializeField, Min(0f)] private float nodeRespawnSeconds = 30f;
 
-        [Header("Colocación")]
-        [Tooltip("Vacío = capa 'Ground'.")]
+        [Header("Placement")]
+        [Tooltip("Empty = 'Ground' layer.")]
         [SerializeField] private LayerMask groundMask;
-        [Tooltip("Vacío = capa 'Player'.")]
+        [Tooltip("Empty = 'Player' layer.")]
         [SerializeField] private LayerMask playerMask;
         [SerializeField, Range(0f, 89f)] private float maxSlope = 30f;
-        [Tooltip("Distancia mínima (XZ) entre todo lo que crea esta zona.")]
+        [Tooltip("Minimum XZ distance between everything this zone spawns.")]
         [SerializeField, Min(0f)] private float minSpacing = 4f;
-        [Tooltip("Nada aparece a menos de esto de un jugador.")]
+        [Tooltip("Nothing spawns closer than this to a player.")]
         [SerializeField, Min(0f)] private float playerClearance = 12f;
-        [Tooltip("Espacio libre que necesita el cuerpo (no aparece dentro de rocas o paredes).")]
+        [Tooltip("Free space a body needs, so nothing spawns inside rocks or walls.")]
         [SerializeField, Min(0.1f)] private float bodyRadius = 1f;
-        [Tooltip("Margen extra alrededor de cada vista al revisar que no se vea aparecer (0.1 = 10%).")]
+        [Tooltip("Extra margin around each view when checking a respawn is unseen (0.1 = 10%).")]
         [SerializeField, Min(0f)] private float viewportMargin = 0.1f;
         [SerializeField, Min(1)] private int maxAttempts = 25;
-        [Tooltip("Si no hay punto válido (p. ej. todo a la vista), reintenta tras estos segundos.")]
+        [Tooltip("When no point is valid (e.g. all in view), retry after these seconds.")]
         [SerializeField, Min(0.1f)] private float retrySeconds = 2f;
 
         [Header("Debug")]
@@ -117,7 +117,7 @@ namespace CodenameVelvet.Spawning
             if (dayNightEvent != null) dayNightEvent.OnRaised -= HandleDayNight;
         }
 
-        // Un frame de espera: el PlayerSpawner crea a los jugadores en su Start.
+        // Waits one frame: PlayerSpawner creates the players in its Start.
         private IEnumerator Start()
         {
             yield return null;
@@ -129,10 +129,8 @@ namespace CodenameVelvet.Spawning
             started = true;
 
             if (debugLogs)
-                VelvetLog.Info(LogCategory, this, $"{liveEnemies.Count} enemigos y {spawnedNodes.Count} recursos");
+                VelvetLog.Info(LogCategory, this, $"{liveEnemies.Count} enemies and {spawnedNodes.Count} resource nodes");
         }
-
-        // ─────────────────────── Enemigos ───────────────────────
 
         private bool TrySpawnEnemy(bool allowVisible)
         {
@@ -162,19 +160,17 @@ namespace CodenameVelvet.Spawning
             }));
         }
 
-        /// <summary>Repone un enemigo fuera de la vista, salvo que ya se alcanzó la meta (p. ej. amaneció).</summary>
+        /// <summary>Spawns one enemy out of sight, unless the target is already met (e.g. dawn came).</summary>
         private bool SpawnIfBelowTarget()
         {
             liveEnemies.RemoveAll(enemy => enemy == null);
             return liveEnemies.Count >= enemyTarget || TrySpawnEnemy(allowVisible: false);
         }
 
-        // ─────────────────────── Día / noche ───────────────────────
-
         private void HandleDayNight(DayNightState state)
         {
             enemyTarget = state.IsNight ? NightThreat.EnemyCount(maxEnemies, state.ThreatMultiplier) : dayEnemies;
-            if (!started) return; // el llenado inicial ya usa la meta nueva
+            if (!started) return; // the initial fill already uses the new target
 
             liveEnemies.RemoveAll(enemy => enemy == null);
             int missing = enemyTarget - liveEnemies.Count - pendingRespawns;
@@ -185,7 +181,7 @@ namespace CodenameVelvet.Spawning
                 trimRoutine = StartCoroutine(TrimExcess());
         }
 
-        /// <summary>Quita los enemigos sobrantes de uno en uno, solo cuando ninguna cámara los ve.</summary>
+        /// <summary>Removes surplus enemies one at a time, only while no camera sees them.</summary>
         private IEnumerator TrimExcess()
         {
             var wait = new WaitForSeconds(retrySeconds);
@@ -205,8 +201,6 @@ namespace CodenameVelvet.Spawning
             trimRoutine = null;
         }
 
-        // ─────────────────────── Recursos ───────────────────────
-
         private bool TrySpawnNode()
         {
             int index = WeightedRandom.Pick(nodeWeights, random);
@@ -222,17 +216,15 @@ namespace CodenameVelvet.Spawning
 
         private void HandleNodeDepleted(ResourceNode node)
         {
-            // Su posición vieja sigue contando como ocupada, así que reaparece en otro lado.
+            // The old position still counts as occupied, so the node comes back somewhere else.
             StartCoroutine(AfterDelay(nodeRespawnSeconds, () => StartCoroutine(RetryUntil(() =>
             {
-                if (node == null) return true; // destruido por otra cosa: nada que reponer
+                if (node == null) return true; // destroyed by something else: nothing to restore
                 if (!TryFindPoint(allowVisible: false, out Vector3 point)) return false;
                 node.RespawnAt(point);
                 return true;
             }))));
         }
-
-        // ─────────────────────── Colocación ───────────────────────
 
         private bool TryFindPoint(bool allowVisible, out Vector3 point)
         {
@@ -248,7 +240,7 @@ namespace CodenameVelvet.Spawning
                         groundMask, QueryTriggerInteraction.Ignore))
                     continue;
 
-                // Lo primero que toca el rayo debe estar dentro de la altura de la caja (no techo de pilar).
+                // The first surface hit must be inside the box height, not the top of a pillar.
                 if (hit.point.y < bounds.min.y || hit.point.y > bounds.max.y) continue;
                 if (!SpawnRules.IsFlatEnough(hit.normal, maxSlope)) continue;
                 if (!SpawnRules.IsClear(hit.point, occupied, minSpacing)) continue;
@@ -283,8 +275,6 @@ namespace CodenameVelvet.Spawning
                     return true;
             return false;
         }
-
-        // ─────────────────────── Tiempos ───────────────────────
 
         private static IEnumerator AfterDelay(float seconds, Action action)
         {

@@ -3,10 +3,10 @@ using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 
-/// <summary>Corre los tests EditMode y escribe el resultado en Logs/velvet_tests.txt.</summary>
+/// <summary>Runs the EditMode tests and writes the results to Logs/velvet_tests.txt.</summary>
 public static class VelvetRunEditModeTests
 {
-    [MenuItem("Tools/Velvet/Correr tests EditMode")]
+    [MenuItem("Tools/Velvet/Run EditMode Tests")]
     public static void Run()
     {
         var api = ScriptableObject.CreateInstance<TestRunnerApi>();
@@ -26,7 +26,7 @@ public static class VelvetRunEditModeTests
         }
         public void RunFinished(ITestResultAdaptor result)
         {
-            sb.Insert(0, $"Pasaron {result.PassCount}, fallaron {result.FailCount}, omitidos {result.SkipCount}\n");
+            sb.Insert(0, $"Passed {result.PassCount}, failed {result.FailCount}, skipped {result.SkipCount}\n");
             System.IO.File.WriteAllText("Logs/velvet_tests.txt", sb.ToString());
             Debug.Log("[Tests] " + sb);
         }

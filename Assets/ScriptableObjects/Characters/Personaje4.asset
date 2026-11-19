@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77e5b8e25ac0d4266849963a13dbb464, type: 3}
   m_Name: Personaje4
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
-  displayName: Personaje 4
+  displayName: Character 4
   color: {r: 0.95, g: 0.78, b: 0.25, a: 1}
   portrait: {fileID: 0}

@@ -10,10 +10,8 @@ namespace CodenameVelvet.Gathering
     /// A stack of one resource lying on the ground. Any living player who walks over it
     /// collects as much as fits in their inventory; the rest stays on the ground, and the
     /// pickup is destroyed once empty.
-    /// Prefab setup: a Collider with "Is Trigger" on this GameObject (players carry the
-    /// Rigidbody that makes trigger callbacks fire) and child SpriteRenderers for the visual.
-    /// Spawn with <c>Instantiate(prefab, position, Quaternion.identity).Initialize(type, amount)</c>;
-    /// pickups placed directly in a scene use the serialized type and amount.
+    /// Detection relies on a trigger Collider on this object; the players' Rigidbody fires the callbacks.
+    /// Spawned pickups get their contents from <see cref="Initialize"/>; scene-placed ones use the serialized values.
     /// </summary>
     public class ResourcePickup : MonoBehaviour
     {

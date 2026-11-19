@@ -50,7 +50,7 @@ namespace CodenameVelvet.Tests
         public void Advance_HugeStep_CrossesSeveralPhases()
         {
             var clock = new DayNightClock(10f, 5f);
-            clock.Advance(28f); // día 10 + noche 5 + día 10 + 3 de la segunda noche
+            clock.Advance(28f); // day 10 + night 5 + day 10 + 3 into the second night
             Assert.That(clock.Phase, Is.EqualTo(DayPhase.Night));
             Assert.That(clock.NightNumber, Is.EqualTo(2));
             Assert.That(clock.Remaining, Is.EqualTo(2f).Within(1e-4));

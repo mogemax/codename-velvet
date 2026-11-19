@@ -14,40 +14,40 @@ namespace CodenameVelvet.Enemies
     [Serializable]
     public class CyclopsAttack
     {
-        [Tooltip("Solo para identificarlo en el Inspector y en los logs.")]
-        public string name = "Ataque";
-        [Tooltip("Trigger del Animator que inicia la animación de este ataque.")]
+        [Tooltip("Only identifies it in the Inspector and the logs.")]
+        public string name = "Attack";
+        [Tooltip("Animator trigger that starts this attack's animation.")]
         public string animatorTrigger = "Attack";
-        [Tooltip("Probabilidad relativa frente a los otros ataques disponibles.")]
+        [Tooltip("Relative chance against the other available attacks.")]
         [Min(0f)] public float weight = 1f;
 
-        [Header("Rango (hueco entre cuerpos, en el suelo)")]
+        [Header("Range (gap between bodies, on the ground plane)")]
         [Min(0f)] public float minGap = 0f;
         [Min(0f)] public float maxGap = 2f;
 
-        [Header("Tiempos (segundos)")]
-        [Tooltip("Desde que empieza el ataque hasta el golpe.")]
+        [Header("Timing (seconds)")]
+        [Tooltip("From the start of the attack to the hit.")]
         [Min(0f)] public float windup = 0.6f;
-        [Tooltip("Desde el golpe hasta que puede volver a moverse (p. ej. levantarse del suelo).")]
+        [Tooltip("From the hit until it can move again (e.g. getting up from the ground).")]
         [Min(0f)] public float recovery = 1f;
-        [Tooltip("Tiempo antes de poder repetir ESTE ataque.")]
+        [Tooltip("Time before THIS attack can be used again.")]
         [Min(0f)] public float cooldown = 3f;
 
-        [Header("Embestida (se avienta hacia adelante)")]
-        [Tooltip("Distancia que avanza hacia el jugador durante el ataque. 0 = no se mueve.")]
+        [Header("Lunge (throws itself forward)")]
+        [Tooltip("Distance covered toward the player during the attack. 0 = stays in place.")]
         [Min(0f)] public float lungeDistance = 0f;
-        [Tooltip("En qué parte del windup empieza a avanzar (0 = al inicio, 1 = en el golpe).")]
+        [Tooltip("Point of the windup where the lunge starts (0 = start, 1 = at the hit).")]
         [Range(0f, 1f)] public float lungeStart = 0.6f;
 
-        [Header("Golpe")]
+        [Header("Hit")]
         [Min(0)] public int damage = 1;
         [Min(0f)] public float impactRadius = 2f;
-        [Tooltip("Qué tan adelante del cíclope cae el golpe (0 = a sus pies).")]
+        [Tooltip("How far in front of the cyclops the hit lands (0 = at its feet).")]
         public float impactForwardOffset = 1f;
         [Min(0f)] public float knockbackForce = 8f;
         [Min(0f)] public float knockbackStun = 0.5f;
 
-        [Tooltip("Se llama en el momento del golpe con la posición del impacto (VFX, sacudida de cámara, sonido).")]
+        [Tooltip("Called at the hit with the impact position (VFX, camera shake, sound).")]
         public UnityEvent<Vector3> onImpact = new UnityEvent<Vector3>();
 
         [NonSerialized] public float readyTime;

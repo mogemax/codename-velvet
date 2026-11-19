@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74ad728d8476f4fe9b67f83f5182b49e, type: 3}
   m_Name: Arbol
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Gathering.ResourceNodeDefinition
-  displayName: Arbol
+  displayName: Tree
   resource: 0
   color: {r: 0.2, g: 0.6, b: 0.2, a: 1}
   hitsToDeplete: 3

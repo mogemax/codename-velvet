@@ -8,14 +8,14 @@ using UnityEngine.SceneManagement;
 namespace CodenameVelvet.Core
 {
     /// <summary>
-    /// Fin de la partida en el nivel:
+    /// How a match ends:
     /// <list type="bullet">
-    /// <item><b>Game over</b>: todos los jugadores caídos al mismo tiempo. Mientras quede uno vivo, los
-    /// caídos reaparecen como siempre (PlayerHealth). Jugando solo, morir es game over.</item>
-    /// <item><b>Victoria</b>: alguien llama a <see cref="Victory"/> (el jefe al morir).</item>
+    /// <item><b>Game over</b>: every player is down at the same time. While one is alive, downed players
+    /// respawn as usual (PlayerHealth). Playing solo, dying is game over.</item>
+    /// <item><b>Victory</b>: someone calls <see cref="Victory"/> (the boss on death).</item>
     /// </list>
-    /// En ambos casos congela el juego (timeScale 0, así nadie reaparece ni se mueve), muestra su panel
-    /// y regresa al menú tras unos segundos reales.
+    /// Either way the game freezes (timeScale 0, so nobody respawns or moves), the matching panel shows,
+    /// and the menu loads after a few real-time seconds.
     /// </summary>
     public class MatchFlow : MonoBehaviour
     {
@@ -39,7 +39,7 @@ namespace CodenameVelvet.Core
         {
             foreach (PlayerHealth player in players)
                 if (player != null) player.Died -= HandlePlayerDied;
-            Time.timeScale = 1f; // por si la escena se descarga a mitad de la pantalla final
+            Time.timeScale = 1f; // in case the scene unloads during the end screen
         }
 
         public void RegisterPlayer(PlayerHealth player)
@@ -50,7 +50,7 @@ namespace CodenameVelvet.Core
 
         public void Victory() => End(victoryPanel, "Victory");
 
-        // Died llega cuando el jugador ya cuenta como caído, así que basta revisar si queda alguien de pie.
+        // Died fires once the player already counts as down, so it is enough to look for anyone standing.
         private void HandlePlayerDied()
         {
             foreach (PlayerHealth player in players)

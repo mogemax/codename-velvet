@@ -1,36 +1,34 @@
 using UnityEngine;
 
 /// <summary>
-/// Cámara estilo Cult of the Lamb: sigue al jugador manteniendo un ángulo
-/// y una distancia fijos, con suavizado. Colócala en un objeto vacío
-/// separado del Player (no como hijo directo) y asigna el Target.
+/// Follows one player at a fixed angle and distance, with smoothing. Split screen uses one per player,
+/// assigned through <see cref="SetTarget"/>.
 /// </summary>
 public class CameraFollow : MonoBehaviour
 {
-    [Header("Referencia")]
-    [SerializeField] private Transform target; // Arrastra aquí el Player
+    [SerializeField] private Transform target;
 
-    [Header("Offset de cámara")]
-    [Tooltip("Posición relativa al jugador. Y alto, Z negativo para quedar detrás/arriba")]
+    [Header("Camera offset")]
+    [Tooltip("Position relative to the player: Y up, negative Z to sit behind and above.")]
     [SerializeField] private Vector3 offset = new Vector3(0f, 10f, -8f);
 
-    [Header("Suavizado")]
-    [Tooltip("Qué tan rápido alcanza al jugador. Más alto = más pegada. Igual a cualquier FPS.")]
+    [Header("Smoothing")]
+    [Tooltip("How fast it catches up with the player. Higher = tighter. Frame-rate independent.")]
     [SerializeField] private float smoothSpeed = 8f;
 
-    [Header("Enfoque")]
-    [Tooltip("Si está activo, la cámara siempre rota para mirar exactamente al target, evitando desalineación entre Offset y Rotation. Recomendado: activado.")]
+    [Header("Focus")]
+    [Tooltip("Keeps the camera rotated to look exactly at the target.")]
     [SerializeField] private bool alwaysLookAtTarget = true;
 
-    [Tooltip("Desplaza el PUNTO al que la cámara mira, sin mover la posición real de la cámara. Y positivo = la cámara mira más arriba del target, lo que hace que el personaje aparezca más ABAJO en pantalla.")]
+    [Tooltip("Shifts the point the camera looks at, without moving the camera. Positive Y shows the character lower on screen.")]
     [SerializeField] private Vector3 lookAtOffset = new Vector3(0f, 2f, 0f);
 
-    [Header("Límites opcionales (para no salir del mapa)")]
+    [Header("Optional bounds (keeps the camera over the map)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
     [SerializeField] private Vector2 maxBounds;
 
-    /// <summary>Asigna a quién sigue (pantalla dividida: una cámara por jugador). Llamar antes de Start.</summary>
+    /// <summary>Sets who to follow. Call before Start.</summary>
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
@@ -44,13 +42,13 @@ public class CameraFollow : MonoBehaviour
             return;
         }
 
-        // Empieza ya en su lugar (sin "volar" desde donde quedó en la escena).
+        // Start in place instead of flying in from wherever the camera was.
         transform.position = target.position + offset;
         transform.LookAt(target.position + lookAtOffset);
     }
 
-    // LateUpdate: el Rigidbody del jugador interpola su posición cada frame, así que la cámara
-    // la lee ya actualizada. Seguirlo en FixedUpdate (50 Hz) se ve a tirones en pantallas de 60+ Hz.
+    // LateUpdate: the player's Rigidbody interpolates every frame, so its position is already current here.
+    // Following in FixedUpdate (50 Hz) stutters on 60+ Hz screens.
     private void LateUpdate()
     {
         if (target == null) return;
@@ -63,7 +61,7 @@ public class CameraFollow : MonoBehaviour
             desiredPosition.z = Mathf.Clamp(desiredPosition.z, minBounds.y, maxBounds.y);
         }
 
-        // Suavizado exponencial: el mismo recorrido por segundo sin importar los FPS.
+        // Exponential smoothing: same catch-up per second at any frame rate.
         float t = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
         transform.position = Vector3.Lerp(transform.position, desiredPosition, t);
 

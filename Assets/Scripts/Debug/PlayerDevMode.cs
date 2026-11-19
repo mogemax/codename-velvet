@@ -6,10 +6,9 @@ using UnityEngine;
 namespace CodenameVelvet.DebugTools
 {
     /// <summary>
-    /// Efectos del dev mode sobre UN jugador. Lo agrega <see cref="DevMode"/> en runtime (no va en el prefab)
-    /// y sigue su estado global: más velocidad, invulnerable, todos los recursos y "fantasma"
-    /// (atraviesa enemigos y jugadores, pero sigue chocando con el mapa y recogiendo recursos).
-    /// Guarda lo que cambia para dejarlo exactamente igual al desactivarse.
+    /// Dev mode effects on ONE player, added at runtime by <see cref="DevMode"/> and following its global state:
+    /// extra speed, invulnerability, full inventory and "ghost" (passes through enemies and players but still
+    /// collides with the map and collects pickups). Restores exactly what it changed when turned off.
     /// </summary>
     public class PlayerDevMode : MonoBehaviour
     {
@@ -48,7 +47,7 @@ namespace CodenameVelvet.DebugTools
         {
             if (movement != null) movement.SpeedMultiplier = active ? SpeedMultiplier : 1f;
             if (health != null) health.Invulnerable = active;
-            // Solo excluye contactos: los enemigos lo siguen detectando (OverlapSphere) y persiguiendo.
+            // Only contacts are excluded: enemies still detect (OverlapSphere) and chase the player.
             if (body != null) body.excludeLayers = active ? originalExcludeLayers | ghostLayers : originalExcludeLayers;
             if (active) FillInventory();
         }

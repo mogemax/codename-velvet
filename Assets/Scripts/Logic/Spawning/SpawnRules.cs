@@ -6,12 +6,12 @@ using UnityEngine;
 namespace CodenameVelvet.Spawning
 {
     /// <summary>
-    /// Reglas puras para decidir si un punto sirve para aparecer algo (enemigo o recurso).
-    /// Las consultas a la física y a las cámaras las hace <c>SpawnZone</c>; aquí solo la decisión.
+    /// Pure rules that decide whether a point can host a spawn (enemy or resource). <c>SpawnZone</c> runs
+    /// the physics and camera queries; this class only makes the decision.
     /// </summary>
     public static class SpawnRules
     {
-        /// <summary>True si la superficie (por su normal) no es más inclinada que <paramref name="maxSlopeDegrees"/>.</summary>
+        /// <summary>True when the surface (given its normal) is no steeper than <paramref name="maxSlopeDegrees"/>.</summary>
         public static bool IsFlatEnough(Vector3 surfaceNormal, float maxSlopeDegrees)
         {
             if (surfaceNormal == Vector3.zero)
@@ -20,8 +20,8 @@ namespace CodenameVelvet.Spawning
         }
 
         /// <summary>
-        /// True si <paramref name="candidate"/> queda a al menos <paramref name="minDistance"/> (en el plano XZ)
-        /// de todos los puntos ocupados.
+        /// True when <paramref name="candidate"/> is at least <paramref name="minDistance"/> (on the XZ plane)
+        /// from every occupied point.
         /// </summary>
         public static bool IsClear(Vector3 candidate, IReadOnlyList<Vector3> occupied, float minDistance)
         {
@@ -37,8 +37,8 @@ namespace CodenameVelvet.Spawning
         }
 
         /// <summary>
-        /// True si un punto en coordenadas de viewport (Camera.WorldToViewportPoint) cae dentro de la vista,
-        /// ampliada por <paramref name="margin"/> para no aparecer justo en el borde.
+        /// True when a viewport-space point (Camera.WorldToViewportPoint) is on screen, with the view grown
+        /// by <paramref name="margin"/> so spawns never pop in right at the edge.
         /// </summary>
         public static bool IsInsideViewport(Vector3 viewportPoint, float margin)
         {
