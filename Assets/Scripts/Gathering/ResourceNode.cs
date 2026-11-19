@@ -38,6 +38,23 @@ namespace CodenameVelvet.Gathering
 
         public bool IsAlive => definition != null && !isDepleted;
 
+        /// <summary>Se lanza al agotarse (después de ocultarse).</summary>
+        public event Action<ResourceNode> Depleted;
+
+        /// <summary>
+        /// True = no reaparece solo; quien lo creó (p. ej. una SpawnZone) llama a <see cref="RespawnAt"/>.
+        /// False (por defecto) = reaparece en el mismo lugar según la definición.
+        /// </summary>
+        public bool ExternalRespawn { get; set; }
+
+        /// <summary>Lo mueve a <paramref name="position"/> y lo restaura completo.</summary>
+        public void RespawnAt(Vector3 position)
+        {
+            StopRespawn();
+            transform.position = position;
+            Restore();
+        }
+
         private void Awake()
         {
             renderers = GetComponentsInChildren<Renderer>(true);
@@ -56,7 +73,7 @@ namespace CodenameVelvet.Gathering
         private void OnEnable()
         {
             // Resumes a respawn that was interrupted by disabling the node.
-            if (isDepleted && definition != null && definition.RespawnSeconds > 0f)
+            if (isDepleted && !ExternalRespawn && definition != null && definition.RespawnSeconds > 0f)
                 StartRespawn();
         }
 
@@ -121,6 +138,14 @@ namespace CodenameVelvet.Gathering
         {
             isDepleted = true;
             SetPresent(false);
+            Depleted?.Invoke(this);
+
+            if (ExternalRespawn)
+            {
+                if (debugLogs)
+                    VelvetLog.Info(LogCategory, this, "Depleted, waiting for its spawner");
+                return;
+            }
 
             if (definition.RespawnSeconds <= 0f)
             {

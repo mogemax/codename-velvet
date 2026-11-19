@@ -47,6 +47,9 @@ namespace CodenameVelvet.Player
         public int MaxHp => healthState.MaxHp;
         public bool IsAlive => !healthState.IsDead && !isDying;
 
+        /// <summary>Mientras sea true ignora todo el daño (dev mode, invulnerabilidad temporal).</summary>
+        public bool Invulnerable { get; set; }
+
         private void Awake()
         {
             healthState = new PlayerHealthState(maxHp);
@@ -62,7 +65,7 @@ namespace CodenameVelvet.Player
 
         public void ApplyDamage(int amount)
         {
-            if (!IsAlive)
+            if (!IsAlive || Invulnerable)
                 return;
 
             healthState.ApplyDamage(amount);

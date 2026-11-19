@@ -60,6 +60,9 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Útil para otros scripts (ej. invulnerabilidad durante el dash).</summary>
     public bool IsDashing { get; private set; }
 
+    /// <summary>Multiplica la velocidad al caminar y en el dash (1 = normal). Para dev mode o efectos.</summary>
+    public float SpeedMultiplier { get; set; } = 1f;
+
     /// <summary>Última dirección de movimiento (hacia donde mira el jugador). Útil para ataques.</summary>
     public Vector2 FacingDirection => lastMoveDir;
 
@@ -246,7 +249,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Transición suave: al terminar conservamos velocidad normal en esa dirección
         // en lugar de frenar en seco.
-        currentVelocity = dashDir * moveSpeed;
+        currentVelocity = dashDir * (moveSpeed * SpeedMultiplier);
 
         if (animator != null)
             animator.SetBool(isDashingHash, false);
@@ -254,14 +257,14 @@ public class PlayerMovement : MonoBehaviour
 
     private void DashMove()
     {
-        ApplyPlanarVelocity(dashDir * dashSpeed);
+        ApplyPlanarVelocity(dashDir * (dashSpeed * SpeedMultiplier));
     }
 
     // ─────────────────────── MOVIMIENTO ───────────────────────
 
     private void MoveCharacter()
     {
-        Vector2 targetVelocity = inputDir * moveSpeed;
+        Vector2 targetVelocity = inputDir * (moveSpeed * SpeedMultiplier);
 
         bool hasInput = inputDir.sqrMagnitude > 0.01f;
         float accel = deceleration;
