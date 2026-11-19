@@ -40,16 +40,13 @@ public class CameraFollow : MonoBehaviour
     {
         if (target == null)
         {
-            Debug.LogWarning("CameraFollow: no se asignó target, buscando por tag 'Player'");
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) target = player.transform;
+            Debug.LogWarning($"{name}: CameraFollow has no target; call SetTarget before Start.", this);
+            return;
         }
 
         // Empieza ya en su lugar (sin "volar" desde donde quedó en la escena).
-        if (target != null) transform.position = target.position + offset;
-
-        // Fuerza la rotación inicial mirando hacia el offset (ángulo isométrico)
-        transform.LookAt(target != null ? target.position + lookAtOffset : Vector3.zero);
+        transform.position = target.position + offset;
+        transform.LookAt(target.position + lookAtOffset);
     }
 
     // LateUpdate: el Rigidbody del jugador interpola su posición cada frame, así que la cámara

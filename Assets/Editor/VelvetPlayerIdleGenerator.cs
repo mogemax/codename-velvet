@@ -200,25 +200,27 @@ public static class VelvetPlayerIdleGenerator
     [MenuItem("Tools/Velvet/Regenerar solo el Dash")]
     public static void GenerateDashOnly()
     {
-        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
             if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP."); return; }
             BuildClip(Dash(), root.transform, hip);
             AssetDatabase.SaveAssets();
             Debug.Log("[Anim] Dash regenerado (clavado + rodada).");
         }
-        finally { PrefabUtility.UnloadPrefabContents(root); }
+        finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
         VelvetGroundSolver.Solve("Assets/Animators/Animations/PLAYER_Dash.anim");
     }
 
     [MenuItem("Tools/Velvet/Generar animaciones del Player")]
     public static void Generate()
     {
-        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
             if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP dentro de PLAYER."); return; }
 
@@ -233,7 +235,7 @@ public static class VelvetPlayerIdleGenerator
             animator.runtimeAnimatorController = controller;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
-            var movement = root.GetComponent<PlayerMovement>();
+            var movement = prefabRoot.GetComponent<PlayerMovement>();
             if (movement != null)
             {
                 var so = new SerializedObject(movement);
@@ -241,13 +243,13 @@ public static class VelvetPlayerIdleGenerator
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
             AssetDatabase.SaveAssets();
             Debug.Log("[Anim] Listo: Idle, Walk y Dash conectados al prefab PLAYER.");
         }
         finally
         {
-            PrefabUtility.UnloadPrefabContents(root);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
         }
     }
 
@@ -410,16 +412,17 @@ public static class VelvetPlayerIdleGenerator
     [MenuItem("Tools/Velvet/Regenerar solo el Walk")]
     public static void GenerateWalkOnly()
     {
-        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             Transform hip = FindBone(root.transform, "HIP");
             if (hip == null) { Debug.LogError("[Anim] No encontré el hueso HIP."); return; }
             BuildClip(Walk(), root.transform, hip);
             AssetDatabase.SaveAssets();
             Debug.Log("[Anim] Walk regenerado (pose to pose).");
         }
-        finally { PrefabUtility.UnloadPrefabContents(root); }
+        finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
     }
 
     // Muestrea f(u) (u = 0..1) y pone tangentes a partir de la derivada, para curvas suaves

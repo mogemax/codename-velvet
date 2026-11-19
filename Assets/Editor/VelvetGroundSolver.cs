@@ -31,9 +31,10 @@ public static class VelvetGroundSolver
         if (clip == null) { Debug.LogError($"[Suelo] No encontré {clipPath}."); return; }
         var report = new StringBuilder();
 
-        GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
         try
         {
+            GameObject root = AnimatedRoot(prefabRoot);
             var skins = Collect(root);
             Transform hip = null;
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
@@ -109,9 +110,19 @@ public static class VelvetGroundSolver
         }
         finally
         {
-            PrefabUtility.UnloadPrefabContents(root);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
             System.IO.File.WriteAllText(logPath, report.ToString());
         }
+    }
+
+    /// <summary>
+    /// The object clip paths are relative to: the Animator's GameObject (PLAYER keeps it on its
+    /// tilted "Visual" child), or the prefab root when there is none.
+    /// </summary>
+    public static GameObject AnimatedRoot(GameObject prefabRoot)
+    {
+        Animator animator = prefabRoot.GetComponentInChildren<Animator>(true);
+        return animator != null ? animator.gameObject : prefabRoot;
     }
 
     static List<SkinData> Collect(GameObject root)

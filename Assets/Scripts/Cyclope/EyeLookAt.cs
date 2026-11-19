@@ -1,3 +1,4 @@
+using CodenameVelvet.Enemies;
 using UnityEngine;
 
 /// <summary>
@@ -24,22 +25,27 @@ public class EyeLookAt : MonoBehaviour
     [SerializeField] private bool useDetectionRange = false;
     [SerializeField] private float detectionRange = 8f;
 
+    private const float RetargetInterval = 0.25f;
+    private const float UnlimitedSearchRange = 100f;
+
     private Vector3 restLocalPosition; // Posición original del hueso (pose de reposo del rig/animación base)
+    private EnemyTargetFinder targetFinder;
+    private float nextRetargetTime;
 
     private void Awake()
     {
         restLocalPosition = transform.localPosition;
-
-        if (target == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) target = player.transform;
-        }
+        targetFinder = GetComponentInParent<EnemyTargetFinder>();
     }
 
     private void LateUpdate()
     {
-        if (target == null) return;
+        RetargetNearestPlayer();
+        if (target == null)
+        {
+            transform.localPosition = Vector3.Lerp(transform.localPosition, restLocalPosition, moveSpeed * Time.deltaTime);
+            return;
+        }
 
         bool withinRange = !useDetectionRange ||
             Vector3.Distance(transform.position, target.position) <= detectionRange;
@@ -75,5 +81,17 @@ public class EyeLookAt : MonoBehaviour
             desiredLocalPosition,
             moveSpeed * Time.deltaTime
         );
+    }
+
+    // Con varios jugadores mira al más cercano; sin EnemyTargetFinder en el cíclope usa el target asignado.
+    private void RetargetNearestPlayer()
+    {
+        if (targetFinder == null || Time.time < nextRetargetTime) return;
+        nextRetargetTime = Time.time + RetargetInterval;
+
+        float range = useDetectionRange ? detectionRange : UnlimitedSearchRange;
+        target = targetFinder.TryFindNearest(transform.position, range, out _, out Transform nearest, out _)
+            ? nearest
+            : null;
     }
 }

@@ -33,10 +33,11 @@ public static class VelvetPreviewRenderer
     public static void Render(string prefabPath, string clipPath, int frames, string outPath, bool includeRest = true)
     {
         var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
-        GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
         var created = new List<Object>();
         try
         {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             var skins = new List<Skin>();
             var shader = Shader.Find("Sprites/Default");
             foreach (var comp in root.GetComponentsInChildren<Component>(true))
@@ -120,7 +121,7 @@ public static class VelvetPreviewRenderer
         }
         finally
         {
-            PrefabUtility.UnloadPrefabContents(root);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
             foreach (var o in created) if (o != null) Object.DestroyImmediate(o);
         }
     }

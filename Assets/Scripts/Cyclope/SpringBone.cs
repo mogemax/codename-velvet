@@ -45,6 +45,7 @@ public class SpringBone : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (Time.deltaTime <= 0f) return; // en pausa (timeScale 0) la velocidad sería 0/0 = NaN
         // 1. Calcula qué tan rápido se está moviendo el personaje completo
         rootVelocity = (rootParent.position - lastRootPosition) / Time.deltaTime;
         lastRootPosition = rootParent.position;

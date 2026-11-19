@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyTargetFinder
   searchMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
   maxHits: 32
 --- !u!114 &482342608020965080
 MonoBehaviour:

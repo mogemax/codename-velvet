@@ -9,7 +9,11 @@ public class CambioEscenaAnimado : MonoBehaviour {
     [SerializeField] private string nombreSiguienteEscena; // El nombre exacto de tu Escena 2
 
     // Esta función es la que pondrás en el OnClick() de tu botón
+    private bool enTransicion;
+
     public void IrASiguienteMenu() {
+        if (enTransicion) return; // doble clic: una sola carga de escena
+        enTransicion = true;
         StartCoroutine(RutinaTransicion());
     }
 

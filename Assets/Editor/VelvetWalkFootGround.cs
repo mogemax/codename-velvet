@@ -23,9 +23,10 @@ public static class VelvetWalkFootGround
         var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(WalkPath);
         if (clip == null) { Debug.LogError("[Suelo] No encontré PLAYER_Walk."); return; }
 
-        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
             var report = new System.Text.StringBuilder();
             var feet = new List<(Transform t, float len, float floor, string path)>();
             foreach (var name in Feet)
@@ -103,7 +104,7 @@ public static class VelvetWalkFootGround
         }
         finally
         {
-            PrefabUtility.UnloadPrefabContents(root);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
         }
     }
 
