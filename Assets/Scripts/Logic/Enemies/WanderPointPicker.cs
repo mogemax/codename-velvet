@@ -31,5 +31,38 @@ namespace CodenameVelvet.Enemies
                 center.y,
                 center.z + (float)(distance * Math.Sin(angle)));
         }
+
+        /// <summary>
+        /// Returns a point uniformly inside the axis-aligned rectangle centred on
+        /// <paramref name="center"/> with half sizes <paramref name="halfExtents"/>
+        /// (x = world X, y = world Z), keeping the center's Y.
+        /// </summary>
+        public static Vector3 PickPointInArea(Vector3 center, Vector2 halfExtents, System.Random random)
+        {
+            if (random == null)
+                throw new ArgumentNullException(nameof(random));
+            if (halfExtents.x < 0f || halfExtents.y < 0f)
+                throw new ArgumentOutOfRangeException(nameof(halfExtents), halfExtents, "Half extents must be non-negative.");
+
+            return new Vector3(
+                center.x + (float)((random.NextDouble() * 2.0 - 1.0) * halfExtents.x),
+                center.y,
+                center.z + (float)((random.NextDouble() * 2.0 - 1.0) * halfExtents.y));
+        }
+
+        /// <summary>
+        /// Clamps <paramref name="point"/> on the XZ plane into the rectangle centred on
+        /// <paramref name="center"/> with half sizes <paramref name="halfExtents"/>, shrunk by
+        /// <paramref name="margin"/> on every side (never below zero). Y is left untouched.
+        /// </summary>
+        public static Vector3 ClampToArea(Vector3 point, Vector3 center, Vector2 halfExtents, float margin = 0f)
+        {
+            float hx = Mathf.Max(0f, halfExtents.x - margin);
+            float hz = Mathf.Max(0f, halfExtents.y - margin);
+            return new Vector3(
+                Mathf.Clamp(point.x, center.x - hx, center.x + hx),
+                point.y,
+                Mathf.Clamp(point.z, center.z - hz, center.z + hz));
+        }
     }
 }

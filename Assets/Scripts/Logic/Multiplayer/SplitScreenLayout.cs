@@ -5,15 +5,13 @@ namespace CodenameVelvet.Multiplayer
 {
     /// <summary>
     /// Pure viewport calculator for local split-screen. Returns one normalized
-    /// <see cref="Camera.rect"/> per player, indexed by slot. Odd counts leave
+    /// <see cref="Camera.rect"/> per player, indexed by slot. Three players leave
     /// the remaining grid space empty (letterboxed) instead of stretching a view.
     /// </summary>
     public static class SplitScreenLayout
     {
         public const int MinPlayers = 1;
-        public const int MaxPlayers = 5;
-
-        private const float Third = 1f / 3f;
+        public const int MaxPlayers = 4;
 
         public static Rect[] ComputeRects(int playerCount)
         {
@@ -47,17 +45,6 @@ namespace CodenameVelvet.Multiplayer
                         new Rect(0.5f, 0.5f, 0.5f, 0.5f),
                         new Rect(0f, 0f, 0.5f, 0.5f),
                         new Rect(0.5f, 0f, 0.5f, 0.5f),
-                    };
-
-                case 5:
-                    // Three on top, two centered below; each row takes half the screen.
-                    return new[]
-                    {
-                        new Rect(0f, 0.5f, Third, 0.5f),
-                        new Rect(Third, 0.5f, Third, 0.5f),
-                        new Rect(2f * Third, 0.5f, Third, 0.5f),
-                        new Rect(Third * 0.5f, 0f, Third, 0.5f),
-                        new Rect(0.5f, 0f, Third, 0.5f),
                     };
 
                 default:

@@ -2,67 +2,87 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Movimiento top-down/isométrico en 8 direcciones + Dash, estilo Cult of the Lamb.
-/// Usa Rigidbody (no Kinematic) para colisiones correctas contra el escenario.
-/// El sprite/rig debe estar en un hijo del objeto con este script.
-/// El input llega del PlayerInput del mismo objeto (Behavior = Send Messages),
-/// así cada jugador lee únicamente su propio dispositivo.
+/// Top-down 8-direction movement plus Dash on a non-kinematic Rigidbody, so collisions with the map work.
+/// Input comes from this object's PlayerInput (Send Messages), so each player reads only their own device.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movimiento")]
+    [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float acceleration = 20f;
     [SerializeField] private float deceleration = 25f;
-    [Tooltip("Actívalo si arriba/abajo se ven invertidos respecto a la cámara.")]
+    [Tooltip("Acceleration when changing direction. Higher = sharper turns, no drifting.")]
+    [SerializeField] private float turnAcceleration = 90f;
+    [Tooltip("How much the direction must change to use Turn Acceleration (1 = any change, 0 = only turns over 90°).")]
+    [Range(-1f, 1f)]
+    [SerializeField] private float turnThreshold = 0.7f;
+    [Tooltip("Enable when up/down look inverted relative to the camera.")]
     [SerializeField] private bool invertVertical = false;
-    [Tooltip("Actívalo si izquierda/derecha se ven invertidos respecto a la cámara.")]
+    [Tooltip("Enable when left/right look inverted relative to the camera.")]
     [SerializeField] private bool invertHorizontal = false;
 
     [Header("Dash")]
-    [Tooltip("Velocidad durante el dash.")]
+    [Tooltip("Speed during the dash.")]
     [SerializeField] private float dashSpeed = 16f;
-    [Tooltip("Duración del dash en segundos.")]
+    [Tooltip("Dash duration in seconds.")]
     [SerializeField] private float dashDuration = 0.2f;
-    [Tooltip("Tiempo de espera entre dashes (se cuenta desde que termina el dash).")]
+    [Tooltip("Wait between dashes, counted from the end of the dash.")]
     [SerializeField] private float dashCooldown = 0.5f;
-    [Tooltip("Si no hay input, hace dash hacia la última dirección en la que miraba.")]
+    [Tooltip("Without input, dash toward the last facing direction.")]
     [SerializeField] private bool dashWithoutInput = true;
 
-    [Header("Referencias")]
-    [SerializeField] private Animator animator;      // Animator del rig/sprite
-    [SerializeField] private Transform spriteRoot;    // Hijo que se voltea (Scale.x) o rota
+    [Header("Ground")]
+    [Tooltip("Layers that count as ground. Empty = 'Ground' layer.")]
+    [SerializeField] private LayerMask groundMask;
+    [Tooltip("Max walkable slope in degrees. Steeper counts as a wall.")]
+    [SerializeField, Range(0f, 89f)] private float maxSlopeAngle = 50f;
+    [Tooltip("How far below the feet it stays snapped to the ground (walks down steps without floating).")]
+    [SerializeField, Min(0f)] private float groundSnapDistance = 0.4f;
+    [Tooltip("Gravity multiplier while falling, so falls do not feel floaty.")]
+    [SerializeField, Min(1f)] private float fallGravityMultiplier = 2.5f;
 
-    [Header("Animator - nombres de parámetros")]
+    [Header("References")]
+    [SerializeField] private Animator animator;
+    [Tooltip("Child flipped with Scale.x to face left or right.")]
+    [SerializeField] private Transform spriteRoot;
+    [Tooltip("Enable when the original art faces right; disable when it faces left.")]
+    [SerializeField] private bool artFacesRight = true;
+
+    [Header("Animator parameter names")]
     [SerializeField] private string paramIsMoving = "IsMoving";
-    [SerializeField] private string paramDashTrigger = "Dash";     // Trigger: dispara la animación
-    [SerializeField] private string paramIsDashing = "IsDashing";  // Bool: true mientras dura el dash
+    [SerializeField] private string paramDashTrigger = "Dash";     // trigger: starts the animation
+    [SerializeField] private string paramIsDashing = "IsDashing";  // bool: true for the whole dash
 
-    /// <summary>Útil para otros scripts (ej. invulnerabilidad durante el dash).</summary>
     public bool IsDashing { get; private set; }
 
-    /// <summary>Última dirección de movimiento (hacia donde mira el jugador). Útil para ataques.</summary>
+    /// <summary>Multiplies walking and dash speed (1 = normal).</summary>
+    public float SpeedMultiplier { get; set; } = 1f;
+
+    /// <summary>Last movement direction, i.e. where the player faces.</summary>
     public Vector2 FacingDirection => lastMoveDir;
 
     private const string MoveActionName = "Move";
+    private const float GroundProbeSkin = 0.05f; // the probe sphere starts slightly above the feet
 
     private Rigidbody rb;
+    private Collider body;
+    private bool isGrounded;
+    private Vector3 groundNormal = Vector3.up;
+    private float groundGap; // distance between the feet and the detected ground
     private PlayerInput playerInput;
-    private Vector2 rawMoveInput;   // Último valor recibido de la acción Move
+    private Vector2 rawMoveInput;
     private Vector2 inputDir;
     private Vector2 currentVelocity;
-    private Vector2 lastMoveDir = Vector2.down; // Para mantener animación Idle mirando última dirección
+    private Vector2 lastMoveDir = Vector2.down;
     private bool controlEnabled = true;
 
-    // Estado del dash
     private Vector2 dashDir;
     private float dashTimeLeft;
     private float dashCooldownLeft;
-    private bool dashRequested;     // Se consume en el siguiente Update (equivale al GetKeyDown anterior)
+    private bool dashRequested;     // consumed by the next Update, like GetKeyDown
 
-    // Hashes de los parámetros del Animator (evita buscar strings cada frame)
     private int isMovingHash;
     private int dashTriggerHash;
     private int isDashingHash;
@@ -70,9 +90,14 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true; // Evita que el Rigidbody rote el personaje por física
-        // Evita atravesar paredes a alta velocidad durante el dash
+        rb.freezeRotation = true;
+        // The dash is fast enough to tunnel through walls with discrete detection.
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        // Without interpolation the body moves at 50 Hz and stutters on 60+ Hz screens.
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        body = GetComponent<Collider>();
+        if (groundMask.value == 0) groundMask = LayerMask.GetMask("Ground");
 
         playerInput = GetComponent<PlayerInput>();
 
@@ -93,11 +118,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ProbeGround();
+
         if (IsDashing)
         {
             DashMove();
-            // El tiempo del dash corre en el paso de física, igual que su velocidad,
-            // para que la distancia recorrida no dependa de los FPS.
+            // Dash time runs on the physics step, like its velocity, so the distance does not depend on FPS.
             dashTimeLeft -= Time.fixedDeltaTime;
             if (dashTimeLeft <= 0f) EndDash();
         }
@@ -106,8 +132,6 @@ public class PlayerMovement : MonoBehaviour
             MoveCharacter();
         }
     }
-
-    // ─────────────────────── INPUT (PlayerInput · Send Messages) ───────────────────────
 
     private void OnMove(InputValue value)
     {
@@ -122,9 +146,8 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Activa/desactiva el control del jugador (ej. mientras está muerto).
-    /// Al desactivarlo se descarta el input pendiente; al reactivarlo se lee el
-    /// valor actual de Move para no quedarse quieto si ya tenía una dirección presionada.
+    /// Enables/disables player control (e.g. while dead). Disabling drops pending input; enabling reads
+    /// the current Move value so a direction already held keeps working.
     /// </summary>
     public void SetControlEnabled(bool isEnabled)
     {
@@ -153,21 +176,18 @@ public class PlayerMovement : MonoBehaviour
 
         inputDir = new Vector2(x, y).normalized;
 
-        // Durante el dash la dirección queda bloqueada
+        // The direction is locked during a dash.
         if (!IsDashing && inputDir.sqrMagnitude > 0.01f)
             lastMoveDir = inputDir;
     }
 
-    // ───────────────────────── DASH ─────────────────────────
-
     private void HandleDash()
     {
-        // Igual que GetKeyDown: una pulsación solo cuenta el frame en que llega;
-        // si cae durante un dash o en cooldown, se descarta (no se acumula).
+        // Like GetKeyDown: a press only counts on its frame; during a dash or cooldown it is dropped, not queued.
         bool requested = dashRequested;
         dashRequested = false;
 
-        if (IsDashing) return; // El fin del dash se controla en FixedUpdate
+        if (IsDashing) return; // the dash ends in FixedUpdate
 
         if (dashCooldownLeft > 0f)
             dashCooldownLeft -= Time.deltaTime;
@@ -182,7 +202,7 @@ public class PlayerMovement : MonoBehaviour
         if (!hasInput && !dashWithoutInput) return;
 
         dashDir = hasInput ? inputDir : lastMoveDir;
-        lastMoveDir = dashDir; // El animator usa esta dirección para el blend tree del dash
+        lastMoveDir = dashDir;
 
         IsDashing = true;
         dashTimeLeft = dashDuration;
@@ -195,8 +215,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Corta un dash en curso sin aplicar la velocidad de salida ni el cooldown
-    /// (ej. el jugador muere a mitad del dash).
+    /// Cuts a dash short without exit velocity or cooldown (e.g. the player dies mid-dash).
     /// </summary>
     public void CancelDash()
     {
@@ -215,9 +234,8 @@ public class PlayerMovement : MonoBehaviour
         IsDashing = false;
         dashCooldownLeft = dashCooldown;
 
-        // Transición suave: al terminar conservamos velocidad normal en esa dirección
-        // en lugar de frenar en seco.
-        currentVelocity = dashDir * moveSpeed;
+        // Leave the dash at walking speed in the same direction instead of stopping dead.
+        currentVelocity = dashDir * (moveSpeed * SpeedMultiplier);
 
         if (animator != null)
             animator.SetBool(isDashingHash, false);
@@ -225,37 +243,92 @@ public class PlayerMovement : MonoBehaviour
 
     private void DashMove()
     {
-        // Mismo mapeo 2D -> 3D (X, Z) que el movimiento normal. Se conserva la Y (gravedad).
-        Vector3 v = new Vector3(dashDir.x * dashSpeed, rb.linearVelocity.y, dashDir.y * dashSpeed);
-        rb.linearVelocity = v;
+        ApplyPlanarVelocity(dashDir * (dashSpeed * SpeedMultiplier));
     }
-
-    // ─────────────────────── MOVIMIENTO ───────────────────────
 
     private void MoveCharacter()
     {
-        Vector2 targetVelocity = inputDir * moveSpeed;
+        Vector2 targetVelocity = inputDir * (moveSpeed * SpeedMultiplier);
 
-        float accel = inputDir.sqrMagnitude > 0.01f ? acceleration : deceleration;
+        bool hasInput = inputDir.sqrMagnitude > 0.01f;
+        float accel = deceleration;
+
+        if (hasInput)
+        {
+            accel = acceleration;
+
+            // Turning away from the current velocity uses the turn acceleration, so it does not drift.
+            if (currentVelocity.sqrMagnitude > 0.01f)
+            {
+                float alignment = Vector2.Dot(currentVelocity.normalized, inputDir);
+                if (alignment < turnThreshold)
+                    accel = turnAcceleration;
+            }
+        }
+
         currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, accel * Time.fixedDeltaTime);
 
-        // Mapeo 2D -> plano 3D (X, Z). Si tu mundo usa X/Y en vez de X/Z, ajusta aquí.
-        Vector3 worldVelocity = new Vector3(currentVelocity.x, 0f, currentVelocity.y);
-        rb.linearVelocity = new Vector3(worldVelocity.x, rb.linearVelocity.y, worldVelocity.z);
+        ApplyPlanarVelocity(currentVelocity);
     }
 
-    // ─────────────────────── ANIMACIÓN ───────────────────────
+    /// <summary>
+    /// Sphere-casts down from the feet. Only a walkable surface (slope ≤ maxSlopeAngle) within
+    /// groundSnapDistance counts as ground.
+    /// </summary>
+    private void ProbeGround()
+    {
+        isGrounded = false;
+        groundNormal = Vector3.up;
+        if (body == null) return;
+
+        Bounds bounds = body.bounds;
+        float radius = Mathf.Min(bounds.extents.x, bounds.extents.z) * 0.9f;
+        Vector3 origin = new Vector3(bounds.center.x, bounds.min.y + radius + GroundProbeSkin, bounds.center.z);
+
+        if (!Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit,
+                GroundProbeSkin + groundSnapDistance, groundMask, QueryTriggerInteraction.Ignore))
+            return;
+
+        if (Vector3.Angle(hit.normal, Vector3.up) > maxSlopeAngle) return;
+
+        isGrounded = true;
+        groundNormal = hit.normal;
+        groundGap = Mathf.Max(0f, hit.distance - GroundProbeSkin);
+    }
+
+    /// <summary>
+    /// Applies the XZ velocity (2D input → world X/Z) and decides Y here instead of leaving it to physics:
+    /// <list type="bullet">
+    /// <item>Grounded: follows the slope and stays snapped to the ground (no floating down steps).</item>
+    /// <item>Airborne: can only fall. There is no jump, so any upward velocity comes from pushing against
+    /// an edge and is discarded.</item>
+    /// </list>
+    /// </summary>
+    private void ApplyPlanarVelocity(Vector2 planar)
+    {
+        Vector3 velocity = new Vector3(planar.x, 0f, planar.y);
+
+        if (isGrounded)
+        {
+            velocity = Vector3.ProjectOnPlane(velocity, groundNormal);
+            velocity.y -= groundGap / Time.fixedDeltaTime;
+        }
+        else
+        {
+            float fallSpeed = Mathf.Min(rb.linearVelocity.y, 0f);
+            fallSpeed += Physics.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
+            velocity.y = fallSpeed;
+        }
+
+        rb.linearVelocity = velocity;
+    }
 
     private void UpdateAnimator()
     {
         if (animator == null) return;
 
-        // El personaje solo voltea izquierda/derecha (FlipSprite), así que el Animator
-        // no necesita dirección ni velocidad: solo IsMoving / Dash / IsDashing.
-
-        // true mientras se presiona una tecla de movimiento (input crudo, no velocidad),
-        // así el cambio a Walk es inmediato al presionar y a Idle inmediato al soltar.
-        // Durante el dash se pone en false para que no compita con la animación de Dash.
+        // Raw input, not velocity: Walk/Idle switch the moment the stick moves or is released.
+        // False during a dash so it does not compete with the Dash animation.
         bool isMoving = !IsDashing && inputDir.sqrMagnitude > 0.01f;
         animator.SetBool(isMovingHash, isMoving);
     }
@@ -264,13 +337,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (spriteRoot == null) return;
 
-        // Durante el dash el flip sigue la dirección del dash, no el input actual
+        // During a dash the flip follows the dash direction, not the current input.
         float xDir = IsDashing ? dashDir.x : inputDir.x;
 
         if (Mathf.Abs(xDir) > 0.01f)
         {
             Vector3 scale = spriteRoot.localScale;
-            scale.x = Mathf.Abs(scale.x) * (xDir < 0 ? 1f : -1f);
+            bool movingRight = xDir > 0f;
+            bool keepOriginal = movingRight == artFacesRight;
+            scale.x = Mathf.Abs(scale.x) * (keepOriginal ? 1f : -1f);
             spriteRoot.localScale = scale;
         }
     }

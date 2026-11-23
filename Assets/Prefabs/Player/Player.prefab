@@ -66,6 +66,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2855774334821328979, guid: 27c0dbf1b5510488e82f95649a0a5dbf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3082139087338230862}
+    - targetCorrespondingSourceObject: {fileID: 2855774334821328979, guid: 27c0dbf1b5510488e82f95649a0a5dbf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1930908424204613238}
   m_SourcePrefab: {fileID: 100100000, guid: 27c0dbf1b5510488e82f95649a0a5dbf, type: 3}
 --- !u!1 &1692496498373023900 stripped
 GameObject:
@@ -88,6 +91,7 @@ MonoBehaviour:
   deathDelaySeconds: 2
   onPlayerDied: {fileID: 11400000, guid: 0fe4bb3b2938d494983fa7d07be5d184, type: 2}
   spriteRoot: {fileID: 0}
+  debugLogs: 1
 --- !u!114 &3082139087338230862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,12 +108,29 @@ MonoBehaviour:
   range: 1
   arcDegrees: 150
   cooldown: 0.4
+  aimAssist: 1
   knockbackForce: 22
   stunSeconds: 0.35
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
   maxHits: 32
+  debugLogs: 1
+--- !u!114 &1930908424204613238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692496498373023900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf23712ca4054c27bddb393713453c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerInventory
+  pickupPrefab: {fileID: 2537763033678080076, guid: c447b776b575c47eab547bebdc7db0b8, type: 3}
+  dropScatterRadius: 1
+  debugLogs: 1
 --- !u!4 &7626117334640366481 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6415415559426286430, guid: 27c0dbf1b5510488e82f95649a0a5dbf, type: 3}

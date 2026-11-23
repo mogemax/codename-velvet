@@ -202,8 +202,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 853496978}
-        m_TargetAssemblyTypeName: CambioEscenaAnimado, Assembly-CSharp
-        m_MethodName: IrASiguienteMenu
+        m_TargetAssemblyTypeName: SceneTransition, Assembly-CSharp
+        m_MethodName: GoToNextScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -334,8 +334,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1843143032}
-        m_TargetAssemblyTypeName: CambioEscenaAnimado, Assembly-CSharp
-        m_MethodName: IrASiguienteMenu
+        m_TargetAssemblyTypeName: SceneTransition, Assembly-CSharp
+        m_MethodName: GoToNextScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -622,10 +622,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eeab5d487bbe8694586f3816a39645c6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CambioEscenaAnimado
-  AnimatorMenu: {fileID: 1265297612}
-  tiempoDeAnimacion: 0.5
-  nombreSiguienteEscena: SettingsMenu
+  m_EditorClassIdentifier: Assembly-CSharp::SceneTransition
+  menuAnimator: {fileID: 1265297612}
+  exitAnimationSeconds: 0.5
+  nextSceneName: SettingsMenu
 --- !u!4 &853496979
 Transform:
   m_ObjectHideFlags: 0
@@ -1137,10 +1137,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eeab5d487bbe8694586f3816a39645c6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CambioEscenaAnimado
-  AnimatorMenu: {fileID: 1265297612}
-  tiempoDeAnimacion: 0.5
-  nombreSiguienteEscena: Credits
+  m_EditorClassIdentifier: Assembly-CSharp::SceneTransition
+  menuAnimator: {fileID: 1265297612}
+  exitAnimationSeconds: 0.5
+  nextSceneName: Credits
 --- !u!4 &1403407206
 Transform:
   m_ObjectHideFlags: 0
@@ -1184,10 +1184,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eeab5d487bbe8694586f3816a39645c6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CambioEscenaAnimado
-  AnimatorMenu: {fileID: 1265297612}
-  tiempoDeAnimacion: 0.5
-  nombreSiguienteEscena: CharacterMenu
+  m_EditorClassIdentifier: Assembly-CSharp::SceneTransition
+  menuAnimator: {fileID: 1265297612}
+  exitAnimationSeconds: 0.5
+  nextSceneName: CharacterMenu
 --- !u!4 &1843143033
 Transform:
   m_ObjectHideFlags: 0
@@ -1286,8 +1286,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1403407205}
-        m_TargetAssemblyTypeName: CambioEscenaAnimado, Assembly-CSharp
-        m_MethodName: IrASiguienteMenu
+        m_TargetAssemblyTypeName: SceneTransition, Assembly-CSharp
+        m_MethodName: GoToNextScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -12,7 +12,7 @@ namespace CodenameVelvet.Multiplayer
     /// </summary>
     public class SessionRoster
     {
-        public const int DefaultMaxPlayers = 5;
+        public const int DefaultMaxPlayers = 4;
 
         private readonly RosterEntry[] slots;
 
@@ -59,6 +59,19 @@ namespace CodenameVelvet.Multiplayer
 
             slots[slotIndex] = null;
             Count--;
+            return true;
+        }
+
+        /// <summary>Records the lobby's character pick; only before the roster is locked.</summary>
+        public bool AssignCharacter(int slotIndex, int characterIndex)
+        {
+            if (characterIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(characterIndex), characterIndex, "Character index must be non-negative.");
+
+            if (IsLocked || !TryGetEntry(slotIndex, out RosterEntry entry))
+                return false;
+
+            entry.CharacterIndex = characterIndex;
             return true;
         }
 

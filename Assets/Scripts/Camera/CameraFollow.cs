@@ -1,59 +1,55 @@
 using UnityEngine;
 
 /// <summary>
-/// Cámara estilo Cult of the Lamb: sigue al jugador manteniendo un ángulo
-/// y una distancia fijos, con suavizado. Colócala en un objeto vacío
-/// separado del Player (no como hijo directo) y asigna el Target.
+/// Follows one player at a fixed angle and distance, with smoothing. Split screen uses one per player,
+/// assigned through <see cref="SetTarget"/>.
 /// </summary>
 public class CameraFollow : MonoBehaviour
 {
-    [Header("Referencia")]
-    [SerializeField] private Transform target; // Arrastra aquí el Player
+    [SerializeField] private Transform target;
 
-    [Header("Offset de cámara")]
-    [Tooltip("Posición relativa al jugador. Y alto, Z negativo para quedar detrás/arriba")]
+    [Header("Camera offset")]
+    [Tooltip("Position relative to the player: Y up, negative Z to sit behind and above.")]
     [SerializeField] private Vector3 offset = new Vector3(0f, 10f, -8f);
 
-    [Header("Suavizado")]
+    [Header("Smoothing")]
+    [Tooltip("How fast it catches up with the player. Higher = tighter. Frame-rate independent.")]
     [SerializeField] private float smoothSpeed = 8f;
-    [SerializeField] private bool useFixedUpdate = true;
 
-    [Header("Enfoque")]
-    [Tooltip("Si está activo, la cámara siempre rota para mirar exactamente al target, evitando desalineación entre Offset y Rotation. Recomendado: activado.")]
+    [Header("Focus")]
+    [Tooltip("Keeps the camera rotated to look exactly at the target.")]
     [SerializeField] private bool alwaysLookAtTarget = true;
 
-    [Tooltip("Desplaza el PUNTO al que la cámara mira, sin mover la posición real de la cámara. Y positivo = la cámara mira más arriba del target, lo que hace que el personaje aparezca más ABAJO en pantalla.")]
+    [Tooltip("Shifts the point the camera looks at, without moving the camera. Positive Y shows the character lower on screen.")]
     [SerializeField] private Vector3 lookAtOffset = new Vector3(0f, 2f, 0f);
 
-    [Header("Límites opcionales (para no salir del mapa)")]
+    [Header("Optional bounds (keeps the camera over the map)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
     [SerializeField] private Vector2 maxBounds;
+
+    /// <summary>Sets who to follow. Call before Start.</summary>
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+    }
 
     private void Start()
     {
         if (target == null)
         {
-            Debug.LogWarning("CameraFollow: no se asignó target, buscando por tag 'Player'");
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) target = player.transform;
+            Debug.LogWarning($"{name}: CameraFollow has no target; call SetTarget before Start.", this);
+            return;
         }
 
-        // Fuerza la rotación inicial mirando hacia el offset (ángulo isométrico)
-        transform.LookAt(target != null ? target.position + lookAtOffset : Vector3.zero);
+        // Start in place instead of flying in from wherever the camera was.
+        transform.position = target.position + offset;
+        transform.LookAt(target.position + lookAtOffset);
     }
 
+    // LateUpdate: the player's Rigidbody interpolates every frame, so its position is already current here.
+    // Following in FixedUpdate (50 Hz) stutters on 60+ Hz screens.
     private void LateUpdate()
-    {
-        if (!useFixedUpdate) FollowTarget();
-    }
-
-    private void FixedUpdate()
-    {
-        if (useFixedUpdate) FollowTarget();
-    }
-
-    private void FollowTarget()
     {
         if (target == null) return;
 
@@ -65,8 +61,9 @@ public class CameraFollow : MonoBehaviour
             desiredPosition.z = Mathf.Clamp(desiredPosition.z, minBounds.y, maxBounds.y);
         }
 
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.position = smoothedPosition;
+        // Exponential smoothing: same catch-up per second at any frame rate.
+        float t = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, t);
 
         if (alwaysLookAtTarget)
             transform.LookAt(target.position + lookAtOffset);

@@ -12,8 +12,8 @@ namespace CodenameVelvet.Enemies
     {
         private const string PlayerTag = "Player";
 
-        [Tooltip("Layers scanned for players. Narrow it to the player layer once one exists.")]
-        [SerializeField] private LayerMask searchMask = ~0;
+        [Tooltip("Layers scanned for players. Empty = the 'Player' layer.")]
+        [SerializeField] private LayerMask searchMask;
         [Tooltip("Max colliders inspected per search. Raise it if busy scenes miss players.")]
         [SerializeField] private int maxHits = 32;
 
@@ -22,6 +22,7 @@ namespace CodenameVelvet.Enemies
         private void Awake()
         {
             hits = new Collider[Mathf.Max(1, maxHits)];
+            if (searchMask.value == 0) searchMask = LayerMask.GetMask("Player");
         }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace CodenameVelvet.Enemies
             targetCollider = null;
             float nearestDistance = float.MaxValue;
 
-            int count = Physics.OverlapSphereNonAlloc(origin, range, hits, searchMask);
+            int count = Physics.OverlapSphereNonAlloc(origin, range, hits, searchMask, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
                 Collider hit = hits[i];

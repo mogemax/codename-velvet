@@ -17,13 +17,13 @@ namespace CodenameVelvet.Tests
         }
 
         [Test]
-        public void NewRoster_IsEmptyUnlockedWithFiveSlots()
+        public void NewRoster_IsEmptyUnlockedWithFourSlots()
         {
             var roster = new SessionRoster();
 
             Assert.That(roster.Count, Is.EqualTo(0));
             Assert.That(roster.IsLocked, Is.False);
-            Assert.That(roster.MaxPlayers, Is.EqualTo(5));
+            Assert.That(roster.MaxPlayers, Is.EqualTo(4));
             Assert.That(roster.Entries, Is.Empty);
         }
 
@@ -143,6 +143,32 @@ namespace CodenameVelvet.Tests
             Assert.That(roster.Count, Is.EqualTo(0));
             Assert.That(roster.IsLocked, Is.False);
             Assert.That(AddDevice(roster, 10), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AssignCharacter_StoresThePickOnTheEntry()
+        {
+            var roster = new SessionRoster();
+            int slot = AddDevice(roster, 10);
+
+            Assert.That(roster.TryGetEntry(slot, out RosterEntry entry), Is.True);
+            Assert.That(entry.CharacterIndex, Is.EqualTo(-1));
+
+            Assert.That(roster.AssignCharacter(slot, 2), Is.True);
+            Assert.That(entry.CharacterIndex, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void AssignCharacter_EmptySlotOrLockedRoster_Fails()
+        {
+            var roster = new SessionRoster();
+            int slot = AddDevice(roster, 10);
+
+            Assert.That(roster.AssignCharacter(3, 0), Is.False);
+
+            roster.Lock();
+            Assert.That(roster.AssignCharacter(slot, 1), Is.False);
+            Assert.Throws<ArgumentOutOfRangeException>(() => roster.AssignCharacter(slot, -1));
         }
 
         [Test]
