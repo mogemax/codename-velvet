@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 /// <summary>
-/// Generates the procedural PLAYER animations (Idle, Walk, Dash), builds the Animator Controller with
+/// Generates the procedural PLAYER animations (Idle, Walk, Dash, Climb), builds the Animator Controller with
 /// PlayerMovement's parameters and assigns it to the prefab.
 ///
 /// Sign convention (character facing right):
@@ -196,6 +196,49 @@ public static class VelvetPlayerIdleGenerator
         return c;
     }
 
+    // CLIMB: two rungs per loop, in place (PlayerClimb moves the body). Right hand with left foot, then mirrored.
+    // Side A: 0 holds high, 1-2 pulls down, 3 lets go low and reaches up again.
+    static readonly float[] ClimbArm1  = { 150f, 125f,  95f, 115f };
+    static readonly float[] ClimbArm2  = {  10f,  35f,  70f,  60f };
+    static readonly float[] ClimbThigh = {  75f,  45f,  10f,  45f };
+    static readonly float[] ClimbKnee  = { -95f, -60f, -15f, -85f };
+
+    static ClipDef Climb()
+    {
+        var c = new ClipDef { name = "PLAYER_Climb", duration = 0.7f, loop = true };
+        c.Poses("R ARM 1", ClimbArm1);        c.Poses("L ARM 1", Shift(ClimbArm1, 2));
+        c.Poses("R ARM 2", ClimbArm2);        c.Poses("L ARM 2", Shift(ClimbArm2, 2));
+        c.Poses("L LEG 1", ClimbThigh);       c.Poses("R LEG 1", Shift(ClimbThigh, 2));
+        c.Poses("L BOOT FRONT", ClimbKnee);   c.Poses("R BOOT FRONT", Shift(ClimbKnee, 2));
+        c.PosesY("HIP", new[] { -0.2f, 0.2f, -0.2f, 0.2f });
+        c.Poses("BODY", new[] { -8f, -5f, -8f, -5f });
+        c.Poses("HEAD", new[] { 8f, 6f, 8f, 6f }); // looks up
+        foreach (var ear in new[] { "L EAR", "R EAR", "L EAR TIP", "R EAR TIP" })
+            c.Poses(ear, new[] { 6f, 2f, 6f, 2f });
+        foreach (var side in new[] { "", "L_", "R_" })
+        {
+            c.PosesA(side + "CAPE_1", new[] { -3f, -1f, -3f, -1f });
+            c.PosesA(side + "CAPE_2", new[] { -1f, 1f, -1f, 1f });
+        }
+        return c;
+    }
+
+    [MenuItem("Tools/Velvet/Player Animations/Regenerate Climb Only")]
+    public static void GenerateClimbOnly()
+    {
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
+            Transform hip = FindBone(root.transform, "HIP");
+            if (hip == null) { Debug.LogError("[Anim] HIP bone not found."); return; }
+            BuildClip(Climb(), root.transform, hip);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Anim] Climb regenerated.");
+        }
+        finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
+    }
+
     [MenuItem("Tools/Velvet/Player Animations/Regenerate Dash Only")]
     public static void GenerateDashOnly()
     {
@@ -226,8 +269,9 @@ public static class VelvetPlayerIdleGenerator
             AnimationClip idle = BuildClip(Idle(), root.transform, hip);
             AnimationClip walk = BuildClip(Walk(), root.transform, hip);
             AnimationClip dash = BuildClip(Dash(), root.transform, hip);
+            AnimationClip climb = BuildClip(Climb(), root.transform, hip);
 
-            AnimatorController controller = BuildController(idle, walk, dash);
+            AnimatorController controller = BuildController(idle, walk, dash, climb);
 
             var animator = root.GetComponent<Animator>();
             if (animator == null) animator = root.AddComponent<Animator>();
@@ -244,7 +288,7 @@ public static class VelvetPlayerIdleGenerator
 
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Anim] Done: Idle, Walk and Dash assigned to the PLAYER prefab.");
+            Debug.Log("[Anim] Done: Idle, Walk, Dash and Climb assigned to the PLAYER prefab.");
         }
         finally
         {
@@ -302,7 +346,7 @@ public static class VelvetPlayerIdleGenerator
         return clip;
     }
 
-    static AnimatorController BuildController(AnimationClip idle, AnimationClip walk, AnimationClip dash)
+    static AnimatorController BuildController(AnimationClip idle, AnimationClip walk, AnimationClip dash, AnimationClip climb)
     {
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         if (controller == null) controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
@@ -310,6 +354,7 @@ public static class VelvetPlayerIdleGenerator
         EnsureParam(controller, "IsMoving", AnimatorControllerParameterType.Bool);
         EnsureParam(controller, "Dash", AnimatorControllerParameterType.Trigger);
         EnsureParam(controller, "IsDashing", AnimatorControllerParameterType.Bool);
+        EnsureParam(controller, "IsClimbing", AnimatorControllerParameterType.Bool);
 
         var sm = controller.layers[0].stateMachine;
         foreach (var t in sm.anyStateTransitions) sm.RemoveAnyStateTransition(t);
@@ -318,7 +363,8 @@ public static class VelvetPlayerIdleGenerator
         var sIdle = sm.AddState("Idle", new Vector3(300, 0, 0));
         var sWalk = sm.AddState("Walk", new Vector3(300, 120, 0));
         var sDash = sm.AddState("Dash", new Vector3(560, 60, 0));
-        sIdle.motion = idle; sWalk.motion = walk; sDash.motion = dash;
+        var sClimb = sm.AddState("Climb", new Vector3(560, 180, 0));
+        sIdle.motion = idle; sWalk.motion = walk; sDash.motion = dash; sClimb.motion = climb;
         sm.defaultState = sIdle;
 
         var t1 = Quick(sIdle.AddTransition(sWalk), 0.08f);
@@ -338,6 +384,13 @@ public static class VelvetPlayerIdleGenerator
         var t5 = Quick(sDash.AddTransition(sIdle), 0.15f);
         t5.AddCondition(AnimatorConditionMode.IfNot, 0, "IsDashing");
         t5.AddCondition(AnimatorConditionMode.IfNot, 0, "IsMoving");
+
+        var t6 = Quick(sm.AddAnyStateTransition(sClimb), 0.1f);
+        t6.canTransitionToSelf = false;
+        t6.AddCondition(AnimatorConditionMode.If, 0, "IsClimbing");
+
+        var t7 = Quick(sClimb.AddTransition(sIdle), 0.12f);
+        t7.AddCondition(AnimatorConditionMode.IfNot, 0, "IsClimbing");
 
         EditorUtility.SetDirty(controller);
         return controller;

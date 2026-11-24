@@ -92,7 +92,7 @@ namespace CodenameVelvet.Player
             if (health != null && !health.IsAlive)
                 return false;
 
-            return !movement.IsDashing && Time.time >= nextAttackTime;
+            return !movement.IsDashing && !movement.IsClimbing && Time.time >= nextAttackTime;
         }
 
         /// <summary>Debug-only: why <see cref="CanAttack"/> returned false, checked in the same order.</summary>
@@ -102,6 +102,8 @@ namespace CodenameVelvet.Player
                 return "dead";
             if (movement.IsDashing)
                 return "dashing";
+            if (movement.IsClimbing)
+                return "climbing";
             return $"cooldown, {nextAttackTime - Time.time:F2}s left";
         }
 

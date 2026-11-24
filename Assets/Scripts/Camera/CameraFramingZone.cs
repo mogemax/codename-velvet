@@ -5,15 +5,20 @@ namespace CodenameVelvet.Cameras
 {
     /// <summary>
     /// Area (this object's BoxCollider, on the XZ plane) where the camera of each player inside pulls back and
-    /// shifts its focus toward <see cref="focus"/>, e.g. a boss arena. Every split-screen camera reacts on its own.
+    /// shifts its focus toward <see cref="focus"/>, e.g. a boss arena, or turns to <see cref="Yaw"/> where the map
+    /// hides the player. Every split-screen camera reacts on its own.
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
     public class CameraFramingZone : MonoBehaviour
     {
         private static readonly List<CameraFramingZone> Active = new List<CameraFramingZone>();
 
-        [Tooltip("Extra camera distance while inside.")]
-        [SerializeField, Min(0f)] private float extraDistance = 12f;
+        [Tooltip("Extra camera distance while inside (negative = closer).")]
+        [SerializeField] private float extraDistance = 12f;
+        [Tooltip("Degrees the camera turns while inside (0 = the usual view). Controls turn with it.")]
+        [SerializeField, Range(-180f, 180f)] private float yaw = 0f;
+        [Tooltip("Also require the player's height to be inside the box (e.g. only the lower of two floors).")]
+        [SerializeField] private bool useHeight = false;
         [Tooltip("Optional: while it exists, the camera's focus shifts toward it (e.g. the boss).")]
         [SerializeField] private Transform focus;
         [Tooltip("Fraction of the way from the player to the focus (0.5 = midpoint).")]
@@ -24,6 +29,7 @@ namespace CodenameVelvet.Cameras
         private BoxCollider area;
 
         public float ExtraDistance => extraDistance;
+        public float Yaw => yaw;
 
         /// <summary>The active zone containing <paramref name="position"/> on the XZ plane, or null.</summary>
         public static CameraFramingZone Find(Vector3 position)
@@ -51,7 +57,8 @@ namespace CodenameVelvet.Cameras
         {
             Bounds bounds = area.bounds;
             return position.x >= bounds.min.x && position.x <= bounds.max.x
-                && position.z >= bounds.min.z && position.z <= bounds.max.z;
+                && position.z >= bounds.min.z && position.z <= bounds.max.z
+                && (!useHeight || (position.y >= bounds.min.y && position.y <= bounds.max.y));
         }
     }
 }

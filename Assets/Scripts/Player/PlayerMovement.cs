@@ -55,8 +55,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private string paramIsMoving = "IsMoving";
     [SerializeField] private string paramDashTrigger = "Dash";     // trigger: starts the animation
     [SerializeField] private string paramIsDashing = "IsDashing";  // bool: true for the whole dash
+    [SerializeField] private string paramIsClimbing = "IsClimbing";
 
     public bool IsDashing { get; private set; }
+
+    /// <summary>While true something else (PlayerClimb) moves the kinematic body.</summary>
+    public bool IsClimbing { get; private set; }
+
+    /// <summary>Yaw of this player's camera, written by CameraFollow: controls and sprite flip are relative to it.</summary>
+    public float ViewYaw { get; set; }
+
+    /// <summary>The part of a climb before reaching the top; false while stepping onto the ledge.</summary>
+    public bool IsOnLadder { get; private set; }
 
     /// <summary>Multiplies walking and dash speed (1 = normal).</summary>
     public float SpeedMultiplier { get; set; } = 1f;
@@ -93,6 +103,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInput playerInput;
     private Vector2 rawMoveInput;
     private Vector2 inputDir;
+    private float controlYaw;
     private Vector2 currentVelocity;
     private Vector2 lastMoveDir = Vector2.down;
     private bool controlEnabled = true;
@@ -107,6 +118,7 @@ public class PlayerMovement : MonoBehaviour
     private int isMovingHash;
     private int dashTriggerHash;
     private int isDashingHash;
+    private int isClimbingHash;
 
     private void Awake()
     {
@@ -128,6 +140,7 @@ public class PlayerMovement : MonoBehaviour
         isMovingHash = Animator.StringToHash(paramIsMoving);
         dashTriggerHash = Animator.StringToHash(paramDashTrigger);
         isDashingHash = Animator.StringToHash(paramIsDashing);
+        isClimbingHash = Animator.StringToHash(paramIsClimbing);
     }
 
     private void Update()
@@ -140,6 +153,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (IsClimbing) return;
+
         ProbeGround();
 
         if (IsDashing)
@@ -196,11 +211,20 @@ public class PlayerMovement : MonoBehaviour
         if (invertHorizontal) x *= -1f;
         if (invertVertical) y *= -1f;
 
-        inputDir = new Vector2(x, y).normalized;
+        // Follows a camera turn only once the stick is released, so a held direction never swerves mid-walk.
+        if (rawMoveInput.sqrMagnitude < 0.01f) controlYaw = ViewYaw;
+        inputDir = Turn(new Vector2(x, y).normalized, controlYaw);
 
         // The direction is locked during a dash.
         if (!IsDashing && inputDir.sqrMagnitude > 0.01f)
             lastMoveDir = inputDir;
+    }
+
+    /// <summary>Turns a planar direction (world X/Z) by a yaw.</summary>
+    private static Vector2 Turn(Vector2 direction, float yaw)
+    {
+        Vector3 turned = Quaternion.Euler(0f, yaw, 0f) * new Vector3(direction.x, 0f, direction.y);
+        return new Vector2(turned.x, turned.z);
     }
 
     private void HandleDash()
@@ -249,6 +273,39 @@ public class PlayerMovement : MonoBehaviour
 
         if (animator != null)
             animator.SetBool(isDashingHash, false);
+    }
+
+    /// <summary>Takes control away and frees the body from physics until <see cref="EndClimb"/>.</summary>
+    public void BeginClimb(Vector2 direction)
+    {
+        CancelDash();
+        SetControlEnabled(false);
+        currentVelocity = Vector2.zero;
+        lastMoveDir = direction;
+        SetClimbing(true);
+    }
+
+    /// <summary>The top was reached: what is left of the climb is walking onto the ledge.</summary>
+    public void StepOffLadder() => SetOnLadder(false);
+
+    public void EndClimb()
+    {
+        SetClimbing(false);
+        SetControlEnabled(true);
+    }
+
+    private void SetClimbing(bool climbing)
+    {
+        IsClimbing = climbing;
+        rb.isKinematic = climbing;
+        SetOnLadder(climbing);
+    }
+
+    private void SetOnLadder(bool onLadder)
+    {
+        IsOnLadder = onLadder;
+        if (animator != null)
+            animator.SetBool(isClimbingHash, onLadder);
     }
 
     private void EndDash()
@@ -362,7 +419,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Raw input, not velocity: Walk/Idle switch the moment the stick moves or is released.
         // False during a dash so it does not compete with the Dash animation.
-        bool isMoving = !IsDashing && inputDir.sqrMagnitude > 0.01f;
+        bool isMoving = !IsDashing && (IsClimbing ? !IsOnLadder : inputDir.sqrMagnitude > 0.01f);
         animator.SetBool(isMovingHash, isMoving);
     }
 
@@ -370,8 +427,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (spriteRoot == null) return;
 
-        // During a dash the flip follows the dash direction, not the current input.
-        float xDir = IsDashing ? dashDir.x : inputDir.x;
+        // During a dash or climb the flip follows that direction, not the current input.
+        Vector2 direction = IsDashing ? dashDir : IsClimbing ? lastMoveDir : inputDir;
+        float xDir = Turn(direction, -ViewYaw).x; // left or right as seen on screen
 
         if (Mathf.Abs(xDir) > 0.01f)
         {
