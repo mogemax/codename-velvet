@@ -117,6 +117,8 @@ namespace CodenameVelvet.Enemies
         public bool IsAttacking => isAttacking;
         /// <summary>True while recovering from an attack: it stays still, no moving or attacking.</summary>
         public bool IsDazed => isDazed;
+        /// <summary>True while chasing or attacking a player, i.e. the boss has seen someone.</summary>
+        public bool HasTarget => targetTransform != null;
 
         private void Reset()
         {

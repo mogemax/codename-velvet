@@ -346,7 +346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d56cb43e765a4180afabc51a7c05bd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.CyclopsBrain
-  maxHp: 20
+  maxHp: 50
   wanderArea: {fileID: 0}
   fallbackWanderRadius: 8
   areaMargin: 1.5
