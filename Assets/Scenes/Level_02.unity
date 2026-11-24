@@ -14,19 +14,19 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_Fog: 1
+  m_FogColor: {r: 0.75, g: 0.9, b: 0.95, a: 1}
+  m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 0
-  m_LinearFogEnd: 300
+  m_LinearFogStart: 250
+  m_LinearFogEnd: 1000
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 4923ace76ad6467196a0130f7039b6c2, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -223,6 +223,135 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b624f7a994b14cef9c7b0029092c6c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyHealth
+--- !u!1 &180578834
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 180578837}
+  - component: {fileID: 180578836}
+  - component: {fileID: 180578835}
+  m_Layer: 2
+  m_Name: SpawnZone (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &180578835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180578834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &180578836
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180578834}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 148.08888, y: 40.42115, z: 114.39209}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &180578837
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180578834}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.5627072, z: -0, w: 0.82665634}
+  m_LocalPosition: {x: 333, y: -21.6, z: 0.3}
+  m_LocalScale: {x: 1.1503012, y: 0.18732, z: 0.31814185}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -68.486, z: 0}
 --- !u!1 &183607013
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,6 +387,11 @@ MonoBehaviour:
   nightSunColor: {r: 0.45, g: 0.55, b: 0.9, a: 1}
   nightSunFactor: 0.25
   nightAmbientFactor: 0.35
+  nightSkyTop: {r: 0.055, g: 0.102, b: 0.227, a: 1}
+  nightSkyHorizon: {r: 0.169, g: 0.247, b: 0.42, a: 1}
+  nightClouds: {r: 0.36, g: 0.43, b: 0.6, a: 0.6}
+  nightFog: {r: 0.12, g: 0.17, b: 0.3, a: 1}
+  nightDarkness: {r: 0.85, g: 0.82, b: 0.7, a: 0}
   transitionSeconds: 8
 --- !u!114 &183607015
 MonoBehaviour:
@@ -603,25 +737,48 @@ MonoBehaviour:
     weight: 1
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
     weight: 1
-  maxEnemies: 6
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
   dayEnemies: 2
   dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
     weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
     weight: 0.5
-  maxNodes: 4
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
   nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
   groundMask:
     serializedVersion: 2
     m_Bits: 0
@@ -631,9 +788,8 @@ MonoBehaviour:
   maxSlope: 30
   minSpacing: 7
   playerClearance: 12
-  bodyRadius: 1
   viewportMargin: 0.1
-  maxAttempts: 25
+  maxAttempts: 40
   retrySeconds: 2
   debugLogs: 1
 --- !u!65 &501704852
@@ -655,7 +811,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 40, y: 10, z: 40}
+  m_Size: {x: 148.08888, y: 40.42115, z: 114.39209}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &501704853
 Transform:
@@ -665,9 +821,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 501704850}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.056330852, z: -0, w: 0.9984122}
-  m_LocalPosition: {x: -36.1, y: 6.1, z: 89.9}
-  m_LocalScale: {x: 3.7022223, y: 1, z: 2.8598025}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -51, y: 18.27678, z: 89.9}
+  m_LocalScale: {x: 0.72808, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -710,25 +866,48 @@ MonoBehaviour:
     weight: 1
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
     weight: 1
-  maxEnemies: 6
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
   dayEnemies: 2
   dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
     weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
     weight: 0.5
-  maxNodes: 4
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
   nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
   groundMask:
     serializedVersion: 2
     m_Bits: 0
@@ -738,9 +917,8 @@ MonoBehaviour:
   maxSlope: 30
   minSpacing: 7
   playerClearance: 12
-  bodyRadius: 1
   viewportMargin: 0.1
-  maxAttempts: 25
+  maxAttempts: 40
   retrySeconds: 2
   debugLogs: 1
 --- !u!65 &547844175
@@ -762,7 +940,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 40, y: 10, z: 40}
+  m_Size: {x: 168.59683, y: 63.020966, z: 139.80588}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &547844176
 Transform:
@@ -772,13 +950,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 547844173}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.17294386, z: -0, w: 0.98493177}
-  m_LocalPosition: {x: 199.3, y: 35.7, z: -5.9}
-  m_LocalScale: {x: 4.214921, y: 1, z: 3.4951468}
+  m_LocalRotation: {x: -0, y: 0.17601074, z: -0, w: 0.98438823}
+  m_LocalPosition: {x: 190.4, y: 0.64636326, z: -0.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 19.918, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 20.275, z: 0}
 --- !u!21 &554649396
 Material:
   serializedVersion: 8
@@ -846,6 +1024,264 @@ Material:
     - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!1 &659266050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 659266053}
+  - component: {fileID: 659266052}
+  - component: {fileID: 659266051}
+  m_Layer: 2
+  m_Name: SpawnZone (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &659266051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 659266050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &659266052
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 659266050}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 148.08888, y: 40.42115, z: 114.39209}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &659266053
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 659266050}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.97963065, z: -0, w: 0.20080805}
+  m_LocalPosition: {x: 265, y: -21.6, z: 97}
+  m_LocalScale: {x: 0.95973086, y: 0.18732, z: 0.31814185}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -156.832, z: 0}
+--- !u!1 &680733142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 680733145}
+  - component: {fileID: 680733144}
+  - component: {fileID: 680733143}
+  m_Layer: 2
+  m_Name: SpawnZone (7)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &680733143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680733142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &680733144
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680733142}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 168.59683, y: 63.020966, z: 139.80588}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &680733145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680733142}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.17601074, z: -0, w: 0.98438823}
+  m_LocalPosition: {x: 118.1, y: -21.6, z: -145.7}
+  m_LocalScale: {x: 1, y: 0.22814102, z: 0.19406058}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 20.275, z: 0}
 --- !u!1 &700153070
 GameObject:
   m_ObjectHideFlags: 0
@@ -871,7 +1307,7 @@ Transform:
   m_GameObject: {fileID: 700153070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.26, y: -36, z: -57}
+  m_LocalPosition: {x: 7.2600174, y: -27.864119, z: -56.999992}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1157,6 +1593,135 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &992952069
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 992952072}
+  - component: {fileID: 992952071}
+  - component: {fileID: 992952070}
+  m_Layer: 2
+  m_Name: SpawnZone (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &992952070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992952069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &992952071
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992952069}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 148.08888, y: 40.42115, z: 114.39209}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &992952072
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992952069}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -18, y: -21.6, z: -46.9}
+  m_LocalScale: {x: 0.52078104, y: 0.18732, z: 0.31814185}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -6.458, z: 0}
 --- !u!1 &1029071272
 GameObject:
   m_ObjectHideFlags: 0
@@ -1336,7 +1901,7 @@ Transform:
   m_GameObject: {fileID: 1061252000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2, y: -3.8902607, z: -2.000002}
+  m_LocalPosition: {x: -2, y: 0, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1483,12 +2048,141 @@ Transform:
   m_GameObject: {fileID: 1160057186}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2, y: -3.8902607, z: 2}
+  m_LocalPosition: {x: -2, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 700153071}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1236046120
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1236046123}
+  - component: {fileID: 1236046122}
+  - component: {fileID: 1236046121}
+  m_Layer: 2
+  m_Name: SpawnZone (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1236046121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236046120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &1236046122
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236046120}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 168.59683, y: 63.020966, z: 139.80588}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1236046123
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236046120}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.17601074, z: -0, w: 0.98438823}
+  m_LocalPosition: {x: 247.8, y: -19.1, z: -140.6}
+  m_LocalScale: {x: 0.24118, y: 0.35878, z: 0.3748668}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 20.275, z: 0}
 --- !u!1 &1299129071
 GameObject:
   m_ObjectHideFlags: 0
@@ -1514,7 +2208,7 @@ Transform:
   m_GameObject: {fileID: 1299129071}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: -3.8902607, z: -2}
+  m_LocalPosition: {x: 2, y: 0, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1731,7 +2425,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 130.08969, y: 59.48463, z: 123.313965}
+  m_Size: {x: 112.23471, y: 78.412636, z: 162.55247}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1431538188
 Transform:
@@ -1741,9 +2435,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1431538186}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.319963, z: -0, w: 0.9474301}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 71.9, y: 48.522903, z: 160.6}
-  m_LocalScale: {x: 0.8627487, y: 1.3182, z: 1.3182}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1824,6 +2518,135 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1452674058
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1452674061}
+  - component: {fileID: 1452674060}
+  - component: {fileID: 1452674059}
+  m_Layer: 2
+  m_Name: SpawnZone (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1452674059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452674058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &1452674060
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452674058}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 168.59683, y: 63.020966, z: 139.80588}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1452674061
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452674058}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.17601074, z: -0, w: 0.98438823}
+  m_LocalPosition: {x: 145.3, y: -19.1, z: -91.9}
+  m_LocalScale: {x: 1, y: 0.35878, z: 0.19406058}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 20.275, z: 0}
 --- !u!1 &1487975760
 GameObject:
   m_ObjectHideFlags: 0
@@ -1875,6 +2698,135 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1572831798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1572831801}
+  - component: {fileID: 1572831800}
+  - component: {fileID: 1572831799}
+  m_Layer: 2
+  m_Name: SpawnZone (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1572831799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572831798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3df180de173f4a5a8173bb7dfda8179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
+  enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 1
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 1
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
+  dayEnemies: 2
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
+  enemyRespawnDelay: {x: 20, y: 40}
+  nodes:
+  - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
+    weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
+  nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  maxSlope: 30
+  minSpacing: 7
+  playerClearance: 12
+  viewportMargin: 0.1
+  maxAttempts: 40
+  retrySeconds: 2
+  debugLogs: 1
+--- !u!65 &1572831800
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572831798}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 148.08888, y: 40.42115, z: 114.39209}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1572831801
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572831798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -51, y: -8.8, z: -1.4}
+  m_LocalScale: {x: 0.72808, y: 0.18732, z: 0.1891}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -6.458, z: 0}
 --- !u!1 &1578846428
 GameObject:
   m_ObjectHideFlags: 0
@@ -2091,7 +3043,7 @@ Transform:
   m_GameObject: {fileID: 1719036643}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: -3.8902607, z: 2}
+  m_LocalPosition: {x: 2, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2272,25 +3224,48 @@ MonoBehaviour:
     weight: 1
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
     weight: 1
-  maxEnemies: 6
+  nightEnemyDensity: 0.6
+  maxEnemies: 20
   dayEnemies: 2
   dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
+    clusterSize: {x: 2, y: 6}
+    clusterSpread: 3
+    scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
     weight: 0.333
+    clusterSize: {x: 1, y: 4}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
     weight: 0.5
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
   - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
     weight: 0.5
-  maxNodes: 4
+    clusterSize: {x: 1, y: 2}
+    clusterSpread: 1.5
+    scaleRange: {x: 0.7, y: 1.3}
+  nodeDensity: 2.5
+  maxNodes: 40
   nodeRespawnSeconds: 30
+  patchSize: 60
+  emptyBelow: 0.3
+  fullPatch: 0.65
   groundMask:
     serializedVersion: 2
     m_Bits: 0
@@ -2300,9 +3275,8 @@ MonoBehaviour:
   maxSlope: 30
   minSpacing: 7
   playerClearance: 12
-  bodyRadius: 1
   viewportMargin: 0.1
-  maxAttempts: 25
+  maxAttempts: 40
   retrySeconds: 2
   debugLogs: 1
 --- !u!65 &1977981513
@@ -2324,7 +3298,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 40, y: 10, z: 40}
+  m_Size: {x: 56.840004, y: 54.33993, z: 40}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1977981514
 Transform:
@@ -2334,9 +3308,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1977981511}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.188523, z: -0, w: 0.9820688}
-  m_LocalPosition: {x: 317.1, y: 37.9, z: -120.2}
-  m_LocalScale: {x: 1.421, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 317.1, y: 7.2049236, z: -120.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2664,7 +3638,14 @@ SceneRoots:
   - {fileID: 370101936}
   - {fileID: 934255046}
   - {fileID: 501704853}
+  - {fileID: 1572831801}
+  - {fileID: 992952072}
+  - {fileID: 180578837}
+  - {fileID: 659266053}
   - {fileID: 547844176}
+  - {fileID: 1452674061}
+  - {fileID: 680733145}
+  - {fileID: 1236046123}
   - {fileID: 1977981514}
   - {fileID: 1431538188}
   - {fileID: 40041003}
