@@ -30,6 +30,9 @@ namespace CodenameVelvet.Enemies
         public int CurrentHp => healthState?.CurrentHp ?? 0;
         public int MaxHp => healthState?.MaxHp ?? 0;
 
+        /// <summary>While true every hit is ignored (e.g. a boss whose fight has not started).</summary>
+        public bool Invulnerable { get; set; }
+
         /// <summary>Sets max HP and refills to it. Values below 1 are clamped to 1.</summary>
         public void Initialize(int maxHp)
         {
@@ -44,6 +47,9 @@ namespace CodenameVelvet.Enemies
                     VelvetLog.Warn(LogCategory, this, $"Ignored {amount} damage: not initialized (no EnemyDefinition applied yet)");
                 return;
             }
+
+            if (Invulnerable)
+                return;
 
             healthState.ApplyDamage(amount);
 

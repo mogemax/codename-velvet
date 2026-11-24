@@ -1,17 +1,17 @@
+using System.Collections.Generic;
 using CodenameVelvet.Enemies;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace CodenameVelvet.UI
 {
     /// <summary>
-    /// Boss health bar across the top of the screen, with the boss name above it.
+    /// Boss health bar across the top of every player's view, with the boss name above it.
     /// Builds its own overlay Canvas at runtime, so every look setting lives on this
     /// component and can be tweaked in the Inspector, even during Play mode.
     /// Hidden until the boss first sees a player, then stays until the boss dies.
-    /// shortcut: one overlay for the whole screen; when split-screen lands it reads as
-    /// a single shared bar over every view, which is fine for a boss fight.
     /// </summary>
     public class BossHealthBar : MonoBehaviour
     {
@@ -40,24 +40,25 @@ namespace CodenameVelvet.UI
         [Tooltip("Gap from the top edge; leaves room for the day/night clock above.")]
         [SerializeField, Min(0f)] private float topMargin = 75f;
 
-        private GameObject canvasRoot;
-        private RectTransform panel;
-        private RectTransform track;
-        private RectTransform fill;
-        private Image borderImage;
-        private Image trackImage;
-        private Image fillImage;
-        private TextMeshProUGUI nameText;
-        private bool hasBeenSeen;
+        private sealed class Bar
+        {
+            public float Scale;
+            public RectTransform Panel;
+            public RectTransform Track;
+            public RectTransform Fill;
+            public Image BorderImage;
+            public Image TrackImage;
+            public Image FillImage;
+            public TextMeshProUGUI NameText;
+        }
+
+        private readonly List<Bar> bars = new List<Bar>(); // one per view
+        private GameObject canvasRoot; // built when the boss first sees a player, so every view exists
 
         private void Awake()
         {
             if (health == null)
                 Debug.LogWarning($"{name}: BossHealthBar has no EnemyHealth assigned; the bar stays hidden.", this);
-
-            Build();
-            ApplyStyle();
-            canvasRoot.SetActive(false);
         }
 
         private void Update()
@@ -65,16 +66,21 @@ namespace CodenameVelvet.UI
             // EnemyHealth destroys the boss on death, which nulls the reference.
             if (health == null)
             {
-                canvasRoot.SetActive(false);
+                if (canvasRoot != null) canvasRoot.SetActive(false);
                 enabled = false;
                 return;
             }
 
-            hasBeenSeen |= brain == null || brain.HasTarget;
-            canvasRoot.SetActive(hasBeenSeen);
+            if (canvasRoot == null)
+            {
+                if (brain != null && !brain.HasTarget) return;
+                Build();
+                ApplyStyle();
+            }
 
             float fraction = health.MaxHp > 0 ? (float)health.CurrentHp / health.MaxHp : 1f;
-            fill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
+            foreach (Bar bar in bars)
+                bar.Fill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
         }
 
         private void OnValidate()
@@ -97,33 +103,47 @@ namespace CodenameVelvet.UI
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            panel = CreateRect("Panel", canvasRoot.transform);
-            panel.anchorMin = panel.anchorMax = panel.pivot = new Vector2(0.5f, 1f);
+            foreach (PlayerInput player in PlayerInput.all)
+                if (player.camera != null) bars.Add(BuildBar(player.camera.rect));
+            if (bars.Count == 0) bars.Add(BuildBar(new Rect(0f, 0f, 1f, 1f))); // no split screen
+        }
 
-            nameText = CreateRect("Name", panel).gameObject.AddComponent<TextMeshProUGUI>();
-            RectTransform nameRect = nameText.rectTransform;
+        /// <summary>A bar at the top of a view (normalized screen rect, like <see cref="Camera.rect"/>).</summary>
+        private Bar BuildBar(Rect viewport)
+        {
+            // Shrinks less than the view itself so the name stays readable.
+            var bar = new Bar { Scale = Mathf.Sqrt(Mathf.Min(viewport.width, viewport.height)) };
+
+            bar.Panel = CreateRect("Panel", canvasRoot.transform);
+            bar.Panel.anchorMin = bar.Panel.anchorMax = new Vector2(viewport.center.x, viewport.yMax);
+            bar.Panel.pivot = new Vector2(0.5f, 1f);
+            bar.Panel.localScale = Vector3.one * bar.Scale;
+
+            bar.NameText = CreateRect("Name", bar.Panel).gameObject.AddComponent<TextMeshProUGUI>();
+            RectTransform nameRect = bar.NameText.rectTransform;
             nameRect.anchorMin = new Vector2(0f, 1f);
             nameRect.anchorMax = Vector2.one;
             nameRect.pivot = new Vector2(0.5f, 1f);
-            nameText.alignment = TextAlignmentOptions.Bottom;
-            nameText.raycastTarget = false;
+            bar.NameText.alignment = TextAlignmentOptions.Bottom;
+            bar.NameText.raycastTarget = false;
 
-            RectTransform border = CreateRect("Border", panel);
+            RectTransform border = CreateRect("Border", bar.Panel);
             border.anchorMin = Vector2.zero;
             border.anchorMax = new Vector2(1f, 0f);
             border.pivot = new Vector2(0.5f, 0f);
-            borderImage = AddImage(border);
+            bar.BorderImage = AddImage(border);
 
-            track = CreateRect("Track", border);
-            track.anchorMin = Vector2.zero;
-            track.anchorMax = Vector2.one;
-            trackImage = AddImage(track);
+            bar.Track = CreateRect("Track", border);
+            bar.Track.anchorMin = Vector2.zero;
+            bar.Track.anchorMax = Vector2.one;
+            bar.TrackImage = AddImage(bar.Track);
 
-            fill = CreateRect("Fill", track);
-            fill.anchorMin = Vector2.zero;
-            fill.anchorMax = Vector2.one;
-            fill.offsetMin = fill.offsetMax = Vector2.zero;
-            fillImage = AddImage(fill);
+            bar.Fill = CreateRect("Fill", bar.Track);
+            bar.Fill.anchorMin = Vector2.zero;
+            bar.Fill.anchorMax = Vector2.one;
+            bar.Fill.offsetMin = bar.Fill.offsetMax = Vector2.zero;
+            bar.FillImage = AddImage(bar.Fill);
+            return bar;
         }
 
         private void ApplyStyle()
@@ -131,23 +151,26 @@ namespace CodenameVelvet.UI
             float nameHeight = fontSize * 1.3f;
             float borderedHeight = barHeight + borderThickness * 2f;
 
-            panel.anchoredPosition = new Vector2(0f, -topMargin);
-            panel.sizeDelta = new Vector2(barWidth + borderThickness * 2f, nameHeight + borderedHeight);
+            foreach (Bar bar in bars)
+            {
+                bar.Panel.anchoredPosition = new Vector2(0f, -topMargin * bar.Scale);
+                bar.Panel.sizeDelta = new Vector2(barWidth + borderThickness * 2f, nameHeight + borderedHeight);
 
-            nameText.rectTransform.sizeDelta = new Vector2(0f, nameHeight);
-            nameText.text = bossName;
-            nameText.font = font != null ? font : TMP_Settings.defaultFontAsset;
-            nameText.fontSize = fontSize;
-            nameText.fontStyle = fontStyle;
-            nameText.color = textColor;
+                bar.NameText.rectTransform.sizeDelta = new Vector2(0f, nameHeight);
+                bar.NameText.text = bossName;
+                bar.NameText.font = font != null ? font : TMP_Settings.defaultFontAsset;
+                bar.NameText.fontSize = fontSize;
+                bar.NameText.fontStyle = fontStyle;
+                bar.NameText.color = textColor;
 
-            ((RectTransform)borderImage.transform).sizeDelta = new Vector2(0f, borderedHeight);
-            track.offsetMin = new Vector2(borderThickness, borderThickness);
-            track.offsetMax = new Vector2(-borderThickness, -borderThickness);
+                ((RectTransform)bar.BorderImage.transform).sizeDelta = new Vector2(0f, borderedHeight);
+                bar.Track.offsetMin = new Vector2(borderThickness, borderThickness);
+                bar.Track.offsetMax = new Vector2(-borderThickness, -borderThickness);
 
-            borderImage.color = borderColor;
-            trackImage.color = backgroundColor;
-            fillImage.color = fillColor;
+                bar.BorderImage.color = borderColor;
+                bar.TrackImage.color = backgroundColor;
+                bar.FillImage.color = fillColor;
+            }
         }
 
         private static RectTransform CreateRect(string objectName, Transform parent)
