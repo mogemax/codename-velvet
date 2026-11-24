@@ -123,6 +123,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5266234117968046114}
+    - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4465710871554203334}
     - targetCorrespondingSourceObject: {fileID: 7984626808104215477, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5291267208458174166}
@@ -399,6 +402,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.BossVictory
   matchFlow: {fileID: 0}
+--- !u!114 &4465710871554203334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571990011580710253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656d1786ec1b42ca94e1a1803a1b8c27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContactShadow
+  material: {fileID: 2100000, guid: 7d2977731a10b4e93a90532656e2e3b1, type: 2}
+  width: 0
+  depthRatio: 0.5
+  colliderScale: 1.3
+  offset: {x: 0, y: 0, z: 0}
 --- !u!1 &4229496284835898938 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3075279980656434564, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}

@@ -25,8 +25,7 @@ namespace CodenameVelvet.Spawning
     /// <item>Every zone sees what the others placed, so overlapping zones never stack things.</item>
     /// <item>On start it fills enemies and nodes (in view is allowed).</item>
     /// <item>A dead enemy is replaced after <see cref="enemyRespawnDelay"/> seconds, somewhere else.</item>
-    /// <item>A depleted node comes back in the same spot after <see cref="nodeRespawnSeconds"/>, so clusters keep
-    /// their shape.</item>
+    /// <item>A depleted node comes back alone after <see cref="nodeRespawnSeconds"/>, at a new random spot.</item>
     /// <item>Respawns never happen in view of any camera or near a player.</item>
     /// <item>With <see cref="dayNightEvent"/>: keeps <see cref="dayEnemies"/> by day and, at night, the
     /// area's count scaled by the night threat (never fewer than by day, never more than <see cref="maxEnemies"/>).
@@ -327,15 +326,17 @@ namespace CodenameVelvet.Spawning
             spawnedNodes.Add(node, Footprint(node));
         }
 
-        /// <summary>A depleted node comes back in its own spot (it still counts as occupied), once nobody sees it.</summary>
+        /// <summary>
+        /// A depleted node comes back alone at a new random spot of the zone (patches respected), out of view.
+        /// Its old spot still counts as occupied until then.
+        /// </summary>
         private void HandleNodeDepleted(ResourceNode node)
         {
             StartCoroutine(AfterDelay(nodeRespawnSeconds, () => StartCoroutine(RetryUntil(() =>
             {
                 if (node == null) return true; // destroyed by something else: nothing to restore
-                Vector3 spot = node.transform.position;
-                if (IsVisibleToAnyCamera(spot) || IsNearPlayer(spot)) return false;
-                node.RespawnAt(spot);
+                if (!TryFindSeed(allowVisible: false, spawnedNodes[node], useNoise: true, out Vector3 point)) return false;
+                node.RespawnAt(point);
                 return true;
             }))));
         }
