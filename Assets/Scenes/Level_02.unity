@@ -272,7 +272,7 @@ MonoBehaviour:
   threatPerExtraPlayer: 0.35
   maxThreat: 3
   rosterAsset: {fileID: 11400000, guid: 4654ff5d2c8a04c45aeea8cb05f3b86f, type: 2}
-  onPhaseChanged: {fileID: 0}
+  onPhaseChanged: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   debugLogs: 1
 --- !u!4 &183607016
 Transform:
@@ -600,7 +600,7 @@ MonoBehaviour:
     weight: 1
   maxEnemies: 6
   dayEnemies: 2
-  dayNightEvent: {fileID: 0}
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
@@ -701,7 +701,7 @@ MonoBehaviour:
     weight: 1
   maxEnemies: 6
   dayEnemies: 2
-  dayNightEvent: {fileID: 0}
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
@@ -1360,6 +1360,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1431538188}
   - component: {fileID: 1431538187}
+  - component: {fileID: 892723338049442008}
   m_Layer: 2
   m_Name: Boss Roam Area
   m_TagString: Untagged
@@ -1814,7 +1815,7 @@ MonoBehaviour:
     weight: 1
   maxEnemies: 6
   dayEnemies: 2
-  dayNightEvent: {fileID: 0}
+  dayNightEvent: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   enemyRespawnDelay: {x: 20, y: 40}
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
@@ -1944,6 +1945,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 32f36e0986c70de42a81e32fbdd906e1, type: 3}
+--- !u!4 &2080241222855773941 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9146104601714820110, guid: 99f33bdde11ce4c6bb25699dc03a5b4a, type: 3}
+  m_PrefabInstance: {fileID: 40041003}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1962,3 +1968,19 @@ SceneRoots:
   - {fileID: 183607016}
   - {fileID: 1367842856}
   - {fileID: 1487975762}
+--- !u!114 &892723338049442008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431538186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11813d352556404b8f6b809c319cd6d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Cameras.CameraFramingZone
+  extraDistance: 12
+  focus: {fileID: 2080241222855773941}
+  focusWeight: 0.4
+  maxFocusShift: 8

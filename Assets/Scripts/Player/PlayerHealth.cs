@@ -99,7 +99,9 @@ namespace CodenameVelvet.Player
             if (onPlayerDied != null)
                 onPlayerDied.Raise(SlotIndexOrDefault());
 
+            // With interpolation the Rigidbody ignores Transform-only moves, so it is moved too.
             transform.position = spawnPoint;
+            if (body != null) body.position = spawnPoint;
             StopBody();
             SetVisible(true);
             healthState.ResetToFull();

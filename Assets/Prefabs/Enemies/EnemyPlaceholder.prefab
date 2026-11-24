@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8368253433950923599}
   - component: {fileID: 9069226088978565953}
+  - component: {fileID: 545363681616962640}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -25,13 +26,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3257010448089253929}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0.1564345, y: 0, z: 0, w: 0.9876883}
   m_LocalPosition: {x: 0, y: 1.25, z: 0}
   m_LocalScale: {x: 12.5, y: 12.5, z: 12.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 771451975005232810}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 18, y: 0, z: 0}
 --- !u!212 &9069226088978565953
 SpriteRenderer:
   serializedVersion: 2
@@ -263,3 +264,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyHealth
   debugLogs: 1
+--- !u!114 &545363681616962640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257010448089253929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af2879609f24e79b25eef2637df1294, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Cameras.ViewTilt

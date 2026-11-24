@@ -1,3 +1,4 @@
+using CodenameVelvet.Map;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -63,6 +64,24 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Last movement direction, i.e. where the player faces.</summary>
     public Vector2 FacingDirection => lastMoveDir;
 
+    /// <summary>
+    /// Free flight (dev mode): no gravity, ground snapping, dash or water edge; the vertical speed comes from
+    /// <see cref="FlightVerticalSpeed"/>.
+    /// </summary>
+    public bool IsFlying
+    {
+        get => isFlying;
+        set
+        {
+            isFlying = value;
+            rb.useGravity = !value && usesGravity;
+            if (value) CancelDash();
+        }
+    }
+
+    /// <summary>Vertical speed while flying (positive = up).</summary>
+    public float FlightVerticalSpeed { get; set; }
+
     private const string MoveActionName = "Move";
     private const float GroundProbeSkin = 0.05f; // the probe sphere starts slightly above the feet
 
@@ -77,6 +96,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 currentVelocity;
     private Vector2 lastMoveDir = Vector2.down;
     private bool controlEnabled = true;
+    private bool isFlying;
+    private bool usesGravity;
 
     private Vector2 dashDir;
     private float dashTimeLeft;
@@ -91,6 +112,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        usesGravity = rb.useGravity;
         // The dash is fast enough to tunnel through walls with discrete detection.
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         // Without interpolation the body moves at 50 Hz and stutters on 60+ Hz screens.
@@ -192,7 +214,7 @@ public class PlayerMovement : MonoBehaviour
         if (dashCooldownLeft > 0f)
             dashCooldownLeft -= Time.deltaTime;
 
-        if (requested && dashCooldownLeft <= 0f)
+        if (requested && !isFlying && dashCooldownLeft <= 0f)
             TryStartDash();
     }
 
@@ -308,6 +330,15 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 velocity = new Vector3(planar.x, 0f, planar.y);
 
+        if (isFlying)
+        {
+            velocity.y = FlightVerticalSpeed;
+            rb.linearVelocity = velocity;
+            return;
+        }
+
+        velocity = WaterEdge.Clamp(rb.position, velocity, EdgeRadius(), Time.fixedDeltaTime);
+
         if (isGrounded)
         {
             velocity = Vector3.ProjectOnPlane(velocity, groundNormal);
@@ -322,6 +353,8 @@ public class PlayerMovement : MonoBehaviour
 
         rb.linearVelocity = velocity;
     }
+
+    private float EdgeRadius() => body != null ? Mathf.Min(body.bounds.extents.x, body.bounds.extents.z) : 0.5f;
 
     private void UpdateAnimator()
     {

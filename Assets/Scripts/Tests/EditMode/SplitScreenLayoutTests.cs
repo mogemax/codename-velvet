@@ -27,13 +27,13 @@ namespace CodenameVelvet.Tests
         }
 
         [Test]
-        public void TwoPlayers_AreSideBySide()
+        public void TwoPlayers_AreStackedWithP1OnTop()
         {
             Rect[] rects = SplitScreenLayout.ComputeRects(2);
 
             Assert.That(rects, Has.Length.EqualTo(2));
-            AssertRect(new Rect(0f, 0f, 0.5f, 1f), rects[0]);
-            AssertRect(new Rect(0.5f, 0f, 0.5f, 1f), rects[1]);
+            AssertRect(new Rect(0f, 0.5f, 1f, 0.5f), rects[0]);
+            AssertRect(new Rect(0f, 0f, 1f, 0.5f), rects[1]);
         }
 
         [Test]

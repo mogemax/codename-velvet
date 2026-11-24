@@ -7,6 +7,7 @@ using CodenameVelvet.Core.Events;
 using CodenameVelvet.DayNight;
 using CodenameVelvet.Enemies;
 using CodenameVelvet.Gathering;
+using CodenameVelvet.Map;
 using UnityEngine;
 
 namespace CodenameVelvet.Spawning
@@ -242,6 +243,7 @@ namespace CodenameVelvet.Spawning
 
                 // The first surface hit must be inside the box height, not the top of a pillar.
                 if (hit.point.y < bounds.min.y || hit.point.y > bounds.max.y) continue;
+                if (WaterEdge.IsOverWater(hit.point)) continue;
                 if (!SpawnRules.IsFlatEnough(hit.normal, maxSlope)) continue;
                 if (!SpawnRules.IsClear(hit.point, occupied, minSpacing)) continue;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using CodenameVelvet.Cameras;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
 using UnityEngine;
@@ -419,6 +420,7 @@ namespace CodenameVelvet.Enemies
             }
 
             if (debugLogs) VelvetLog.Info(LogCategory, this, $"{attack.name}: impact at {center}, radius {attack.impactRadius}, hit {hitCount}");
+            CameraShake.Impulse(center, attack.cameraShake);
             attack.onImpact?.Invoke(center);
             lastImpact = (center, attack.impactRadius, Time.time);
         }
@@ -548,13 +550,13 @@ namespace CodenameVelvet.Enemies
                 name = "Ground Punch", animatorTrigger = "AttackPunch", weight = 1f,
                 minGap = 1f, maxGap = 7f, windup = 1.3f, recovery = 3.2f, cooldown = 6f,
                 lungeDistance = 6f, lungeStart = 0.6f,
-                damage = 2, impactRadius = 2.8f, impactForwardOffset = 2.5f, knockbackForce = 10f, knockbackStun = 0.6f,
+                damage = 2, impactRadius = 2.8f, impactForwardOffset = 2.5f, knockbackForce = 10f, knockbackStun = 0.6f, cameraShake = 0.7f,
             },
             new CyclopsAttack
             {
                 name = "Stomp", animatorTrigger = "AttackStomp", weight = 1.5f,
                 minGap = 0f, maxGap = 1.5f, windup = 1.1f, recovery = 1.2f, cooldown = 3f,
-                damage = 1, impactRadius = 3.5f, impactForwardOffset = 0.5f, knockbackForce = 11f, knockbackStun = 0.4f,
+                damage = 1, impactRadius = 3.5f, impactForwardOffset = 0.5f, knockbackForce = 11f, knockbackStun = 0.4f, cameraShake = 0.6f,
             },
         };
 

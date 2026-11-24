@@ -21,11 +21,11 @@ namespace CodenameVelvet.Multiplayer
                     return new[] { new Rect(0f, 0f, 1f, 1f) };
 
                 case 2:
-                    // Side by side.
+                    // One above the other: each view keeps the full width.
                     return new[]
                     {
-                        new Rect(0f, 0f, 0.5f, 1f),
-                        new Rect(0.5f, 0f, 0.5f, 1f),
+                        new Rect(0f, 0.5f, 1f, 0.5f),
+                        new Rect(0f, 0f, 1f, 0.5f),
                     };
 
                 case 3:
