@@ -122,5 +122,27 @@ namespace CodenameVelvet.Tests
             Assert.That(NightThreat.EnemyCount(6, 1.7f), Is.EqualTo(10)); // 10.2 → 10
             Assert.That(NightThreat.EnemyCount(-3, 2f), Is.EqualTo(0));
         }
+
+        [Test]
+        public void Warmth_IsZeroAtNightAndMidDay()
+        {
+            Assert.That(DayNightPalette.Warmth(true, 0f, 1f, 30f, 20f), Is.EqualTo(0f));
+            Assert.That(DayNightPalette.Warmth(false, 90f, 90f, 30f, 20f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void Warmth_RampsUpAtDuskAndFadesAfterDawn()
+        {
+            Assert.That(DayNightPalette.Warmth(false, 165f, 15f, 30f, 20f), Is.EqualTo(0.5f).Within(1e-5f));
+            Assert.That(DayNightPalette.Warmth(false, 180f, 0f, 30f, 20f), Is.EqualTo(1f));
+            Assert.That(DayNightPalette.Warmth(false, 0f, 180f, 30f, 20f), Is.EqualTo(1f));
+            Assert.That(DayNightPalette.Warmth(false, 10f, 170f, 30f, 20f), Is.EqualTo(0.5f).Within(1e-5f));
+        }
+
+        [Test]
+        public void Warmth_ZeroDurationsMeanNoWarmth()
+        {
+            Assert.That(DayNightPalette.Warmth(false, 0f, 0f, 0f, 0f), Is.EqualTo(0f));
+        }
     }
 }

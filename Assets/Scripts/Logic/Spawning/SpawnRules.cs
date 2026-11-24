@@ -5,6 +5,19 @@ using UnityEngine;
 
 namespace CodenameVelvet.Spawning
 {
+    /// <summary>Something already placed: where it stands and the radius of its footprint on the ground.</summary>
+    public readonly struct SpawnBody
+    {
+        public SpawnBody(Vector3 position, float radius)
+        {
+            Position = position;
+            Radius = radius;
+        }
+
+        public Vector3 Position { get; }
+        public float Radius { get; }
+    }
+
     /// <summary>
     /// Pure rules that decide whether a point can host a spawn (enemy or resource). <c>SpawnZone</c> runs
     /// the physics and camera queries; this class only makes the decision.
@@ -34,6 +47,68 @@ namespace CodenameVelvet.Spawning
                     return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// How many things an area holds at <paramref name="perThousandUnits"/> per 1000 square units, rounded,
+        /// never negative and never above <paramref name="max"/>.
+        /// </summary>
+        public static int CountForArea(float area, float perThousandUnits, int max)
+        {
+            float count = Math.Max(0f, area) * Math.Max(0f, perThousandUnits) / 1000f;
+            return Math.Min(Math.Max(0, max), (int)Math.Round(count, MidpointRounding.AwayFromZero));
+        }
+
+        /// <summary>
+        /// True when a body of <paramref name="radius"/> at <paramref name="candidate"/> keeps at least
+        /// <paramref name="gap"/> (on the XZ plane, edge to edge) from every other body.
+        /// </summary>
+        public static bool IsClearOfBodies(Vector3 candidate, float radius, IReadOnlyList<SpawnBody> bodies, float gap)
+        {
+            if (bodies == null)
+                throw new ArgumentNullException(nameof(bodies));
+
+            foreach (SpawnBody body in bodies)
+            {
+                if (EnemyAggroRules.PlanarDistance(candidate, body.Position) < radius + body.Radius + gap)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Chance (0-1) of placing something where a smooth noise reads <paramref name="noise"/>: nothing below
+        /// <paramref name="emptyBelow"/>, always above <paramref name="fullAbove"/>, a ramp between. This makes
+        /// dense patches and empty clearings instead of an even spread.
+        /// </summary>
+        public static float PatchWeight(float noise, float emptyBelow, float fullAbove)
+        {
+            if (fullAbove <= emptyBelow)
+                return noise >= emptyBelow ? 1f : 0f;
+            return Mathf.Clamp01((noise - emptyBelow) / (fullAbove - emptyBelow));
+        }
+
+        /// <summary>
+        /// How many bodies a cluster gets: a value in <paramref name="range"/> (inclusive) picked by
+        /// <paramref name="t01"/>, never more than <paramref name="remaining"/> and never less than 1.
+        /// </summary>
+        public static int ClusterSize(Vector2Int range, float t01, int remaining)
+        {
+            int min = Math.Max(1, Math.Min(range.x, range.y));
+            int max = Math.Max(min, Math.Max(range.x, range.y));
+            int size = min + (int)Math.Floor(Mathf.Clamp01(t01) * (max - min + 1 - 1e-4f));
+            return Math.Max(1, Math.Min(size, remaining));
+        }
+
+        /// <summary>
+        /// Scale of a cluster member, picked by <paramref name="t01"/> from <paramref name="range"/>: the center one
+        /// from the upper half, the rest from the lower half, so a cluster has a big piece with smaller ones around.
+        /// </summary>
+        public static float ClusterMemberScale(bool isCenter, Vector2 range, float t01)
+        {
+            float min = Math.Min(range.x, range.y), max = Math.Max(range.x, range.y);
+            float mid = (min + max) * 0.5f;
+            return isCenter ? Mathf.Lerp(mid, max, Mathf.Clamp01(t01)) : Mathf.Lerp(min, mid, Mathf.Clamp01(t01));
         }
 
         /// <summary>

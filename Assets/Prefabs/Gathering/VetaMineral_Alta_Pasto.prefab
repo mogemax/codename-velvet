@@ -34,19 +34,19 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 3827dca6c2ed4b63932280146b16ea0e, type: 3}
     - target: {fileID: 5773743163606837573, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
       propertyPath: m_Radius
-      value: 1.75
+      value: 2.56
       objectReference: {fileID: 0}
     - target: {fileID: 5773743163606837573, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
       propertyPath: m_Center.y
-      value: 1.75
+      value: 2.56
       objectReference: {fileID: 0}
     - target: {fileID: 6497593674408533151, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
       propertyPath: dropRadius.x
-      value: 2.25
+      value: 3.06
       objectReference: {fileID: 0}
     - target: {fileID: 6497593674408533151, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
       propertyPath: dropRadius.y
-      value: 3.25
+      value: 4.06
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

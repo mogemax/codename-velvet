@@ -17,8 +17,7 @@ namespace CodenameVelvet.Multiplayer
     public class PlayerSpawner : MonoBehaviour
     {
         private const string LogCategory = "Spawner";
-        private const float GroundProbeUp = 10f;
-        private const float GroundProbeDown = 100f;
+        private const float GroundProbeHeight = 500f;
         private const float SpawnLift = 0.1f;
 
         [Header("Data")]
@@ -98,15 +97,18 @@ namespace CodenameVelvet.Multiplayer
         }
 
         /// <summary>
-        /// The ground right below (or slightly above) a spawn point, so a badly placed point never leaves a player
-        /// inside the terrain or floating. PlayerHealth respawns there too, since it records its start position.
+        /// The ground surface closest in height to a spawn point, so a badly placed point never leaves a player
+        /// inside the terrain (a buried point goes up to the surface) or on top of a rock or cave above it.
+        /// PlayerHealth respawns there too, since it records its start position.
         /// </summary>
         private static Vector3 OnGround(Vector3 point)
         {
-            return Physics.Raycast(point + Vector3.up * GroundProbeUp, Vector3.down, out RaycastHit hit,
-                GroundProbeUp + GroundProbeDown, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore)
-                ? hit.point + Vector3.up * SpawnLift
-                : point;
+            RaycastHit[] hits = Physics.RaycastAll(point + Vector3.up * GroundProbeHeight, Vector3.down,
+                GroundProbeHeight * 2f, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore);
+            if (hits.Length == 0) return point;
+
+            RaycastHit closest = hits.OrderBy(hit => Mathf.Abs(hit.point.y - point.y)).First();
+            return closest.point + Vector3.up * SpawnLift;
         }
 
         private Camera CreateCamera(Transform target, Rect viewport, bool isFirst)

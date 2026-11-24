@@ -42,6 +42,8 @@ namespace CodenameVelvet.DayNight
         public DayNightState State { get; private set; }
         public float Remaining => clock.Remaining;
         public float PhaseProgress => clock.PhaseProgress;
+        /// <summary>Seconds since the current phase started.</summary>
+        public float Elapsed => clock.PhaseDuration - clock.Remaining;
 
         private void Awake()
         {

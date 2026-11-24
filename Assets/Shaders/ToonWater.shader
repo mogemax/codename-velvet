@@ -49,6 +49,8 @@ Shader "Velvet/Toon Water"
                 float _RippleCutoff;
             CBUFFER_END
 
+            half4 _VelvetDarkness;
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -106,6 +108,7 @@ Shader "Velvet/Toon Water"
                 float foamWidth = _FoamDistance * (0.75 + 0.25 * sin(_Time.y * 2.0 + n * 6.2832));
                 color = lerp(color, _FoamColor, step(waterDepth, foamWidth) * _FoamColor.a);
 
+                color.rgb *= 1.0h - _VelvetDarkness.rgb; // night, set by DayNightLighting (unset = 0 = no change)
                 color.rgb = MixFog(color.rgb, input.fogFactor);
                 return color;
             }

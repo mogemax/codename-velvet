@@ -86,5 +86,74 @@ namespace CodenameVelvet.Tests
             Assert.That(SpawnRules.IsInsideViewport(nearEdge, 0f), Is.False);
             Assert.That(SpawnRules.IsInsideViewport(nearEdge, 0.1f), Is.True);
         }
+
+        [Test]
+        public void CountForArea_UsesDensityPerThousandUnits()
+        {
+            Assert.That(SpawnRules.CountForArea(4000f, 2.5f, 100), Is.EqualTo(10));
+        }
+
+        [Test]
+        public void CountForArea_IsCappedAtMax()
+        {
+            Assert.That(SpawnRules.CountForArea(100000f, 2.5f, 30), Is.EqualTo(30));
+        }
+
+        [Test]
+        public void CountForArea_NegativeInputs_AreZero()
+        {
+            Assert.That(SpawnRules.CountForArea(-50f, 2f, 10), Is.EqualTo(0));
+            Assert.That(SpawnRules.CountForArea(5000f, -1f, 10), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void IsClearOfBodies_TouchingFootprints_IsFalse()
+        {
+            var bodies = new List<SpawnBody> { new SpawnBody(Vector3.zero, 2f) };
+            Assert.That(SpawnRules.IsClearOfBodies(new Vector3(3f, 0f, 0f), 1.5f, bodies, 0f), Is.False);
+        }
+
+        [Test]
+        public void IsClearOfBodies_GapCountsEdgeToEdge_AndIgnoresHeight()
+        {
+            var bodies = new List<SpawnBody> { new SpawnBody(Vector3.zero, 2f) };
+            Vector3 candidate = new Vector3(6f, 40f, 0f);
+            Assert.That(SpawnRules.IsClearOfBodies(candidate, 1f, bodies, 3f), Is.True);
+            Assert.That(SpawnRules.IsClearOfBodies(candidate, 1f, bodies, 3.5f), Is.False);
+        }
+
+        [Test]
+        public void PatchWeight_RampsBetweenThresholds()
+        {
+            Assert.That(SpawnRules.PatchWeight(0.2f, 0.3f, 0.7f), Is.EqualTo(0f));
+            Assert.That(SpawnRules.PatchWeight(0.5f, 0.3f, 0.7f), Is.EqualTo(0.5f).Within(1e-5f));
+            Assert.That(SpawnRules.PatchWeight(0.9f, 0.3f, 0.7f), Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void ClusterSize_CoversTheWholeRangeInclusive()
+        {
+            var range = new Vector2Int(1, 4);
+            Assert.That(SpawnRules.ClusterSize(range, 0f, 99), Is.EqualTo(1));
+            Assert.That(SpawnRules.ClusterSize(range, 0.999f, 99), Is.EqualTo(4));
+            Assert.That(SpawnRules.ClusterSize(range, 1f, 99), Is.EqualTo(4));
+        }
+
+        [Test]
+        public void ClusterSize_NeverExceedsWhatIsLeft_NorGoesBelowOne()
+        {
+            Assert.That(SpawnRules.ClusterSize(new Vector2Int(3, 6), 1f, 2), Is.EqualTo(2));
+            Assert.That(SpawnRules.ClusterSize(new Vector2Int(0, 0), 0.5f, 10), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ClusterMemberScale_CenterIsTheBigHalf_OthersTheSmallHalf()
+        {
+            var range = new Vector2(0.7f, 1.3f);
+            Assert.That(SpawnRules.ClusterMemberScale(true, range, 0f), Is.EqualTo(1f).Within(1e-5f));
+            Assert.That(SpawnRules.ClusterMemberScale(true, range, 1f), Is.EqualTo(1.3f).Within(1e-5f));
+            Assert.That(SpawnRules.ClusterMemberScale(false, range, 0f), Is.EqualTo(0.7f).Within(1e-5f));
+            Assert.That(SpawnRules.ClusterMemberScale(false, range, 1f), Is.EqualTo(1f).Within(1e-5f));
+        }
     }
 }

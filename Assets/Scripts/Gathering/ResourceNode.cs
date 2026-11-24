@@ -49,6 +49,9 @@ namespace CodenameVelvet.Gathering
         /// </summary>
         public bool ExternalRespawn { get; set; }
 
+        /// <summary>Size multiplier given by the spawner (1 = as the prefab): the drop ring grows with it.</summary>
+        public float SizeScale { get; set; } = 1f;
+
         /// <summary>Moves the node to <paramref name="position"/> and restores it fully.</summary>
         public void RespawnAt(Vector3 position)
         {
@@ -132,7 +135,7 @@ namespace CodenameVelvet.Gathering
         {
             float minRadius = Mathf.Max(0f, dropRadius.x);
             float maxRadius = Mathf.Max(minRadius, dropRadius.y);
-            float radius = UnityEngine.Random.Range(minRadius, maxRadius);
+            float radius = UnityEngine.Random.Range(minRadius, maxRadius) * SizeScale;
             float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
             return transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
         }
