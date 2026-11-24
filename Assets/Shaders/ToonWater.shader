@@ -8,11 +8,11 @@ Shader "Velvet/Toon Water"
     {
         _ShallowColor ("Shallow Color", Color) = (0.36, 0.86, 0.88, 0.75)
         _DeepColor ("Deep Color", Color) = (0.12, 0.40, 0.66, 0.95)
-        _DepthRange ("Depth For Deep Color", Float) = 4
+        _DepthRange ("Depth For Deep Color", Float) = 15
         _FoamColor ("Foam Color", Color) = (1, 1, 1, 1)
-        _FoamDistance ("Foam Width", Float) = 0.8
+        _FoamDistance ("Foam Width", Float) = 2.5
         _RippleColor ("Ripple Color (alpha = strength)", Color) = (1, 1, 1, 0.35)
-        _RippleScale ("Ripple Scale", Float) = 0.35
+        _RippleScale ("Ripple Scale", Float) = 0.1
         _RippleSpeed ("Ripple Speed", Float) = 0.15
         _RippleCutoff ("Ripple Cutoff", Range(0, 1)) = 0.7
     }

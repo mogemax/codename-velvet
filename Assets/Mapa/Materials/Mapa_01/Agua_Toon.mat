@@ -25,10 +25,10 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _DepthRange: 4
-    - _FoamDistance: 0.8
+    - _DepthRange: 15
+    - _FoamDistance: 2.5
     - _RippleCutoff: 0.7
-    - _RippleScale: 0.35
+    - _RippleScale: 0.1
     - _RippleSpeed: 0.15
     m_Colors:
     - _DeepColor: {r: 0.12, g: 0.4, b: 0.66, a: 0.95}
