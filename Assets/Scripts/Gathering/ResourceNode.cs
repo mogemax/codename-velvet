@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using CodenameVelvet.Audio;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
 using UnityEngine;
@@ -31,6 +32,7 @@ namespace CodenameVelvet.Gathering
 
         private Renderer[] renderers;
         private Collider[] colliders;
+        private AudioSource audioSource;
         private int hitsRemaining;
         private bool isDepleted;
         private float respawnTime;
@@ -99,6 +101,9 @@ namespace CodenameVelvet.Gathering
             int hitNumber = definition.HitsToDeplete - hitsRemaining;
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Hit {hitNumber}/{definition.HitsToDeplete}");
+
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.PlayRandom(definition.HitSounds);
 
             DropPieces();
 

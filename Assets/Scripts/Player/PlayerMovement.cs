@@ -1,3 +1,4 @@
+using CodenameVelvet.Audio;
 using CodenameVelvet.Map;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -50,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform spriteRoot;
     [Tooltip("Enable when the original art faces right; disable when it faces left.")]
     [SerializeField] private bool artFacesRight = true;
+    [Tooltip("Looping footsteps, played while walking.")]
+    [SerializeField] private AudioSource footsteps;
 
     [Header("Animator parameter names")]
     [SerializeField] private string paramIsMoving = "IsMoving";
@@ -148,6 +151,7 @@ public class PlayerMovement : MonoBehaviour
         ReadInput();
         HandleDash();
         UpdateAnimator();
+        footsteps.SetLoopPlaying(isGrounded && !isFlying && !IsDashing && !IsClimbing && inputDir.sqrMagnitude > 0.01f);
         FlipSprite();
     }
 

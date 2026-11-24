@@ -18,3 +18,7 @@ MonoBehaviour:
   hitsToDeplete: 5
   piecesPerHit: 1
   respawnSeconds: 0
+  hitSounds:
+  - {fileID: 8300000, guid: 34ca91c6e2793cc46b7a2efaa412ea74, type: 3}
+  - {fileID: 8300000, guid: a44b86feeea73db4c8b3bf01a54c0c2f, type: 3}
+  - {fileID: 8300000, guid: 9816847e2369b2340a73b5ca41ed9162, type: 3}

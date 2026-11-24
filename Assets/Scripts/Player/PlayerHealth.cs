@@ -34,7 +34,6 @@ namespace CodenameVelvet.Player
         private PlayerMovement movement;
         private Rigidbody body;
         private Renderer[] hiddenRenderers;
-        private Vector3 spawnPoint;
         private bool isDying;
 
         /// <summary>
@@ -50,6 +49,9 @@ namespace CodenameVelvet.Player
         /// <summary>While true every hit is ignored (dev mode, temporary invulnerability).</summary>
         public bool Invulnerable { get; set; }
 
+        /// <summary>Where the player comes back after dying: its start position unless changed (e.g. by a boss fight).</summary>
+        public Vector3 RespawnPoint { get; set; }
+
         private void Awake()
         {
             healthState = new PlayerHealthState(maxHp);
@@ -60,7 +62,7 @@ namespace CodenameVelvet.Player
 
         private void Start()
         {
-            spawnPoint = transform.position;
+            RespawnPoint = transform.position;
         }
 
         public void ApplyDamage(int amount)
@@ -100,15 +102,15 @@ namespace CodenameVelvet.Player
                 onPlayerDied.Raise(SlotIndexOrDefault());
 
             // With interpolation the Rigidbody ignores Transform-only moves, so it is moved too.
-            transform.position = spawnPoint;
-            if (body != null) body.position = spawnPoint;
+            transform.position = RespawnPoint;
+            if (body != null) body.position = RespawnPoint;
             StopBody();
             SetVisible(true);
             healthState.ResetToFull();
             isDying = false;
 
             if (debugLogs)
-                VelvetLog.Info(LogCategory, this, $"Respawned at {spawnPoint}, HP {healthState.CurrentHp}/{healthState.MaxHp}");
+                VelvetLog.Info(LogCategory, this, $"Respawned at {RespawnPoint}, HP {healthState.CurrentHp}/{healthState.MaxHp}");
 
             if (movement != null)
                 movement.SetControlEnabled(true);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CodenameVelvet.Audio;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
 using UnityEngine;
@@ -35,6 +36,13 @@ namespace CodenameVelvet.Player
         [Tooltip("Initial push speed (units/second) given to targets that support knockback.")]
         [SerializeField] private float knockbackForce = 22f;
         [SerializeField] private float stunSeconds = 0.35f;
+
+        [Header("Sound")]
+        [SerializeField] private AudioSource audioSource;
+        [Tooltip("One at random when the swing hits something.")]
+        [SerializeField] private AudioClip[] hitSounds;
+        [Tooltip("One at random when the swing hits nothing.")]
+        [SerializeField] private AudioClip[] missSounds;
 
         [Header("Query")]
         [Tooltip("Layers the swing can hit. Narrow it to the enemy layer once one exists.")]
@@ -135,6 +143,8 @@ namespace CodenameVelvet.Player
                 Strike(candidateTargets[i], owner, origin, targetPosition, aim);
                 struckCount++;
             }
+
+            audioSource.PlayRandom(struckCount > 0 ? hitSounds : missSounds);
 
             candidateTargets.Clear();
             candidateOwners.Clear();

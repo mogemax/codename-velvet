@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using CodenameVelvet.Audio;
 using CodenameVelvet.Cameras;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
@@ -11,9 +12,8 @@ namespace CodenameVelvet.Enemies
     /// <summary>
     /// Cyclops (boss) brain. States:
     /// <list type="bullet">
-    /// <item>Wander: walks to random points inside its zone (a trigger BoxCollider, or a radius around
-    /// the spawn) and only picks points with ground below, so it never walks off the world.</item>
-    /// <item>Rest: now and then stops and plays one of its idles at random (IdleVariant parameter).</item>
+    /// <item>Guard: stands still where it was placed (the cave entrance) playing its idles at random
+    /// (IdleVariant parameter), and walks back there after losing a player.</item>
     /// <item>Chase: walks toward a detected player without leaving the zone.</item>
     /// <item>Attack: with a player close, picks one of the available attacks (by range, cooldown and weight),
     /// commits to it (it cannot be interrupted) and waits to recover.</item>
@@ -30,21 +30,15 @@ namespace CodenameVelvet.Enemies
         [SerializeField, Min(1)] private int maxHp = 20;
 
         [Header("Zone")]
-        [Tooltip("Trigger BoxCollider that bounds where it can walk. Empty = a radius around the spawn.")]
+        [Tooltip("Trigger BoxCollider that bounds where it can walk (may be rotated). Empty = a radius around the spawn.")]
         [SerializeField] private BoxCollider wanderArea;
         [SerializeField, Min(0f)] private float fallbackWanderRadius = 8f;
         [Tooltip("Distance kept from the zone edge (usually about its body radius).")]
         [SerializeField, Min(0f)] private float areaMargin = 1.5f;
-        [Tooltip("Layers that count as ground when checking a point is not over the void.")]
-        [SerializeField] private LayerMask groundMask = ~0;
-        [SerializeField, Min(1)] private int maxPointAttempts = 12;
 
-        [Header("Wander")]
+        [Header("Guard")]
+        [Tooltip("Speed walking back to its post.")]
         [SerializeField, Min(0f)] private float wanderSpeed = 1.8f;
-        [Tooltip("Max length of each walk. Short walks = it arrives and rests often, even in a huge zone.")]
-        [SerializeField, Min(1f)] private float maxWanderStep = 12f;
-        [Tooltip("Chance (0-1) of stopping to play an idle at each point.")]
-        [SerializeField, Range(0f, 1f)] private float restChance = 0.6f;
         [SerializeField] private Vector2 restTimeRange = new Vector2(2.5f, 6f);
         [Tooltip("Weight of each idle: index 0 = Idle state, 1 = Idle_V1.")]
         [SerializeField] private float[] idleWeights = { 1f, 1f };
@@ -78,6 +72,10 @@ namespace CodenameVelvet.Enemies
         [SerializeField] private Transform spriteRoot;
         [Tooltip("Enable when the original art faces right.")]
         [SerializeField] private bool artFacesRight = false;
+
+        [Header("Sound")]
+        [Tooltip("Looping footsteps, played while walking.")]
+        [SerializeField] private AudioSource footsteps;
 
         [Header("Debug")]
         [SerializeField] private bool debugLogs = true;
@@ -113,13 +111,14 @@ namespace CodenameVelvet.Enemies
         private bool isDazed;
         private bool impactSignaled;
         private Vector3 facing = Vector3.back; // toward the camera
-        private bool restBeforeWandering = true; // rests first on start and after losing the player
 
         public bool IsAttacking => isAttacking;
         /// <summary>True while recovering from an attack: it stays still, no moving or attacking.</summary>
         public bool IsDazed => isDazed;
         /// <summary>True while chasing or attacking a player, i.e. the boss has seen someone.</summary>
         public bool HasTarget => targetTransform != null;
+        /// <summary>While false it ignores every player and cannot be pushed (the fight is not allowed to start yet).</summary>
+        public bool CanEngage { get; set; } = true;
 
         private void Reset()
         {
@@ -166,6 +165,7 @@ namespace CodenameVelvet.Enemies
             v.y = 0f;
             bool moving = !isAttacking && v.sqrMagnitude > 0.01f; // the lunge moves it, but it stays in the attack animation
             SetBool(IsMovingHash, moving);
+            footsteps.SetLoopPlaying(moving);
             SetBool(IsAttackingHash, isAttacking);
             SetFloat(SpeedHash, v.magnitude);
             if (moving)
@@ -203,9 +203,13 @@ namespace CodenameVelvet.Enemies
         {
             try
             {
+                // Its post is where physics settles it; the exact placed point may be unreachable on foot.
+                await Awaitable.WaitForSecondsAsync(1f, token);
+                spawnPosition = transform.position;
+
                 while (true)
                 {
-                    await WanderAsync(token);
+                    await GuardAsync(token);
                     await CombatAsync(token);
                 }
             }
@@ -213,26 +217,16 @@ namespace CodenameVelvet.Enemies
             catch (Exception e) { Debug.LogException(e, this); }
         }
 
-        private async Awaitable WanderAsync(CancellationToken token)
+        private async Awaitable GuardAsync(CancellationToken token)
         {
-            if (restBeforeWandering)
-            {
-                restBeforeWandering = false;
-                if (await RestAsync(token)) return;
-            }
-            while (true)
-            {
-                if (await WalkToWanderPointAsync(token)) return;
-
-                if (random.NextDouble() < restChance && await RestAsync(token))
-                    return;
-            }
+            if (await WalkToPostAsync(token)) return; // returns at once when already there
+            while (!await RestAsync(token)) { }
         }
 
         /// <returns>True when a target was found on the way.</returns>
-        private async Awaitable<bool> WalkToWanderPointAsync(CancellationToken token)
+        private async Awaitable<bool> WalkToPostAsync(CancellationToken token)
         {
-            Vector3 point = PickWanderPoint();
+            Vector3 point = spawnPosition;
             mover.MoveTo(point, wanderSpeed);
             float travel = EnemyAggroRules.PlanarDistance(transform.position, point) / Mathf.Max(0.01f, wanderSpeed);
             float giveUp = Time.time + travel * 2f + 1f;
@@ -286,7 +280,6 @@ namespace CodenameVelvet.Enemies
                 {
                     if (debugLogs) VelvetLog.Info(LogCategory, this, alive ? $"Loses interest ({distance:F1}u)" : "Target dead or gone");
                     ClearTarget();
-                    restBeforeWandering = true;
                     mover.Stop();
                     return;
                 }
@@ -427,7 +420,7 @@ namespace CodenameVelvet.Enemies
 
         public void ApplyKnockback(Vector3 direction, float force, float stunSeconds)
         {
-            if (health != null && !health.IsAlive) return;
+            if (!CanEngage || (health != null && !health.IsAlive)) return;
             if (isAttacking && superArmorWhileAttacking)
             {
                 if (debugLogs) VelvetLog.Info(LogCategory, this, "Knockback ignored (super armor)");
@@ -448,7 +441,7 @@ namespace CodenameVelvet.Enemies
 
         private bool TryAcquireTarget()
         {
-            if (Time.time < nextSearchTime) return false;
+            if (!CanEngage || Time.time < nextSearchTime) return false;
             nextSearchTime = Time.time + retargetInterval;
 
             if (!targetFinder.TryFindNearest(transform.position, detectionRange, out IDamageable found, out Transform foundTransform, out Collider foundCollider))
@@ -471,55 +464,23 @@ namespace CodenameVelvet.Enemies
             targetCollider = null;
         }
 
-        private bool GetZone(out Vector3 center, out Vector2 halfExtents)
+        private Vector3 ClampToZone(Vector3 point)
         {
             if (wanderArea != null)
             {
-                Bounds b = wanderArea.bounds;
-                center = new Vector3(b.center.x, transform.position.y, b.center.z);
-                halfExtents = new Vector2(b.extents.x, b.extents.z);
-                return true;
+                // In the box's local space: its world bounds are axis-aligned, bigger than a rotated box.
+                Transform area = wanderArea.transform;
+                Vector3 scale = area.lossyScale;
+                Vector2 half = new Vector2(
+                    wanderArea.size.x * 0.5f - areaMargin / Mathf.Abs(scale.x),
+                    wanderArea.size.z * 0.5f - areaMargin / Mathf.Abs(scale.z));
+                return area.TransformPoint(WanderPointPicker.ClampToArea(area.InverseTransformPoint(point), wanderArea.center, half));
             }
-            center = spawnPosition;
-            halfExtents = Vector2.zero;
-            return false;
-        }
-
-        private Vector3 PickWanderPoint()
-        {
-            bool hasArea = GetZone(out Vector3 center, out Vector2 half);
-            Vector3 candidate = transform.position;
-            for (int i = 0; i < maxPointAttempts; i++)
-            {
-                // A short step from where it stands (inside the zone) instead of crossing the whole zone at once
-                candidate = hasArea
-                    ? WanderPointPicker.ClampToArea(WanderPointPicker.PickPoint(transform.position, maxWanderStep, random), center, half, areaMargin)
-                    : WanderPointPicker.PickPoint(spawnPosition, fallbackWanderRadius, random);
-                if (EnemyAggroRules.PlanarDistance(transform.position, candidate) < maxWanderStep * 0.25f) continue; // too close to be worth a walk
-                if (HasGround(candidate)) return candidate;
-            }
-            if (debugLogs) VelvetLog.Warn(LogCategory, this, "No point with ground found; staying put");
-            return transform.position;
-        }
-
-        private Vector3 ClampToZone(Vector3 point)
-        {
-            if (GetZone(out Vector3 center, out Vector2 half))
-                return WanderPointPicker.ClampToArea(point, center, half, areaMargin);
             float d = EnemyAggroRules.PlanarDistance(spawnPosition, point);
             float max = fallbackWanderRadius + loseInterestRange;
             if (d <= max) return point;
             Vector3 dir = point - spawnPosition; dir.y = 0f;
             return spawnPosition + dir.normalized * max;
-        }
-
-        private bool HasGround(Vector3 point)
-        {
-            Vector3 from = point + Vector3.up * 5f;
-            var hits = Physics.RaycastAll(from, Vector3.down, 15f, groundMask, QueryTriggerInteraction.Ignore);
-            foreach (var h in hits)
-                if (h.rigidbody != rb && h.collider != body) return true;
-            return false;
         }
 
         private void Face(Vector3 direction)
@@ -569,7 +530,9 @@ namespace CodenameVelvet.Enemies
             if (wanderArea != null)
             {
                 Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(wanderArea.bounds.center, wanderArea.bounds.size);
+                Gizmos.matrix = wanderArea.transform.localToWorldMatrix;
+                Gizmos.DrawWireCube(wanderArea.center, wanderArea.size);
+                Gizmos.matrix = Matrix4x4.identity;
             }
             else
             {
