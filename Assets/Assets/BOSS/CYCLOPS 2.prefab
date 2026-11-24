@@ -770,7 +770,7 @@ Transform:
   - {fileID: 8722412661276888625}
   - {fileID: 7715955171155130045}
   - {fileID: 6558174369498025693}
-  m_Father: {fileID: 7994693091453370288}
+  m_Father: {fileID: 1131983211319921288}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1116651543433483958
 GameObject:
@@ -2001,7 +2001,7 @@ Transform:
   - {fileID: 8363010580547115185}
   - {fileID: 8299923491647054840}
   - {fileID: 9090582617699518952}
-  m_Father: {fileID: 7994693091453370288}
+  m_Father: {fileID: 1131983211319921288}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2901468737819619049
 GameObject:
@@ -2766,8 +2766,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4320073455134127706}
-  - {fileID: 5033464834456137192}
+  - {fileID: 1131983211319921288}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3989146029491154853
@@ -5155,6 +5154,52 @@ MonoBehaviour:
     m_Extent: {x: 7.28946, y: 6.71208, z: 0}
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
+--- !u!1 &7984626808104215477
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1131983211319921288}
+  - component: {fileID: 2632708221747203138}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1131983211319921288
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984626808104215477}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4320073455134127706}
+  - {fileID: 5033464834456137192}
+  m_Father: {fileID: 7994693091453370288}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2632708221747203138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7984626808104215477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af2879609f24e79b25eef2637df1294, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Cameras.ViewTilt
 --- !u!1 &8177121997410937272
 GameObject:
   m_ObjectHideFlags: 0

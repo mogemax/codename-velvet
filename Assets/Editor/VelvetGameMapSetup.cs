@@ -59,7 +59,10 @@ public static class VelvetGameMapSetup
     [MenuItem("Tools/Velvet/Map/Mark Selection As Ground")]
     public static void MarkSelectionAsGround() => MarkSelection(GroundLayerName);
 
-    /// <summary>Same as Ground, on the Water layer: characters never walk onto it (see WaterEdge).</summary>
+    /// <summary>
+    /// Same as Ground, on the Water layer: characters never walk onto it (see WaterEdge). Its renderers get the
+    /// lowest sorting order so the water never draws over sprites.
+    /// </summary>
     [MenuItem("Tools/Velvet/Map/Mark Selection As Water")]
     public static void MarkSelectionAsWater() => MarkSelection(WaterLayerName);
 
@@ -86,6 +89,13 @@ public static class VelvetGameMapSetup
                 t.gameObject.layer = layer;
                 GameObjectUtility.SetStaticEditorFlags(t.gameObject, MapStaticFlags);
                 objects++;
+
+                // Sprites sort by order (DynamicSortingOrder); the lowest order keeps water under all of them.
+                if (layerName == WaterLayerName && t.TryGetComponent(out Renderer waterRenderer))
+                {
+                    Undo.RecordObject(waterRenderer, "Mark map layer");
+                    waterRenderer.sortingOrder = short.MinValue;
+                }
 
                 if (t.TryGetComponent(out MeshFilter filter) && filter.sharedMesh != null && !t.TryGetComponent(out Collider _))
                 {

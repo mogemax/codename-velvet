@@ -14,14 +14,14 @@ namespace CodenameVelvet.Cameras
         private static readonly List<CameraShake> Active = new List<CameraShake>();
 
         [Tooltip("Max offset at full trauma, in world units.")]
-        [SerializeField, Min(0f)] private float maxOffset = 0.8f;
+        [SerializeField, Min(0f)] private float maxOffset = 1f;
         [Tooltip("Max roll at full trauma, in degrees.")]
-        [SerializeField, Min(0f)] private float maxRoll = 2.5f;
-        [SerializeField, Min(0.1f)] private float frequency = 22f;
+        [SerializeField, Min(0f)] private float maxRoll = 3f;
+        [SerializeField, Min(0.1f)] private float frequency = 50f;
         [Tooltip("Trauma lost per second (1 = a full-strength shake lasts one second).")]
-        [SerializeField, Min(0.1f)] private float recovery = 1.6f;
+        [SerializeField, Min(0.1f)] private float recovery = 2f;
         [Tooltip("Impacts this far from the camera's focus (or farther) do not shake it.")]
-        [SerializeField, Min(0.1f)] private float falloffDistance = 25f;
+        [SerializeField, Min(0.1f)] private float falloffDistance = 30f;
 
         private CameraFollow follow;
         private float trauma;
