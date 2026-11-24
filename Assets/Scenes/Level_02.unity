@@ -610,10 +610,16 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
-  - prefab: {fileID: 3140021191833811181, guid: 032c1755f064b45d59ca36121133c614, type: 3}
-    weight: 1
-  - prefab: {fileID: 6497593674408533151, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
-    weight: 1
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
   maxNodes: 4
   nodeRespawnSeconds: 30
   groundMask:
@@ -623,7 +629,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   maxSlope: 30
-  minSpacing: 4
+  minSpacing: 7
   playerClearance: 12
   bodyRadius: 1
   viewportMargin: 0.1
@@ -711,10 +717,16 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
-  - prefab: {fileID: 3140021191833811181, guid: 032c1755f064b45d59ca36121133c614, type: 3}
-    weight: 1
-  - prefab: {fileID: 6497593674408533151, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
-    weight: 1
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
   maxNodes: 4
   nodeRespawnSeconds: 30
   groundMask:
@@ -724,7 +736,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   maxSlope: 30
-  minSpacing: 4
+  minSpacing: 7
   playerClearance: 12
   bodyRadius: 1
   viewportMargin: 0.1
@@ -1949,7 +1961,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: m_LocalScale.x
-      value: 99839.7
+      value: 145955.66
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: m_LocalScale.y
@@ -1957,7 +1969,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: m_LocalScale.z
-      value: 99839.7
+      value: 157726.77
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1998,6 +2010,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
+      propertyPath: m_SortingOrder
+      value: -32768
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 00cf4e0dd6a081a4793715623a40b3a2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -2263,10 +2279,16 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 3956583568527570944, guid: 87df4721b626d470d8ec01ef0e612a19, type: 3}
     weight: 1
-  - prefab: {fileID: 3140021191833811181, guid: 032c1755f064b45d59ca36121133c614, type: 3}
-    weight: 1
-  - prefab: {fileID: 6497593674408533151, guid: 62ebaf259880f444389c6ffaab99567c, type: 3}
-    weight: 1
+  - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 1890129949323107069, guid: b2570c28d89848b39d1a3057ccf9617a, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 3821173817981508464, guid: fbaac11e56d64e868d626b630016b08c, type: 3}
+    weight: 0.333
+  - prefab: {fileID: 5488133693953013125, guid: 16625c07d3ed4e5286969e65250b7175, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 7196501714530460173, guid: 4b98fd4a3e7b4703a36c0e9e0383a8e9, type: 3}
+    weight: 0.5
   maxNodes: 4
   nodeRespawnSeconds: 30
   groundMask:
@@ -2276,7 +2298,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   maxSlope: 30
-  minSpacing: 4
+  minSpacing: 7
   playerClearance: 12
   bodyRadius: 1
   viewportMargin: 0.1

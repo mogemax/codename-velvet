@@ -104,9 +104,6 @@ PrefabInstance:
       addedObject: {fileID: 8754817953115579479}
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2801914256553785968}
-    - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6045308306625438167}
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
@@ -126,6 +123,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5266234117968046114}
+    - targetCorrespondingSourceObject: {fileID: 7984626808104215477, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5291267208458174166}
+    - targetCorrespondingSourceObject: {fileID: 7984626808104215477, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3474478739215012731}
     - targetCorrespondingSourceObject: {fileID: 3075279980656434564, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6108820687920873867}
@@ -190,6 +193,11 @@ MonoBehaviour:
   damping: 4
   movementInfluence: 15
   maxAngle: 20
+--- !u!4 &2281700021641539894 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1131983211319921288, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
+  m_PrefabInstance: {fileID: 1161830499897834430}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2571990011580710253 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3723964411061274323, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
@@ -243,28 +251,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 22.096409, y: 44.873352, z: 0.8077209}
   m_Center: {x: 2.5284708, y: 24.833675, z: 0.09595543}
---- !u!95 &2801914256553785968
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2571990011580710253}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e0b7d1d71a3fe4e68b3c4e906c00cd03, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!210 &6045308306625438167
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -395,8 +381,8 @@ MonoBehaviour:
   onDazedEnd:
     m_PersistentCalls:
       m_Calls: []
-  animator: {fileID: 2801914256553785968}
-  spriteRoot: {fileID: 9146104601714820110}
+  animator: {fileID: 5291267208458174166}
+  spriteRoot: {fileID: 2281700021641539894}
   artFacesRight: 0
   debugLogs: 1
   drawGizmos: 1
@@ -520,8 +506,42 @@ MonoBehaviour:
   damping: 4
   movementInfluence: 15
   maxAngle: 15
---- !u!4 &9146104601714820110 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7994693091453370288, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
+--- !u!1 &9137998704345815051 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7984626808104215477, guid: c41eb014a8f394add8959c3bde7eee82, type: 3}
   m_PrefabInstance: {fileID: 1161830499897834430}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &5291267208458174166
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9137998704345815051}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e0b7d1d71a3fe4e68b3c4e906c00cd03, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3474478739215012731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9137998704345815051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3642983839d04d27bbe0829a6bd008dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.CyclopsAnimationEvents

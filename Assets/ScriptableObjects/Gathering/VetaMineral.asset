@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Gathering.ResourceNodeDefinition
   displayName: Mineral Vein
   resource: 2
-  color: {r: 0.2, g: 0.85, b: 0.95, a: 1}
+  color: {r: 1, g: 1, b: 1, a: 1}
   hitsToDeplete: 5
   piecesPerHit: 1
   respawnSeconds: 0
