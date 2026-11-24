@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Follows one player with a fixed rotation: the view is defined by pitch, distance and field of view, and the
-/// camera only slides (it never re-aims while following). Split screen uses one per player, assigned through
+/// camera only slides (it never re-aims while following, except to face a ladder being climbed or in a turned zone). Split screen uses one per player, assigned through
 /// <see cref="SetTarget"/>. Inside a <see cref="CameraFramingZone"/> it pulls back and shifts its focus toward
 /// the zone's focus, and <see cref="CameraShake"/> (when present) is added on top of the framing.
 /// </summary>
@@ -31,6 +31,12 @@ public class CameraFollow : MonoBehaviour
     [Tooltip("How fast framing zones pull the camera back and shift its focus. Lower = slower, more cinematic.")]
     [SerializeField, Min(0.1f)] private float zoneBlendSpeed = 2.5f;
 
+    [Header("Climbing")]
+    [Tooltip("Distance from the focus point while the player is on a ladder, seen from the front.")]
+    [SerializeField, Min(1f)] private float climbDistance = 30f;
+    [Tooltip("How fast it turns to face a ladder or a zone's yaw, and back.")]
+    [SerializeField, Min(0.1f)] private float climbBlendSpeed = 4f;
+
     [Header("Optional bounds (keeps the focus over the map)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
@@ -41,6 +47,9 @@ public class CameraFollow : MonoBehaviour
     private Vector3 focus;
     private float zoneDistance;
     private Vector3 zoneShift;
+    private PlayerMovement movement;
+    private float climbBlend;
+    private float yaw;
 
     /// <summary>Smoothed world point the camera is centered on.</summary>
     public Vector3 FocusPoint => focus;
@@ -49,6 +58,7 @@ public class CameraFollow : MonoBehaviour
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
+        movement = target.GetComponent<PlayerMovement>();
     }
 
     /// <summary>Jumps straight to the target instead of gliding there (e.g. after a teleport).</summary>
@@ -89,6 +99,15 @@ public class CameraFollow : MonoBehaviour
         zoneDistance = Mathf.Lerp(zoneDistance, zone != null ? zone.ExtraDistance : 0f, zoneT);
         zoneShift = Vector3.Lerp(zoneShift, zone != null ? zone.FocusShift(target.position) : Vector3.zero, zoneT);
 
+        // On a ladder it looks along the climb direction, so the ladder is seen from the front and never hidden.
+        bool onLadder = movement != null && movement.IsOnLadder;
+        float climbT = 1f - Mathf.Exp(-climbBlendSpeed * Time.deltaTime);
+        float targetYaw = onLadder ? Mathf.Atan2(movement.FacingDirection.x, movement.FacingDirection.y) * Mathf.Rad2Deg
+            : zone != null ? zone.Yaw : 0f;
+        climbBlend = Mathf.Lerp(climbBlend, onLadder ? 1f : 0f, climbT);
+        yaw = Mathf.LerpAngle(yaw, targetYaw, climbT);
+        if (movement != null) movement.ViewYaw = targetYaw;
+
         float followT = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
         focus = Vector3.Lerp(focus, DesiredFocus() + zoneShift, followT);
         Apply();
@@ -109,8 +128,8 @@ public class CameraFollow : MonoBehaviour
     {
         ViewAngle.Pitch = pitch;
 
-        Quaternion rotation = Quaternion.Euler(pitch, 0f, 0f);
-        Vector3 position = focus - rotation * Vector3.forward * (distance + zoneDistance);
+        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
+        Vector3 position = focus - rotation * Vector3.forward * Mathf.Lerp(distance + zoneDistance, climbDistance, climbBlend);
         if (shake != null)
         {
             position += rotation * shake.Offset;
