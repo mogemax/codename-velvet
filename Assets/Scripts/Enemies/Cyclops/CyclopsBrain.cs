@@ -120,6 +120,9 @@ namespace CodenameVelvet.Enemies
         /// <summary>While false it ignores every player and cannot be pushed (the fight is not allowed to start yet).</summary>
         public bool CanEngage { get; set; } = true;
 
+        /// <summary>An attack hit the ground: where, and which attack (for dust, rumble and the like).</summary>
+        public event System.Action<Vector3, CyclopsAttack> Impacted;
+
         private void Reset()
         {
             attacks = DefaultAttacks();
@@ -140,7 +143,11 @@ namespace CodenameVelvet.Enemies
             if (animator != null)
                 foreach (var p in animator.parameters) animatorParams.Add(p.nameHash);
 
-            if (health != null) health.Initialize(maxHp);
+            if (health != null)
+            {
+                health.Initialize(maxHp);
+                health.Died += _ => enabled = false; // no attacks from the corpse
+            }
             else Debug.LogWarning($"{name}: CyclopsBrain has no EnemyHealth; it cannot take damage.", this);
         }
 
@@ -414,6 +421,7 @@ namespace CodenameVelvet.Enemies
 
             if (debugLogs) VelvetLog.Info(LogCategory, this, $"{attack.name}: impact at {center}, radius {attack.impactRadius}, hit {hitCount}");
             CameraShake.Impulse(center, attack.cameraShake);
+            Impacted?.Invoke(center, attack);
             attack.onImpact?.Invoke(center);
             lastImpact = (center, attack.impactRadius, Time.time);
         }

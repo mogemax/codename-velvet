@@ -40,6 +40,10 @@ namespace CodenameVelvet.Enemies
         [SerializeField] private int attackDamage = 1;
         [Tooltip("Seconds between hits.")]
         [SerializeField] private float attackCooldown = 1f;
+        [Tooltip("Initial speed of the push a hit gives the player (units/second).")]
+        [SerializeField, Min(0f)] private float attackKnockback = 7f;
+        [Tooltip("How long that push lasts; the player has no control meanwhile.")]
+        [SerializeField, Min(0f)] private float attackKnockbackSeconds = 0.25f;
 
         public string DisplayName => displayName;
         public Color Color => color;
@@ -54,6 +58,8 @@ namespace CodenameVelvet.Enemies
         public float AttackRange => attackRange;
         public int AttackDamage => attackDamage;
         public float AttackCooldown => attackCooldown;
+        public float AttackKnockback => attackKnockback;
+        public float AttackKnockbackSeconds => attackKnockbackSeconds;
 
         private void OnValidate()
         {

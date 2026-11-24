@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CodenameVelvet.Audio;
 using CodenameVelvet.Combat;
@@ -71,6 +72,9 @@ namespace CodenameVelvet.Player
         private readonly List<float> enemyGaps = new List<float>();
         private float nextAttackTime;
 
+        /// <summary>After every swing: what it hit and where it aimed (for feedback).</summary>
+        public event Action<SwingResult> Swung;
+
         private void Awake()
         {
             movement = GetComponent<PlayerMovement>();
@@ -127,6 +131,7 @@ namespace CodenameVelvet.Player
                 VelvetLog.Info(LogCategory, this, $"Swing aim {DescribeAim(origin, aim)} {aim}");
 
             int struckCount = 0;
+            int enemiesStruck = 0;
             for (int i = 0; i < candidateTargets.Count; i++)
             {
                 Component owner = candidateOwners[i];
@@ -142,9 +147,11 @@ namespace CodenameVelvet.Player
 
                 Strike(candidateTargets[i], owner, origin, targetPosition, aim);
                 struckCount++;
+                if (candidateIsEnemy[i]) enemiesStruck++;
             }
 
             audioSource.PlayRandom(struckCount > 0 ? hitSounds : missSounds);
+            Swung?.Invoke(new SwingResult(enemiesStruck, struckCount - enemiesStruck, aim));
 
             candidateTargets.Clear();
             candidateOwners.Clear();
@@ -301,6 +308,22 @@ namespace CodenameVelvet.Player
                 previous = point;
             }
             Gizmos.DrawLine(origin, previous);
+        }
+    }
+
+    /// <summary>One swing's outcome: enemies hit, other things hit (resource nodes) and the aim on the ground (X/Z).</summary>
+    public readonly struct SwingResult
+    {
+        public int EnemiesHit { get; }
+        public int OthersHit { get; }
+        public Vector2 Aim { get; }
+        public bool Missed => EnemiesHit == 0 && OthersHit == 0;
+
+        public SwingResult(int enemiesHit, int othersHit, Vector2 aim)
+        {
+            EnemiesHit = enemiesHit;
+            OthersHit = othersHit;
+            Aim = aim;
         }
     }
 }

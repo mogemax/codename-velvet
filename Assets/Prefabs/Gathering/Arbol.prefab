@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3751987613527097876}
   - component: {fileID: 8878352073184142069}
   - component: {fileID: 3439805774017741600}
+  - component: {fileID: 5387714466532834074}
   m_Layer: 0
   m_Name: Arbol
   m_TagString: Untagged
@@ -73,6 +74,7 @@ MonoBehaviour:
   definition: {fileID: 11400000, guid: 99631c58fc27a49a4b2556b79ed8c591, type: 2}
   pickupPrefab: {fileID: 2537763033678080076, guid: c447b776b575c47eab547bebdc7db0b8, type: 3}
   dropRadius: {x: 2.5, y: 3.5}
+  vanishSeconds: 0.15
   debugLogs: 1
 --- !u!210 &3751987613527097876
 SortingGroup:
@@ -117,6 +119,19 @@ MonoBehaviour:
   depthRatio: 0.5
   colliderScale: 1.3
   offset: {x: 0, y: 0, z: 0}
+--- !u!114 &5387714466532834074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957887559838322622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef289de3452b5409aa90a3bd863646e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.HitReaction
+  profile: {fileID: 11400000, guid: 5942b906ee23f4fbe92a98cf7977a837, type: 2}
 --- !u!1 &8156274378788402693
 GameObject:
   m_ObjectHideFlags: 0

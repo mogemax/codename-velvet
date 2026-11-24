@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ada7f0fb087d94b09b4c8d67616ebe5d, type: 3}
+  m_Name: Burst_MineralSparks
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.BurstStyle
+  material: {fileID: 2100000, guid: 8b412e01d839241759ae576664fc7bcf, type: 2}
+  colorA: {r: 0.35, g: 0.95, b: 1, a: 1}
+  colorB: {r: 0.85, g: 1, b: 1, a: 1}
+  count: {x: 8, y: 12}
+  speed: {x: 8, y: 15}
+  upward: 0.55
+  size: {x: 0.3, y: 0.55}
+  lifetime: {x: 0.25, y: 0.45}
+  gravity: 3
+  drag: 0.3
+  spawnRadius: 0.4
+  shrink: 1
+  spin: 0
+  sortingOrder: 50

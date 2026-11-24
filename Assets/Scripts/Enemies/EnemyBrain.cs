@@ -87,6 +87,8 @@ namespace CodenameVelvet.Enemies
             targetFinder = GetComponent<EnemyTargetFinder>();
             health = GetComponent<EnemyHealth>();
             body = GetComponent<Collider>();
+            if (health != null)
+                health.Died += _ => enabled = false; // the corpse lingers a moment: no moving or attacking
             if (health == null)
                 Debug.LogError($"{name}: EnemyBrain has no EnemyHealth component; this enemy can't take damage. Add one to the prefab.", this);
             // Seeded from Unity's RNG: enemies spawned on the same frame would
@@ -265,6 +267,8 @@ namespace CodenameVelvet.Enemies
                     if (Time.time >= nextAttackTime)
                     {
                         target.ApplyDamage(definition.AttackDamage);
+                        targetTransform.GetComponentInParent<IKnockbackable>()?.ApplyKnockback(
+                            targetTransform.position - transform.position, definition.AttackKnockback, definition.AttackKnockbackSeconds);
                         nextAttackTime = Time.time + definition.AttackCooldown;
 
                         if (debugLogs)

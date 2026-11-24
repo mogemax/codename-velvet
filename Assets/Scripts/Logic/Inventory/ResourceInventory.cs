@@ -93,6 +93,20 @@ namespace CodenameVelvet.Inventory
             return true;
         }
 
+        /// <summary>How much more of <paramref name="type"/> fits: room left in its stacks plus empty slots.</summary>
+        public int SpaceFor(ResourceType type)
+        {
+            int space = 0;
+            foreach (Slot slot in slots)
+            {
+                if (slot.IsEmpty)
+                    space += StackCap;
+                else if (slot.Type == type)
+                    space += StackCap - slot.Count;
+            }
+            return space;
+        }
+
         /// <summary>Total of <paramref name="type"/> across all slots.</summary>
         public int CountOf(ResourceType type)
         {

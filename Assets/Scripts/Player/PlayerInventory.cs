@@ -35,6 +35,9 @@ namespace CodenameVelvet.Player
         /// <summary>Raised after any change to the slots.</summary>
         public event Action Changed;
 
+        /// <summary>Something was picked up: what and how much.</summary>
+        public event Action<ResourceType, int> Added;
+
         public IReadOnlyList<ResourceInventory.Slot> Slots => inventory.Slots;
         public int MaxPerSlot => inventory.StackCap;
 
@@ -65,6 +68,7 @@ namespace CodenameVelvet.Player
                 if (debugLogs)
                     VelvetLog.Info(LogCategory, this, $"Added {added} {type}, now {inventory.CountOf(type)}");
                 NotifyChanged();
+                Added?.Invoke(type, added);
             }
 
             if (debugLogs && added < amount && !rejectionLogged)
@@ -87,6 +91,9 @@ namespace CodenameVelvet.Player
         }
 
         public int CountOf(ResourceType type) => inventory.CountOf(type);
+
+        /// <summary>How much more of <paramref name="type"/> fits.</summary>
+        public int SpaceFor(ResourceType type) => inventory.SpaceFor(type);
 
         private void DropEverything()
         {

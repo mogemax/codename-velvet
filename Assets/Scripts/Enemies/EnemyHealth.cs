@@ -9,12 +9,16 @@ namespace CodenameVelvet.Enemies
     /// <summary>
     /// Enemy HP and death. Max HP comes from the <see cref="EnemyDefinition"/> through
     /// <see cref="Initialize"/> (called by <see cref="EnemyBrain"/>). On death it raises
-    /// <see cref="Died"/> once and destroys the GameObject; damage before
+    /// <see cref="Died"/> once, stops colliding and destroys the GameObject a moment later (so its death can be
+    /// seen; the brains stop themselves on <see cref="Died"/>); damage before
     /// <see cref="Initialize"/> or after death is ignored.
     /// </summary>
-    public class EnemyHealth : MonoBehaviour, IDamageable
+    public class EnemyHealth : MonoBehaviour, IDamageable, IDamageEvents
     {
         private const string LogCategory = "Enemy";
+
+        [Tooltip("Seconds the body stays after dying (for the death feedback) before it is destroyed.")]
+        [SerializeField, Min(0f)] private float corpseSeconds = 0.25f;
 
         [Header("Debug")]
         [Tooltip("Logs damage taken and death.")]
@@ -25,6 +29,8 @@ namespace CodenameVelvet.Enemies
 
         /// <summary>Raised once when HP reaches zero, right before the GameObject is destroyed.</summary>
         public event Action<EnemyHealth> Died;
+
+        public event Action<DamageEvent> Damaged;
 
         public bool IsAlive => healthState != null && !healthState.IsDead;
         public int CurrentHp => healthState?.CurrentHp ?? 0;
@@ -52,6 +58,7 @@ namespace CodenameVelvet.Enemies
                 return;
 
             healthState.ApplyDamage(amount);
+            Damaged?.Invoke(new DamageEvent(amount, healthState.IsDead));
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Took {amount} damage, HP {healthState.CurrentHp}/{healthState.MaxHp}");
@@ -61,7 +68,20 @@ namespace CodenameVelvet.Enemies
                 if (debugLogs)
                     VelvetLog.Info(LogCategory, this, "Died");
                 Died?.Invoke(this);
-                Destroy(gameObject);
+                StopColliding();
+                Destroy(gameObject, corpseSeconds);
+            }
+        }
+    
+        /// <summary>The corpse no longer blocks, gets hit or falls through the ground while it fades.</summary>
+        private void StopColliding()
+        {
+            foreach (Collider part in GetComponentsInChildren<Collider>())
+                part.enabled = false;
+            if (TryGetComponent(out Rigidbody body))
+            {
+                body.linearVelocity = Vector3.zero;
+                body.isKinematic = true;
             }
         }
     }

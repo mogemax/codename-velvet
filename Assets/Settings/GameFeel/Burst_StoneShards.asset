@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ada7f0fb087d94b09b4c8d67616ebe5d, type: 3}
+  m_Name: Burst_StoneShards
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.BurstStyle
+  material: {fileID: 2100000, guid: c6256bf332f5b4f728f5cfeeaf92c117, type: 2}
+  colorA: {r: 0.42, g: 0.42, b: 0.45, a: 1}
+  colorB: {r: 0.72, g: 0.72, b: 0.74, a: 1}
+  count: {x: 6, y: 9}
+  speed: {x: 6, y: 12}
+  upward: 0.5
+  size: {x: 0.4, y: 0.75}
+  lifetime: {x: 0.4, y: 0.7}
+  gravity: 4.4
+  drag: 0.1
+  spawnRadius: 0.4
+  shrink: 1
+  spin: 1
+  sortingOrder: 50

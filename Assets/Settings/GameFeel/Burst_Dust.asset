@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ada7f0fb087d94b09b4c8d67616ebe5d, type: 3}
+  m_Name: Burst_Dust
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.BurstStyle
+  material: {fileID: 2100000, guid: 536783f8e957a4f7d8c72499b6550af4, type: 2}
+  colorA: {r: 0.8, g: 0.72, b: 0.6, a: 0.55}
+  colorB: {r: 0.66, g: 0.6, b: 0.5, a: 0.45}
+  count: {x: 2, y: 3}
+  speed: {x: 1.2, y: 2.5}
+  upward: 0.25
+  size: {x: 1.2, y: 2}
+  lifetime: {x: 0.35, y: 0.55}
+  gravity: -0.1
+  drag: 0.6
+  spawnRadius: 0.5
+  shrink: 1
+  spin: 0
+  sortingOrder: 50

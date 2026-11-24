@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d406cd6db5bf4982a5e3b82a36a9278, type: 3}
+  m_Name: Feedback_Player
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.HitFeedbackProfile
+  flashColor: {r: 1, g: 0.35, b: 0.3, a: 0.9}
+  flashSeconds: 0.14
+  squash: {x: 0.2, y: -0.2}
+  fatalSquash: {x: 0.3, y: -0.5}
+  joltAmplitude: 0
+  joltSeconds: 0.18
+  hitStopSeconds: 0.08
+  fatalHitStopSeconds: 0.15
+  hitBurst: {fileID: 11400000, guid: df44f181c5a3f42ce889cc7fd42ff8cc, type: 2}
+  fatalBurst: {fileID: 11400000, guid: 8e01746070a1b4d04b7290618796bfcf, type: 2}
+  burstHeight: 2.4
+  fatalCameraShake: 0
+  damageNumbers: {fileID: 0}
+  numberHeight: 3

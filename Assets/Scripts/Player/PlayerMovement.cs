@@ -62,6 +62,9 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsDashing { get; private set; }
 
+    /// <summary>Being knocked back: sliding without control.</summary>
+    public bool IsPushed => pushTimeLeft > 0f;
+
     /// <summary>While true something else (PlayerClimb) moves the kinematic body.</summary>
     public bool IsClimbing { get; private set; }
 
@@ -118,6 +121,10 @@ public class PlayerMovement : MonoBehaviour
     private float dashCooldownLeft;
     private bool dashRequested;     // consumed by the next Update, like GetKeyDown
 
+    private Vector2 pushVelocity;   // knockback: fades from this to zero over pushDuration
+    private float pushDuration;
+    private float pushTimeLeft;
+
     private int isMovingHash;
     private int dashTriggerHash;
     private int isDashingHash;
@@ -161,6 +168,15 @@ public class PlayerMovement : MonoBehaviour
 
         ProbeGround();
 
+        if (IsPushed)
+        {
+            // Linear fade like the enemies' push; time on the physics step, so the distance does not depend on FPS.
+            currentVelocity = pushVelocity * (pushTimeLeft / pushDuration);
+            ApplyPlanarVelocity(currentVelocity);
+            pushTimeLeft -= Time.fixedDeltaTime;
+            return;
+        }
+
         if (IsDashing)
         {
             DashMove();
@@ -194,6 +210,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controlEnabled = isEnabled;
         dashRequested = false;
+        if (!isEnabled) pushTimeLeft = 0f; // dying or climbing ends a knockback
 
         rawMoveInput = isEnabled ? ReadCurrentMoveValue() : Vector2.zero;
         if (!isEnabled) inputDir = Vector2.zero;
@@ -242,7 +259,7 @@ public class PlayerMovement : MonoBehaviour
         if (dashCooldownLeft > 0f)
             dashCooldownLeft -= Time.deltaTime;
 
-        if (requested && !isFlying && dashCooldownLeft <= 0f)
+        if (requested && !isFlying && !IsPushed && dashCooldownLeft <= 0f)
             TryStartDash();
     }
 
@@ -262,6 +279,18 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool(isDashingHash, true);
             animator.SetTrigger(dashTriggerHash);
         }
+    }
+
+    /// <summary>
+    /// Knockback: slides along <paramref name="velocity"/> (world X/Z), fading to a stop over <paramref name="seconds"/>,
+    /// with no control and no dash meanwhile. Cancels a dash; ignored while climbing.
+    /// </summary>
+    public void Push(Vector2 velocity, float seconds)
+    {
+        if (IsClimbing || seconds <= 0f) return;
+        CancelDash();
+        pushVelocity = velocity;
+        pushDuration = pushTimeLeft = seconds;
     }
 
     /// <summary>

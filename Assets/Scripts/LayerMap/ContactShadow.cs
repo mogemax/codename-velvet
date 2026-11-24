@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using CodenameVelvet.Feedback;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -9,9 +9,8 @@ using UnityEngine.Rendering;
 /// Awake (before other components cache their renderers, so it hides with the rest when a node is depleted or a
 /// player dies).</item>
 /// <item>Tells every "Velvet/Sprite" renderer below where the ground is (this object's height: its feet), so their
-/// cast shadow starts at the feet. Updated only when the height changes. It goes through a copy of the material
-/// owned by this object (one per material it uses), not a MaterialPropertyBlock: a property block turns off the
-/// GPU deformation of bone-animated sprites (they would stop animating).</item>
+/// cast shadow starts at the feet. Updated only when the height changes, through this object's own material copies
+/// (<see cref="SpriteMaterials"/>).</item>
 /// <item>Size: from this object's collider (its body), unless <see cref="width"/> is set.</item>
 /// <item>Draws after the ground and the water but before every sprite (its own Sorting Group, sorted at the root),
 /// so it never covers another character.</item>
@@ -35,12 +34,12 @@ public class ContactShadow : MonoBehaviour
     [SerializeField, Min(0.1f)] private float colliderScale = 1.3f;
     [SerializeField] private Vector3 offset = Vector3.zero;
 
-    private readonly List<Material> groundMaterials = new List<Material>();
+    private SpriteMaterials spriteMaterials;
     private float groundY = float.NaN;
 
     private void Awake()
     {
-        UseOwnGroundMaterials();
+        spriteMaterials = SpriteMaterials.On(gameObject);
         if (material == null || transform.Find(ChildName) != null) return;
 
         float worldWidth = width > 0f ? width : ColliderWidth();
@@ -69,33 +68,7 @@ public class ContactShadow : MonoBehaviour
         float y = transform.position.y;
         if (Mathf.Abs(y - groundY) < 0.001f) return;
         groundY = y;
-        var ground = new Vector4(y, 1f, 0f, 0f);
-        foreach (Material groundMaterial in groundMaterials)
-            groundMaterial.SetVector(ShadowGroundId, ground);
-    }
-
-    private void OnDestroy()
-    {
-        foreach (Material groundMaterial in groundMaterials)
-            Destroy(groundMaterial);
-    }
-
-    /// <summary>Every sprite below that reads a ground height gets this object's own copy of its material.</summary>
-    private void UseOwnGroundMaterials()
-    {
-        var copies = new Dictionary<Material, Material>();
-        foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            Material shared = sprite.sharedMaterial;
-            if (shared == null || !shared.HasProperty(ShadowGroundId)) continue;
-            if (!copies.TryGetValue(shared, out Material copy))
-            {
-                copy = new Material(shared) { name = $"{shared.name} ({name})" };
-                copies.Add(shared, copy);
-                groundMaterials.Add(copy);
-            }
-            sprite.sharedMaterial = copy;
-        }
+        spriteMaterials.SetVector(ShadowGroundId, new Vector4(y, 1f, 0f, 0f));
     }
 
     private float ColliderWidth()

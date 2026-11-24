@@ -14,12 +14,14 @@ namespace CodenameVelvet.Player
     /// and to this player's own components through <see cref="Died"/> (immediately).
     /// Rule: every reference here is to this GameObject's own components.
     /// </summary>
-    public class PlayerHealth : MonoBehaviour, IDamageable
+    public class PlayerHealth : MonoBehaviour, IDamageable, IDamageEvents
     {
         private const string LogCategory = "Player";
 
         [SerializeField] private int maxHp = 3;
         [SerializeField] private float deathDelaySeconds = 2f;
+        [Tooltip("After a hit, every other hit is ignored this long (so several enemies can't land a combo).")]
+        [SerializeField, Min(0f)] private float hitInvulnerabilitySeconds = 0.6f;
         [SerializeField] private PlayerDiedEvent onPlayerDied;
 
         [Tooltip("Child hidden while dead. If empty, child Renderers are toggled instead.")]
@@ -35,6 +37,8 @@ namespace CodenameVelvet.Player
         private Rigidbody body;
         private Renderer[] hiddenRenderers;
         private bool isDying;
+        private float recoverUntil;
+        private int hitFrame = -1;
 
         /// <summary>
         /// Raised once per death, at the start of the death sequence while the player
@@ -42,12 +46,20 @@ namespace CodenameVelvet.Player
         /// </summary>
         public event Action Died;
 
+        public event Action<DamageEvent> Damaged;
+
         public int CurrentHp => healthState.CurrentHp;
         public int MaxHp => healthState.MaxHp;
         public bool IsAlive => !healthState.IsDead && !isDying;
 
         /// <summary>While true every hit is ignored (dev mode, temporary invulnerability).</summary>
         public bool Invulnerable { get; set; }
+
+        /// <summary>Still in the short invulnerability after a hit (separate from <see cref="Invulnerable"/>).</summary>
+        public bool IsRecovering => Time.time < recoverUntil;
+
+        /// <summary>True on the frame a hit landed, so the same attack can still push the player.</summary>
+        public bool WasHitThisFrame => hitFrame == Time.frameCount;
 
         /// <summary>Where the player comes back after dying: its start position unless changed (e.g. by a boss fight).</summary>
         public Vector3 RespawnPoint { get; set; }
@@ -67,13 +79,17 @@ namespace CodenameVelvet.Player
 
         public void ApplyDamage(int amount)
         {
-            if (!IsAlive || Invulnerable)
+            if (!IsAlive || Invulnerable || IsRecovering)
                 return;
 
             healthState.ApplyDamage(amount);
+            recoverUntil = Time.time + hitInvulnerabilitySeconds;
+            hitFrame = Time.frameCount;
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, $"Took {amount} damage, HP {healthState.CurrentHp}/{healthState.MaxHp}");
+
+            Damaged?.Invoke(new DamageEvent(amount, healthState.IsDead));
 
             if (healthState.IsDead)
                 StartCoroutine(DeathSequence());
@@ -107,6 +123,7 @@ namespace CodenameVelvet.Player
             StopBody();
             SetVisible(true);
             healthState.ResetToFull();
+            recoverUntil = 0f;
             isDying = false;
 
             if (debugLogs)

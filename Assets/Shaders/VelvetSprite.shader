@@ -8,7 +8,8 @@
 // - optional wind sway (more at the top than at the base), per material.
 // Globals (set by DayNightLighting; unset = 0 = no effect):
 //   _VelvetDarkness, _VelvetSunTint, _VelvetShadowStrength, _VelvetCastShadow.
-// Per renderer (set by ContactShadow): _ShadowGround = (ground height, 1 = set). Unset = the renderer's own pivot.
+// Per object (own material copy, see SpriteMaterials): _ShadowGround = (ground height, 1 = set; unset = the
+// renderer's own pivot), set by ContactShadow; _FlashColor = hit flash (rgb color, a amount), set by HitFlash.
 Shader "Velvet/Sprite"
 {
     Properties
@@ -19,6 +20,7 @@ Shader "Velvet/Sprite"
         _WindSpeed ("Wind Speed", Float) = 1.5
         _ShadowMaxLength ("Cast Shadow Max Length (× height)", Range(0, 4)) = 1.6
         [HideInInspector] _ShadowGround ("Shadow Ground (height, set)", Vector) = (0, 0, 0, 0)
+        [HideInInspector] _FlashColor ("Flash (rgb color, a amount)", Color) = (1, 1, 1, 0)
 
         // Legacy properties. They're here so that materials using this shader can gracefully fallback to the legacy sprite shader.
         [HideInInspector] _Color ("Tint", Color) = (1,1,1,1)
@@ -42,6 +44,7 @@ Shader "Velvet/Sprite"
             half _WindSpeed;
             half _ShadowMaxLength;
             float4 _ShadowGround;
+            half4 _FlashColor;
         CBUFFER_END
 
         // Globals, outside the material: one value for every sprite.
@@ -206,6 +209,7 @@ Shader "Velvet/Sprite"
                 color.rgb *= lerp(half3(1, 1, 1), hue, _VelvetSunTint);
                 color.rgb *= lerp(1.0h - _VelvetShadowStrength, 1.0h, sun.shadowAttenuation);
                 color.rgb *= 1.0h - _VelvetDarkness.rgb;
+                color.rgb = lerp(color.rgb, _FlashColor.rgb, _FlashColor.a); // hit flash: reads at night too
 
                 color.rgb = MixFog(color.rgb, input.fogFactor);
                 return color;

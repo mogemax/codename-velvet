@@ -14,7 +14,7 @@ namespace CodenameVelvet.Gathering
     /// wait can keep running. It comes back after the definition's respawn time, or stays
     /// depleted when that is 0. Takes damage but never knockback.
     /// </summary>
-    public class ResourceNode : MonoBehaviour, IDamageable
+    public class ResourceNode : MonoBehaviour, IDamageable, IDamageEvents
     {
         private const string LogCategory = "Gather";
 
@@ -25,6 +25,9 @@ namespace CodenameVelvet.Gathering
         [Header("Drops")]
         [Tooltip("Pieces land on a ring around the node, on the ground plane (x = min radius, y = max radius).")]
         [SerializeField] private Vector2 dropRadius = new Vector2(0.6f, 1.2f);
+
+        [Tooltip("Seconds it stays visible after the last hit, so its depletion can be seen.")]
+        [SerializeField, Min(0f)] private float vanishSeconds = 0.15f;
 
         [Header("Debug")]
         [Tooltip("Logs every hit, the pieces dropped, depletion and respawn.")]
@@ -37,11 +40,14 @@ namespace CodenameVelvet.Gathering
         private bool isDepleted;
         private float respawnTime;
         private CancellationTokenSource respawnCancellation;
+        private Coroutine vanishing;
 
         public bool IsAlive => definition != null && !isDepleted;
 
         /// <summary>Raised on depletion, after the node hides.</summary>
         public event Action<ResourceNode> Depleted;
+
+        public event Action<DamageEvent> Damaged;
 
         /// <summary>
         /// True = never respawns by itself; its owner (e.g. a SpawnZone) calls <see cref="RespawnAt"/>.
@@ -85,6 +91,12 @@ namespace CodenameVelvet.Gathering
         private void OnDisable()
         {
             StopRespawn();
+            if (vanishing != null)
+            {
+                // Disabling stops the coroutine: finish hiding now.
+                SetVisible(false);
+                vanishing = null;
+            }
         }
 
         /// <summary>
@@ -106,6 +118,7 @@ namespace CodenameVelvet.Gathering
             audioSource.PlayRandom(definition.HitSounds);
 
             DropPieces();
+            Damaged?.Invoke(new DamageEvent(1, hitsRemaining <= 0));
 
             if (hitsRemaining <= 0)
                 Deplete();
@@ -124,6 +137,8 @@ namespace CodenameVelvet.Gathering
             {
                 ResourcePickup pickup = Instantiate(pickupPrefab, RandomDropPosition(), Quaternion.identity);
                 pickup.Initialize(definition.Resource, 1);
+                if (pickup.TryGetComponent(out PickupMotion motion))
+                    motion.LaunchFrom(transform.position);
             }
 
             if (debugLogs)
@@ -143,7 +158,8 @@ namespace CodenameVelvet.Gathering
         private void Deplete()
         {
             isDepleted = true;
-            SetPresent(false);
+            SetCollidable(false);
+            vanishing = StartCoroutine(HideAfter(vanishSeconds));
             Depleted?.Invoke(this);
 
             if (ExternalRespawn)
@@ -171,6 +187,7 @@ namespace CodenameVelvet.Gathering
         {
             isDepleted = false;
             hitsRemaining = definition.HitsToDeplete;
+            if (vanishing != null) StopCoroutine(vanishing);
             SetPresent(true);
 
             if (debugLogs)
@@ -183,10 +200,27 @@ namespace CodenameVelvet.Gathering
         /// </summary>
         private void SetPresent(bool present)
         {
+            SetVisible(present);
+            SetCollidable(present);
+        }
+
+        private void SetVisible(bool visible)
+        {
             foreach (Renderer nodeRenderer in renderers)
-                nodeRenderer.enabled = present;
+                nodeRenderer.enabled = visible;
+        }
+
+        private void SetCollidable(bool collidable)
+        {
             foreach (Collider nodeCollider in colliders)
-                nodeCollider.enabled = present;
+                nodeCollider.enabled = collidable;
+        }
+
+        private System.Collections.IEnumerator HideAfter(float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            SetVisible(false);
+            vanishing = null;
         }
 
         private void StartRespawn()

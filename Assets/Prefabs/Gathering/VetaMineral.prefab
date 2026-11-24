@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4190436228008445836}
   - component: {fileID: 1365058795228518808}
   - component: {fileID: 9200533275760518060}
+  - component: {fileID: 8250502716251722642}
   m_Layer: 0
   m_Name: VetaMineral
   m_TagString: Untagged
@@ -73,6 +74,7 @@ MonoBehaviour:
   definition: {fileID: 11400000, guid: ecedd96a4b9c54781b9ee6f8e3358ac1, type: 2}
   pickupPrefab: {fileID: 2537763033678080076, guid: c447b776b575c47eab547bebdc7db0b8, type: 3}
   dropRadius: {x: 1.75, y: 2.75}
+  vanishSeconds: 0.15
   debugLogs: 1
 --- !u!210 &4190436228008445836
 SortingGroup:
@@ -117,6 +119,19 @@ MonoBehaviour:
   depthRatio: 0.5
   colliderScale: 1.3
   offset: {x: 0, y: 0, z: 0}
+--- !u!114 &8250502716251722642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6772495472866436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef289de3452b5409aa90a3bd863646e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Feedback.HitReaction
+  profile: {fileID: 11400000, guid: 2305bee28b58c4f0494eb9288d9a9c58, type: 2}
 --- !u!1 &7666310173859196379
 GameObject:
   m_ObjectHideFlags: 0

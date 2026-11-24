@@ -118,6 +118,7 @@ GameObject:
   - component: {fileID: 8785190371905622603}
   - component: {fileID: 8441675080868983202}
   - component: {fileID: 154030257386560427}
+  - component: {fileID: 5544516510642014690}
   m_Layer: 0
   m_Name: ResourcePickup
   m_TagString: Untagged
@@ -224,3 +225,25 @@ MonoBehaviour:
   depthRatio: 0.5
   colliderScale: 1.3
   offset: {x: 0, y: 0, z: 0}
+--- !u!114 &5544516510642014690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6418374431678456308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d633a63df4e5b49ceadb2a2b0b0a8de5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Gathering.PickupMotion
+  flightSeconds: 0.5
+  arcHeight: 3
+  magnetRadius: 5
+  magnetAcceleration: 35
+  magnetMaxSpeed: 16
+  targetHeight: 1
+  searchInterval: 0.15
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 64
