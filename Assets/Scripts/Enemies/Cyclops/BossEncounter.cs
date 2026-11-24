@@ -26,7 +26,13 @@ namespace CodenameVelvet.Enemies
         [Tooltip("Turned off during the fight (e.g. the day/night label).")]
         [SerializeField] private GameObject[] hideDuringFight;
 
+        [Header("Music")]
+        [Tooltip("Level music source; switches to Fight Music during the fight and back afterwards.")]
+        [SerializeField] private AudioSource music;
+        [SerializeField] private AudioClip fightMusic;
+
         private GameObject walls;
+        private AudioClip levelMusic;
 
         /// <summary>True from the moment the boss first sees a player until it dies.</summary>
         public bool InFight { get; private set; }
@@ -61,6 +67,15 @@ namespace CodenameVelvet.Enemies
             if (walls != null) walls.SetActive(inFight);
             SetActive(showDuringFight, inFight);
             SetActive(hideDuringFight, !inFight);
+            SwitchMusic(inFight);
+        }
+
+        private void SwitchMusic(bool inFight)
+        {
+            if (music == null || fightMusic == null) return;
+            if (inFight) levelMusic = music.clip;
+            music.clip = inFight ? fightMusic : levelMusic;
+            music.Play();
         }
 
         /// <summary>Four solid walls hugging the outside of the arena box, in its local space so rotation and scale carry over.</summary>

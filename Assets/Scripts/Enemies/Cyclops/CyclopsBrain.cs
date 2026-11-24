@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using CodenameVelvet.Audio;
 using CodenameVelvet.Cameras;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
@@ -78,6 +79,10 @@ namespace CodenameVelvet.Enemies
         [SerializeField] private Transform spriteRoot;
         [Tooltip("Enable when the original art faces right.")]
         [SerializeField] private bool artFacesRight = false;
+
+        [Header("Sound")]
+        [Tooltip("Looping footsteps, played while walking.")]
+        [SerializeField] private AudioSource footsteps;
 
         [Header("Debug")]
         [SerializeField] private bool debugLogs = true;
@@ -166,6 +171,7 @@ namespace CodenameVelvet.Enemies
             v.y = 0f;
             bool moving = !isAttacking && v.sqrMagnitude > 0.01f; // the lunge moves it, but it stays in the attack animation
             SetBool(IsMovingHash, moving);
+            footsteps.SetLoopPlaying(moving);
             SetBool(IsAttackingHash, isAttacking);
             SetFloat(SpeedHash, v.magnitude);
             if (moving)

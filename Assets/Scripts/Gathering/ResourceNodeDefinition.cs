@@ -25,12 +25,17 @@ namespace CodenameVelvet.Gathering
         [Tooltip("Seconds a depleted node stays gone before it comes back. 0 = never respawns.")]
         [SerializeField] private float respawnSeconds;
 
+        [Header("Sound")]
+        [Tooltip("One at random on every hit.")]
+        [SerializeField] private AudioClip[] hitSounds;
+
         public string DisplayName => displayName;
         public ResourceType Resource => resource;
         public Color Color => color;
         public int HitsToDeplete => hitsToDeplete;
         public int PiecesPerHit => piecesPerHit;
         public float RespawnSeconds => respawnSeconds;
+        public AudioClip[] HitSounds => hitSounds;
 
         private void OnValidate()
         {
