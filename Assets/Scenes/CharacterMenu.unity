@@ -1865,7 +1865,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneTransition
   menuAnimator: {fileID: 510386040}
   exitAnimationSeconds: 0.5
-  nextSceneName: Game_Map
+  nextSceneName: Level_01
 --- !u!4 &619403430
 Transform:
   m_ObjectHideFlags: 0

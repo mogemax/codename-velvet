@@ -17,6 +17,9 @@ namespace CodenameVelvet.Multiplayer
     public class PlayerSpawner : MonoBehaviour
     {
         private const string LogCategory = "Spawner";
+        private const float GroundProbeUp = 10f;
+        private const float GroundProbeDown = 100f;
+        private const float SpawnLift = 0.1f;
 
         [Header("Data")]
         [SerializeField] private SessionRosterAsset rosterAsset;
@@ -34,6 +37,9 @@ namespace CodenameVelvet.Multiplayer
         private readonly List<PlayerInput> spawned = new List<PlayerInput>();
 
         public IReadOnlyList<PlayerInput> Players => spawned;
+
+        /// <summary>Where the first player appears.</summary>
+        public Transform FirstSpawnPoint => spawnPoints.Length > 0 && spawnPoints[0] != null ? spawnPoints[0] : transform;
 
         private void Start()
         {
@@ -65,7 +71,14 @@ namespace CodenameVelvet.Multiplayer
             PlayerInput player = devices.Length > 0
                 ? PlayerInput.Instantiate(playerPrefab.gameObject, slot, scheme, -1, devices)
                 : PlayerInput.Instantiate(playerPrefab.gameObject, slot);
-            player.transform.SetPositionAndRotation(point.position, playerPrefab.transform.rotation);
+            // The player's Rigidbody interpolates, so it ignores Transform-only moves: place both.
+            Vector3 position = OnGround(point.position);
+            player.transform.SetPositionAndRotation(position, playerPrefab.transform.rotation);
+            if (player.TryGetComponent(out Rigidbody body))
+            {
+                body.position = position;
+                body.linearVelocity = Vector3.zero;
+            }
             player.name = $"Player{slot + 1}";
 
             CharacterDefinition character = characterIndex >= 0 && characterIndex < catalog.Count
@@ -82,6 +95,18 @@ namespace CodenameVelvet.Multiplayer
 
             VelvetLog.Info(LogCategory, this,
                 $"P{slot + 1} ({character?.DisplayName ?? "no character"}) with {string.Join(", ", player.devices.Select(d => d.displayName))}");
+        }
+
+        /// <summary>
+        /// The ground right below (or slightly above) a spawn point, so a badly placed point never leaves a player
+        /// inside the terrain or floating. PlayerHealth respawns there too, since it records its start position.
+        /// </summary>
+        private static Vector3 OnGround(Vector3 point)
+        {
+            return Physics.Raycast(point + Vector3.up * GroundProbeUp, Vector3.down, out RaycastHit hit,
+                GroundProbeUp + GroundProbeDown, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore)
+                ? hit.point + Vector3.up * SpawnLift
+                : point;
         }
 
         private Camera CreateCamera(Transform target, Rect viewport, bool isFirst)

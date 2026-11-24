@@ -1,37 +1,68 @@
+using CodenameVelvet.Cameras;
 using UnityEngine;
 
 /// <summary>
-/// Follows one player at a fixed angle and distance, with smoothing. Split screen uses one per player,
-/// assigned through <see cref="SetTarget"/>.
+/// Follows one player with a fixed rotation: the view is defined by pitch, distance and field of view, and the
+/// camera only slides (it never re-aims while following). Split screen uses one per player, assigned through
+/// <see cref="SetTarget"/>. Inside a <see cref="CameraFramingZone"/> it pulls back and shifts its focus toward
+/// the zone's focus, and <see cref="CameraShake"/> (when present) is added on top of the framing.
 /// </summary>
+[RequireComponent(typeof(Camera))]
 public class CameraFollow : MonoBehaviour
 {
+    private const float ReferenceAspect = 16f / 9f;
+
     [SerializeField] private Transform target;
 
-    [Header("Camera offset")]
-    [Tooltip("Position relative to the player: Y up, negative Z to sit behind and above.")]
-    [SerializeField] private Vector3 offset = new Vector3(0f, 10f, -8f);
+    [Header("Framing")]
+    [Tooltip("Degrees the camera looks down. Sprites with ViewTilt lean back by the same angle to face it.")]
+    [SerializeField, Range(10f, 89f)] private float pitch = ViewAngle.DefaultPitch;
+    [Tooltip("Distance from the focus point to the camera.")]
+    [SerializeField, Min(1f)] private float distance = 55f;
+    [Tooltip("Vertical field of view on a 16:9 view. Other view shapes keep the same horizontal coverage, " +
+             "so a half-height split-screen view shows the same width at the same scale.")]
+    [SerializeField, Range(10f, 90f)] private float fieldOfView = 35f;
+    [Tooltip("Height above the player's feet the camera centers on.")]
+    [SerializeField] private float focusHeight = 1.5f;
 
     [Header("Smoothing")]
     [Tooltip("How fast it catches up with the player. Higher = tighter. Frame-rate independent.")]
     [SerializeField] private float smoothSpeed = 8f;
+    [Tooltip("How fast framing zones pull the camera back and shift its focus. Lower = slower, more cinematic.")]
+    [SerializeField, Min(0.1f)] private float zoneBlendSpeed = 2.5f;
 
-    [Header("Focus")]
-    [Tooltip("Keeps the camera rotated to look exactly at the target.")]
-    [SerializeField] private bool alwaysLookAtTarget = true;
-
-    [Tooltip("Shifts the point the camera looks at, without moving the camera. Positive Y shows the character lower on screen.")]
-    [SerializeField] private Vector3 lookAtOffset = new Vector3(0f, 2f, 0f);
-
-    [Header("Optional bounds (keeps the camera over the map)")]
+    [Header("Optional bounds (keeps the focus over the map)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
     [SerializeField] private Vector2 maxBounds;
+
+    private Camera cam;
+    private CameraShake shake;
+    private Vector3 focus;
+    private float zoneDistance;
+    private Vector3 zoneShift;
+
+    /// <summary>Smoothed world point the camera is centered on.</summary>
+    public Vector3 FocusPoint => focus;
 
     /// <summary>Sets who to follow. Call before Start.</summary>
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
+    }
+
+    /// <summary>Jumps straight to the target instead of gliding there (e.g. after a teleport).</summary>
+    public void SnapToTarget()
+    {
+        if (target == null) return;
+        focus = DesiredFocus() + zoneShift;
+        Apply();
+    }
+
+    private void Awake()
+    {
+        cam = GetComponent<Camera>();
+        TryGetComponent(out shake);
     }
 
     private void Start()
@@ -43,29 +74,51 @@ public class CameraFollow : MonoBehaviour
         }
 
         // Start in place instead of flying in from wherever the camera was.
-        transform.position = target.position + offset;
-        transform.LookAt(target.position + lookAtOffset);
+        focus = DesiredFocus();
+        Apply();
     }
 
     // LateUpdate: the player's Rigidbody interpolates every frame, so its position is already current here.
-    // Following in FixedUpdate (50 Hz) stutters on 60+ Hz screens.
     private void LateUpdate()
     {
         if (target == null) return;
 
-        Vector3 desiredPosition = target.position + offset;
+        // Exponential smoothing: same catch-up per second at any frame rate (and frozen while paused).
+        CameraFramingZone zone = CameraFramingZone.Find(target.position);
+        float zoneT = 1f - Mathf.Exp(-zoneBlendSpeed * Time.deltaTime);
+        zoneDistance = Mathf.Lerp(zoneDistance, zone != null ? zone.ExtraDistance : 0f, zoneT);
+        zoneShift = Vector3.Lerp(zoneShift, zone != null ? zone.FocusShift(target.position) : Vector3.zero, zoneT);
 
+        float followT = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
+        focus = Vector3.Lerp(focus, DesiredFocus() + zoneShift, followT);
+        Apply();
+    }
+
+    private Vector3 DesiredFocus()
+    {
+        Vector3 desired = target.position + Vector3.up * focusHeight;
         if (useBounds)
         {
-            desiredPosition.x = Mathf.Clamp(desiredPosition.x, minBounds.x, maxBounds.x);
-            desiredPosition.z = Mathf.Clamp(desiredPosition.z, minBounds.y, maxBounds.y);
+            desired.x = Mathf.Clamp(desired.x, minBounds.x, maxBounds.x);
+            desired.z = Mathf.Clamp(desired.z, minBounds.y, maxBounds.y);
+        }
+        return desired;
+    }
+
+    private void Apply()
+    {
+        ViewAngle.Pitch = pitch;
+
+        Quaternion rotation = Quaternion.Euler(pitch, 0f, 0f);
+        Vector3 position = focus - rotation * Vector3.forward * (distance + zoneDistance);
+        if (shake != null)
+        {
+            position += rotation * shake.Offset;
+            rotation *= Quaternion.Euler(0f, 0f, shake.Roll);
         }
 
-        // Exponential smoothing: same catch-up per second at any frame rate.
-        float t = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, t);
-
-        if (alwaysLookAtTarget)
-            transform.LookAt(target.position + lookAtOffset);
+        transform.SetPositionAndRotation(position, rotation);
+        cam.fieldOfView = Camera.HorizontalToVerticalFieldOfView(
+            Camera.VerticalToHorizontalFieldOfView(fieldOfView, ReferenceAspect), cam.aspect);
     }
 }

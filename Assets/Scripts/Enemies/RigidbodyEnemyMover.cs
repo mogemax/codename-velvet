@@ -1,4 +1,5 @@
 using CodenameVelvet.Core.Debugging;
+using CodenameVelvet.Map;
 using UnityEngine;
 
 namespace CodenameVelvet.Enemies
@@ -6,7 +7,7 @@ namespace CodenameVelvet.Enemies
     /// <summary>
     /// <see cref="IEnemyMover"/> that drives a non-kinematic Rigidbody straight
     /// toward its destination on the XZ plane (no pathfinding). Y velocity is left
-    /// untouched so gravity keeps working, matching PlayerMovement's convention.
+    /// untouched so gravity keeps working, matching PlayerMovement's convention. Never moves onto water.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class RigidbodyEnemyMover : MonoBehaviour, IEnemyMover
@@ -21,6 +22,7 @@ namespace CodenameVelvet.Enemies
         [SerializeField] private bool debugLogs = true;
 
         private Rigidbody rb;
+        private float edgeRadius = 0.5f;
         private Vector3 destination;
         private float speed;
         private bool hasDestination;
@@ -38,6 +40,8 @@ namespace CodenameVelvet.Enemies
         {
             rb = GetComponent<Rigidbody>();
             rb.freezeRotation = true;
+            if (TryGetComponent(out Collider body))
+                edgeRadius = Mathf.Min(body.bounds.extents.x, body.bounds.extents.z);
         }
 
         public void MoveTo(Vector3 destination, float speed)
@@ -121,6 +125,7 @@ namespace CodenameVelvet.Enemies
 
         private void SetPlanarVelocity(Vector3 planarVelocity)
         {
+            planarVelocity = WaterEdge.Clamp(rb.position, planarVelocity, edgeRadius, Time.fixedDeltaTime);
             rb.linearVelocity = new Vector3(planarVelocity.x, rb.linearVelocity.y, planarVelocity.z);
         }
     }
