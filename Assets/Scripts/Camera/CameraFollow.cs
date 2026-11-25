@@ -1,16 +1,19 @@
 using CodenameVelvet.Cameras;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// Follows one player with a fixed rotation: the view is defined by pitch, distance and field of view, and the
 /// camera only slides (it never re-aims while following, except to face a ladder being climbed or in a turned zone). Split screen uses one per player, assigned through
 /// <see cref="SetTarget"/>. Inside a <see cref="CameraFramingZone"/> it pulls back and shifts its focus toward
 /// the zone's focus, and <see cref="CameraShake"/> (when present) is added on top of the framing.
+/// While its camera draws, it tells "Velvet/Lit" (the 3D map) where its player is, so what hides them turns see-through.
 /// </summary>
 [RequireComponent(typeof(Camera))]
 public class CameraFollow : MonoBehaviour
 {
     private const float ReferenceAspect = 16f / 9f;
+    private static readonly int SeeThroughId = Shader.PropertyToID("_VelvetSeeThrough");
 
     [SerializeField] private Transform target;
 
@@ -73,6 +76,31 @@ public class CameraFollow : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         TryGetComponent(out shake);
+    }
+
+    private void OnEnable()
+    {
+        RenderPipelineManager.beginCameraRendering += OpenSeeThrough;
+        RenderPipelineManager.endCameraRendering += CloseSeeThrough;
+    }
+
+    private void OnDisable()
+    {
+        RenderPipelineManager.beginCameraRendering -= OpenSeeThrough;
+        RenderPipelineManager.endCameraRendering -= CloseSeeThrough;
+    }
+
+    // Per camera: in split screen each view only opens the map for its own player.
+    private void OpenSeeThrough(ScriptableRenderContext context, Camera rendering)
+    {
+        if (rendering != cam || target == null) return;
+        Vector3 feet = target.position;
+        Shader.SetGlobalVector(SeeThroughId, new Vector4(feet.x, feet.y, feet.z, 1f));
+    }
+
+    private void CloseSeeThrough(ScriptableRenderContext context, Camera rendering)
+    {
+        if (rendering == cam) Shader.SetGlobalVector(SeeThroughId, Vector4.zero);
     }
 
     private void Start()

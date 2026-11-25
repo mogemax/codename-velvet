@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1365058795228518808}
   - component: {fileID: 9200533275760518060}
   - component: {fileID: 8250502716251722642}
+  - component: {fileID: 7433474879928929323}
   m_Layer: 0
   m_Name: VetaMineral
   m_TagString: Untagged
@@ -236,3 +237,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3af2879609f24e79b25eef2637df1294, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Cameras.ViewTilt
+--- !u!114 &7433474879928929323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6772495472866436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9474159195f942e58224cc2ad79e0092, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OccluderFade
+  hiddenOpacity: 0.35
+  fadeSeconds: 0.2
+  coverage: 0.85
