@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CodenameVelvet.Inventory;
 
 namespace CodenameVelvet.Multiplayer
 {
@@ -9,12 +10,17 @@ namespace CodenameVelvet.Multiplayer
     /// slot, so a player leaving the lobby frees their slot for the next joiner
     /// instead of producing duplicates. Once locked, nobody new can join, but
     /// disconnects can still remove players without re-indexing the others.
+    /// It also holds what travels with the players from one level to the next.
     /// </summary>
     public class SessionRoster
     {
         public const int DefaultMaxPlayers = 4;
 
         private readonly RosterEntry[] slots;
+        private readonly ResourceInventory.Slot[][] carried;
+
+        /// <summary>Match time (day/night) when the players arrived at the current level.</summary>
+        public float ClockSeconds { get; set; }
 
         public int MaxPlayers => slots.Length;
         public int Count { get; private set; }
@@ -30,6 +36,7 @@ namespace CodenameVelvet.Multiplayer
                 throw new ArgumentOutOfRangeException(nameof(maxPlayers), maxPlayers, "Roster needs at least one slot.");
 
             slots = new RosterEntry[maxPlayers];
+            carried = new ResourceInventory.Slot[maxPlayers][];
         }
 
         /// <summary>
@@ -86,6 +93,14 @@ namespace CodenameVelvet.Multiplayer
             return Entries.Any(entry => entry.DeviceIds.Contains(deviceId));
         }
 
+        /// <summary>Records the materials a slot takes to the next level (also without a roster entry, for test players).</summary>
+        public void SetCarried(int slotIndex, IEnumerable<ResourceInventory.Slot> stacks) =>
+            carried[slotIndex] = stacks.Where(stack => !stack.IsEmpty).ToArray();
+
+        /// <summary>The materials a slot brought to this level. Kept, so restarting the level gives them again.</summary>
+        public IReadOnlyList<ResourceInventory.Slot> GetCarried(int slotIndex) =>
+            carried[slotIndex] ?? Array.Empty<ResourceInventory.Slot>();
+
         /// <summary>One-way for the session; only <see cref="Clear"/> unlocks.</summary>
         public void Lock()
         {
@@ -96,6 +111,8 @@ namespace CodenameVelvet.Multiplayer
         public void Clear()
         {
             Array.Clear(slots, 0, slots.Length);
+            Array.Clear(carried, 0, carried.Length);
+            ClockSeconds = 0f;
             Count = 0;
             IsLocked = false;
         }

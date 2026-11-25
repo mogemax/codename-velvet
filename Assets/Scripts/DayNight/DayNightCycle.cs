@@ -1,4 +1,5 @@
 using System;
+using CodenameVelvet.Core;
 using CodenameVelvet.Core.Debugging;
 using CodenameVelvet.Core.Events;
 using CodenameVelvet.Multiplayer;
@@ -25,8 +26,10 @@ namespace CodenameVelvet.DayNight
         [Tooltip("Threat added per player beyond the first.")]
         [SerializeField, Min(0f)] private float threatPerExtraPlayer = 0.35f;
         [SerializeField, Min(1f)] private float maxThreat = 3f;
-        [Tooltip("Used to count players. Empty or no players = 1.")]
+        [Tooltip("Used to count players and to continue the previous level's clock. Empty or no players = 1.")]
         [SerializeField] private SessionRosterAsset rosterAsset;
+        [Tooltip("Saves the clock when the players travel to another level.")]
+        [SerializeField] private MatchFlow matchFlow;
 
         [Header("Events")]
         [SerializeField] private DayNightEvent onPhaseChanged;
@@ -48,7 +51,23 @@ namespace CodenameVelvet.DayNight
         private void Awake()
         {
             clock = new DayNightClock(daySeconds, nightSeconds);
+            if (rosterAsset != null) clock.Advance(rosterAsset.Roster.ClockSeconds);
             State = BuildState();
+        }
+
+        private void OnEnable()
+        {
+            if (matchFlow != null) matchFlow.LeavingLevel += SaveClock;
+        }
+
+        private void OnDisable()
+        {
+            if (matchFlow != null) matchFlow.LeavingLevel -= SaveClock;
+        }
+
+        private void SaveClock()
+        {
+            if (rosterAsset != null) rosterAsset.Roster.ClockSeconds = clock.TotalElapsed;
         }
 
         private void Start() => Announce();

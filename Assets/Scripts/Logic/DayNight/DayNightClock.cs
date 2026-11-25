@@ -40,6 +40,17 @@ namespace CodenameVelvet.DayNight
         /// <summary>0 when the phase starts, 1 when it ends.</summary>
         public float PhaseProgress => 1f - Remaining / PhaseDuration;
 
+        /// <summary>Seconds since the first day started: advancing a new clock by this gives the same moment.</summary>
+        public float TotalElapsed
+        {
+            get
+            {
+                bool isNight = Phase == DayPhase.Night;
+                int fullCycles = isNight ? NightNumber - 1 : NightNumber;
+                return fullCycles * (daySeconds + nightSeconds) + (isNight ? daySeconds : 0f) + PhaseDuration - Remaining;
+            }
+        }
+
         /// <summary>Advances the clock. Returns true when the phase changed; leftover time carries into the next phase.</summary>
         public bool Advance(float seconds)
         {

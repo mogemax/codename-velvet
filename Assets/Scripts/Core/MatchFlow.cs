@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CodenameVelvet.Core.Debugging;
@@ -31,8 +32,13 @@ namespace CodenameVelvet.Core
         [SerializeField] private MenuScreen endScreen;
         [SerializeField] private GameObject victoryPanel;
         [SerializeField] private string menuScene = "MainMenu";
+        [Tooltip("Shown while travelling to another level.")]
+        [SerializeField] private LoadingScreen loadingScreen;
         [Tooltip("After victory, real seconds before the menu loads.")]
         [SerializeField, Min(0f)] private float secondsBeforeMenu = 4f;
+
+        /// <summary>The players are about to travel to another level: save whatever goes with them.</summary>
+        public event Action LeavingLevel;
 
         private readonly List<PlayerHealth> players = new List<PlayerHealth>();
         private bool isOver;
@@ -82,6 +88,22 @@ namespace CodenameVelvet.Core
             if (!End("Victory")) return;
             SetActive(victoryPanel, true);
             StartCoroutine(GoToMenuAfter(secondsBeforeMenu));
+        }
+
+        /// <summary>Everyone travels to another level. Ignored once the match is over or already leaving.</summary>
+        public void GoToLevel(string scene)
+        {
+            if (isOver || isLeaving) return;
+            LeavingLevel?.Invoke();
+            if (loadingScreen == null)
+            {
+                Load(scene);
+                return;
+            }
+
+            isLeaving = true;
+            Freeze(true); // nobody gets hurt behind the loading screen; unloading this scene unfreezes
+            Instantiate(loadingScreen).Load(scene);
         }
 
         // ---- Pause ---------------------------------------------------------------------------------------------

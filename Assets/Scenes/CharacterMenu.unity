@@ -1866,6 +1866,7 @@ MonoBehaviour:
   menuAnimator: {fileID: 510386040}
   exitAnimationSeconds: 0.5
   nextSceneName: Level_01
+  loadingScreen: {fileID: 1271948425771709333, guid: 05afed430e78fcd4fbd54143be547bd8, type: 3}
 --- !u!4 &619403430
 Transform:
   m_ObjectHideFlags: 0
@@ -3493,6 +3494,7 @@ MonoBehaviour:
   menuAnimator: {fileID: 510386040}
   exitAnimationSeconds: 0.5
   nextSceneName: MainMenu
+  loadingScreen: {fileID: 0}
 --- !u!4 &1543301485
 Transform:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using CodenameVelvet.Inventory;
 using CodenameVelvet.Multiplayer;
 using NUnit.Framework;
 
@@ -9,6 +10,23 @@ namespace CodenameVelvet.Tests
     {
         private const string Gamepad = "Gamepad";
         private const string Keyboard = "Keyboard&Mouse";
+
+        [Test]
+        public void Carried_KeepsStacksPerSlot_UntilCleared()
+        {
+            var inventory = new ResourceInventory();
+            inventory.TryAdd(ResourceType.Wood, 6);
+            var roster = new SessionRoster { ClockSeconds = 90f };
+            roster.SetCarried(2, inventory.Slots);
+
+            Assert.That(roster.GetCarried(2).Count, Is.EqualTo(1));
+            Assert.That(roster.GetCarried(2)[0].Count, Is.EqualTo(6));
+            Assert.That(roster.GetCarried(0), Is.Empty);
+
+            roster.Clear();
+            Assert.That(roster.GetCarried(2), Is.Empty);
+            Assert.That(roster.ClockSeconds, Is.Zero);
+        }
 
         private static int AddDevice(SessionRoster roster, int deviceId)
         {

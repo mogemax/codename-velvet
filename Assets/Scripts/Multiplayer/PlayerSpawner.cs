@@ -40,6 +40,23 @@ namespace CodenameVelvet.Multiplayer
         /// <summary>Where the first player appears.</summary>
         public Transform FirstSpawnPoint => spawnPoints.Length > 0 && spawnPoints[0] != null ? spawnPoints[0] : transform;
 
+        private void OnEnable()
+        {
+            if (matchFlow != null) matchFlow.LeavingLevel += SaveInventories;
+        }
+
+        private void OnDisable()
+        {
+            if (matchFlow != null) matchFlow.LeavingLevel -= SaveInventories;
+        }
+
+        private void SaveInventories()
+        {
+            foreach (PlayerInput player in spawned)
+                if (player != null && player.TryGetComponent(out PlayerInventory inventory) && player.TryGetComponent(out PlayerIdentity identity))
+                    rosterAsset.Roster.SetCarried(identity.SlotIndex, inventory.Slots);
+        }
+
         private void Start()
         {
             List<RosterEntry> entries = rosterAsset.Roster.Entries.ToList();
@@ -85,6 +102,9 @@ namespace CodenameVelvet.Multiplayer
                 : null;
             if (player.TryGetComponent(out PlayerIdentity identity))
                 identity.Initialize(slot, character != null ? character.Color : Color.white);
+
+            if (player.TryGetComponent(out PlayerInventory inventory))
+                inventory.Restore(rosterAsset.Roster.GetCarried(slot));
 
             if (matchFlow != null && player.TryGetComponent(out PlayerHealth health))
                 matchFlow.RegisterPlayer(health);

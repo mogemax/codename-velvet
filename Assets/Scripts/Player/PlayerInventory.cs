@@ -80,10 +80,28 @@ namespace CodenameVelvet.Player
             return added;
         }
 
+        /// <summary>Puts back stacks brought from another level, without announcing them as pickups.</summary>
+        public void Restore(IEnumerable<ResourceInventory.Slot> stacks)
+        {
+            foreach (ResourceInventory.Slot stack in stacks)
+                inventory.TryAdd(stack.Type, stack.Count);
+            NotifyChanged();
+        }
+
         /// <summary>Removes exactly <paramref name="amount"/> or nothing. Amount must be positive.</summary>
         public bool TryRemove(ResourceType type, int amount)
         {
             if (!inventory.TryRemove(type, amount))
+                return false;
+
+            NotifyChanged();
+            return true;
+        }
+
+        /// <summary>Hands over everything <paramref name="build"/> still needs. False when there was nothing to give.</summary>
+        public bool DeliverTo(BuildProgress build)
+        {
+            if (!build.TakeFrom(inventory))
                 return false;
 
             NotifyChanged();

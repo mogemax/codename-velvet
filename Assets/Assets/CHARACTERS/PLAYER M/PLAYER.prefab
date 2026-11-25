@@ -738,6 +738,7 @@ GameObject:
   - component: {fileID: 4493804470006723017}
   - component: {fileID: 9158625018220238703}
   - component: {fileID: 2805799872209918690}
+  - component: {fileID: 2665151568915263341}
   m_Layer: 6
   m_Name: PLAYER
   m_TagString: Player
@@ -1334,6 +1335,18 @@ MonoBehaviour:
   lowHealthFraction: 0.3
   heartbeatRate: 1.3
   heartbeatSize: 0.18
+--- !u!114 &2665151568915263341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679989216986570347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2f3fe899454b4140b9c8d70ace3c2e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerBoatBuilder
 --- !u!1 &759181274004830134
 GameObject:
   m_ObjectHideFlags: 0
@@ -4638,14 +4651,14 @@ MonoBehaviour:
   m_text: Press <b>E</b> to climb
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 196614f5af8139649ae54f9512920e81, type: 2}
-  m_sharedMaterial: {fileID: -817280760074950556, guid: 196614f5af8139649ae54f9512920e81, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c1f1ad481dbbd4cbdb3d51d8524c6de1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 0.95, b: 0.84, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

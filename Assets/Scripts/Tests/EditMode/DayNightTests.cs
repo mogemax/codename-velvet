@@ -16,6 +16,23 @@ namespace CodenameVelvet.Tests
             Assert.That(clock.PhaseProgress, Is.EqualTo(0f));
         }
 
+        [TestCase(0f)]
+        [TestCase(70f)]
+        [TestCase(130f)]
+        [TestCase(400f)]
+        public void TotalElapsed_RebuildsTheSameMoment(float seconds)
+        {
+            var clock = new DayNightClock(100f, 50f);
+            clock.Advance(seconds);
+            var rebuilt = new DayNightClock(100f, 50f);
+            rebuilt.Advance(clock.TotalElapsed);
+
+            Assert.That(clock.TotalElapsed, Is.EqualTo(seconds).Within(1e-3f));
+            Assert.That(rebuilt.Phase, Is.EqualTo(clock.Phase));
+            Assert.That(rebuilt.NightNumber, Is.EqualTo(clock.NightNumber));
+            Assert.That(rebuilt.Remaining, Is.EqualTo(clock.Remaining).Within(1e-3f));
+        }
+
         [Test]
         public void Advance_WithinPhase_DoesNotChange()
         {

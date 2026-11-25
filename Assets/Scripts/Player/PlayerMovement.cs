@@ -99,6 +99,7 @@ public class PlayerMovement : MonoBehaviour
     public float FlightVerticalSpeed { get; set; }
 
     private const string MoveActionName = "Move";
+    private const float GroundProbeWidth = 0.9f; // of the capsule radius, so walls are not probed
     private const float GroundProbeSkin = 0.05f; // the probe sphere starts slightly above the feet
 
     private Rigidbody rb;
@@ -394,7 +395,7 @@ public class PlayerMovement : MonoBehaviour
         if (body == null) return;
 
         Bounds bounds = body.bounds;
-        float radius = Mathf.Min(bounds.extents.x, bounds.extents.z) * 0.9f;
+        float radius = EdgeRadius() * GroundProbeWidth;
         Vector3 origin = new Vector3(bounds.center.x, bounds.min.y + radius + GroundProbeSkin, bounds.center.z);
 
         if (!Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit,
@@ -405,7 +406,9 @@ public class PlayerMovement : MonoBehaviour
 
         isGrounded = true;
         groundNormal = hit.normal;
-        groundGap = Mathf.Max(0f, hit.distance - GroundProbeSkin);
+        // Narrower than the capsule, on a slope the probe reads a gap that is not there: snapping to it pushes downhill.
+        float slopeGap = EdgeRadius() * (1f - GroundProbeWidth) * (1f / hit.normal.y - 1f);
+        groundGap = Mathf.Max(0f, hit.distance - GroundProbeSkin - slopeGap);
     }
 
     /// <summary>
@@ -433,6 +436,8 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity = Vector3.ProjectOnPlane(velocity, groundNormal);
             velocity.y -= groundGap / Time.fixedDeltaTime;
+            // The capsule has no friction: cancel the part of gravity that would slide it downhill.
+            velocity -= Vector3.ProjectOnPlane(Physics.gravity, groundNormal) * Time.fixedDeltaTime;
         }
         else
         {
