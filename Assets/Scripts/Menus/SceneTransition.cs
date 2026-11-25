@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Plays the menu's "Exit" animation, then loads <see cref="nextSceneName"/>.
+/// Plays the menu's "Exit" animation (optionally the menu background's shipwreck after it), then loads
+/// <see cref="nextSceneName"/>.
 /// <see cref="GoToNextScene"/> is meant for a UI Button's OnClick.
 /// </summary>
 public class SceneTransition : MonoBehaviour
@@ -15,6 +16,8 @@ public class SceneTransition : MonoBehaviour
     [SerializeField] private string nextSceneName;
     [Tooltip("Shown while the next scene loads. Empty = straight cut.")]
     [SerializeField] private LoadingScreen loadingScreen;
+    [Tooltip("Before loading, the menu background's boat is wrecked (on the way to the first level). Cannot be skipped.")]
+    [SerializeField] private bool shipwreckFirst;
 
     private bool isTransitioning;
 
@@ -32,6 +35,8 @@ public class SceneTransition : MonoBehaviour
     {
         menuAnimator.SetTrigger("Exit");
         yield return new WaitForSeconds(exitAnimationSeconds);
+        if (shipwreckFirst && MenuBackground.Current != null && MenuBackground.Current.TryGetComponent(out Shipwreck shipwreck))
+            yield return shipwreck.Play();
         if (loadingScreen != null) LoadingScreen.Load(loadingScreen, nextSceneName);
         else SceneManager.LoadScene(nextSceneName);
     }

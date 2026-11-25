@@ -21,8 +21,6 @@ MonoBehaviour:
   bonusDrops:
   - prefab: {fileID: 6418374431678456308, guid: f11d5f25d85b34ed1a5630ffaaef11bb, type: 3}
     chance: 0.35
-  - prefab: {fileID: 4747258861238236732, guid: 24d42a4d55f464eea963648f5cfb5608, type: 3}
-    chance: 0.5
   hitSounds:
   - {fileID: 8300000, guid: 7342d21ee627ce04eb11a0273a1a71f4, type: 3}
   - {fileID: 8300000, guid: 95d688b9ffdad4f4b997c76cf1040dda, type: 3}

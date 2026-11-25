@@ -10,17 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80b1a1aaba6db4e80ae1d95b4e6ee6a0, type: 3}
-  m_Name: Bruja
+  m_Name: Enemy_Archer
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyDefinition
-  displayName: Witch
-  color: {r: 0.6, g: 0.3, b: 0.85, a: 1}
+  displayName: Archer
+  color: {r: 1, g: 1, b: 1, a: 1}
+  maxHp: 3
   wanderSpeed: 1.5
   chaseSpeed: 3
   wanderRadius: 5
   restTimeRange: {x: 1, y: 3}
-  detectionRange: 8
+  detectionRange: 9
   loseInterestRange: 12
   retargetInterval: 0.25
   attackRange: 0.4
   attackDamage: 1
-  attackCooldown: 1
+  attackCooldown: 2.5
+  attackKnockback: 7
+  attackKnockbackSeconds: 0.25
+  weapon: 2
+  shootRange: 8
+  drawSeconds: 0.6

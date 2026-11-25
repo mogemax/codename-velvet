@@ -7,8 +7,8 @@ using UnityEngine;
 namespace CodenameVelvet.Enemies
 {
     /// <summary>
-    /// Placeholder enemy behaviour: wander around the spawn point, chase the
-    /// nearest living player, and hit it on contact. Runs as one Awaitable loop
+    /// Enemy behaviour: wander around the spawn point, chase the nearest living player, and hit it on contact
+    /// (or, for an archer, stop at <see cref="EnemyDefinition.ShootRange"/> and shoot it with its <see cref="EnemyBow"/>). Runs as one Awaitable loop
     /// per enable that is cancelled on disable/destroy; every wait uses scaled
     /// time, so pausing with Time.timeScale = 0 freezes the enemy.
     /// Wander → Chase (player within detection range) → attacks while the gap between
@@ -31,6 +31,7 @@ namespace CodenameVelvet.Enemies
         private IEnemyMover mover;
         private EnemyTargetFinder targetFinder;
         private EnemyHealth health;
+        private EnemyBow bow;
         private Collider body;
         private System.Random random;
         private CancellationTokenSource loopCancellation;
@@ -45,6 +46,14 @@ namespace CodenameVelvet.Enemies
         private float nextAttackTime;
         private float stunnedUntil;
         private bool wasInAttackRange; // Debug-only: logs attack-range entry once.
+
+        /// <summary>A hit (or a shot) lands: the look swings.</summary>
+        public event Action Attacked;
+
+        public EnemyDefinition Definition => definition;
+
+        /// <summary>The player being chased, if any.</summary>
+        public Transform Target => targetTransform;
 
         /// <summary>Sets the enemy type. Call right after instantiating, before Start.</summary>
         public void Initialize(EnemyDefinition enemyDefinition)
@@ -86,6 +95,7 @@ namespace CodenameVelvet.Enemies
             mover = GetComponent<IEnemyMover>();
             targetFinder = GetComponent<EnemyTargetFinder>();
             health = GetComponent<EnemyHealth>();
+            bow = GetComponent<EnemyBow>();
             body = GetComponent<Collider>();
             if (health != null)
                 health.Died += _ => enabled = false; // the corpse lingers a moment: no moving or attacking
@@ -253,6 +263,12 @@ namespace CodenameVelvet.Enemies
                     return;
                 }
 
+                if (definition.Weapon == EnemyWeapon.Bow && bow != null)
+                {
+                    await ShootOrApproachAsync(distance, token);
+                    continue;
+                }
+
                 float gap = BodyDistance.PlanarGap(transform.position, body, targetTransform.position, targetCollider);
                 bool inAttackRange = EnemyAggroRules.IsInAttackRange(gap, definition.AttackRange);
                 if (debugLogs && inAttackRange != wasInAttackRange)
@@ -267,6 +283,7 @@ namespace CodenameVelvet.Enemies
                     if (Time.time >= nextAttackTime)
                     {
                         target.ApplyDamage(definition.AttackDamage);
+                        Attacked?.Invoke();
                         targetTransform.GetComponentInParent<IKnockbackable>()?.ApplyKnockback(
                             targetTransform.position - transform.position, definition.AttackKnockback, definition.AttackKnockbackSeconds);
                         nextAttackTime = Time.time + definition.AttackCooldown;
@@ -283,6 +300,31 @@ namespace CodenameVelvet.Enemies
 
                 await Awaitable.NextFrameAsync(token);
             }
+        }
+
+        /// <summary>An archer walks up to its shooting range, then stands and shoots whenever the bow is ready.</summary>
+        private async Awaitable ShootOrApproachAsync(float distance, CancellationToken token)
+        {
+            if (distance > definition.ShootRange)
+            {
+                mover.MoveTo(targetTransform.position, definition.ChaseSpeed);
+                await Awaitable.NextFrameAsync(token);
+                return;
+            }
+
+            mover.Stop();
+            if (Time.time < nextAttackTime)
+            {
+                await Awaitable.NextFrameAsync(token);
+                return;
+            }
+
+            bool shot = await bow.ShootAsync(targetTransform, definition.AttackDamage, definition.DrawSeconds,
+                () => !IsStunned && health != null && health.IsAlive, token);
+            // A draw cut short (stunned) tries again soon; a shot waits the whole cooldown.
+            nextAttackTime = Time.time + (shot ? definition.AttackCooldown : 0.5f);
+            if (debugLogs && shot)
+                VelvetLog.Info(LogCategory, this, $"Shot an arrow at {(targetTransform != null ? targetTransform.name : "nobody")}");
         }
 
         private bool IsStunned => Time.time < stunnedUntil;

@@ -2,8 +2,11 @@ using UnityEngine;
 
 namespace CodenameVelvet.Enemies
 {
+    /// <summary>What an enemy fights with: it decides how it attacks and what it holds.</summary>
+    public enum EnemyWeapon { None, Sword, Bow }
+
     /// <summary>
-    /// Tuning data for one enemy type (minotaur, siren, witch...). Every type
+    /// Tuning data for one enemy type (unarmed, swordsman, archer). Every type
     /// shares the same prefab and <see cref="EnemyBrain"/>; only this asset changes.
     /// </summary>
     [CreateAssetMenu(menuName = "Enemies/Enemy Definition", fileName = "New EnemyDefinition")]
@@ -45,6 +48,14 @@ namespace CodenameVelvet.Enemies
         [Tooltip("How long that push lasts; the player has no control meanwhile.")]
         [SerializeField, Min(0f)] private float attackKnockbackSeconds = 0.25f;
 
+        [Header("Weapon")]
+        [Tooltip("None and Sword hit up close (the sword is only its look; the damage is above). Bow shoots from afar.")]
+        [SerializeField] private EnemyWeapon weapon = EnemyWeapon.None;
+        [Tooltip("Bow: stops and shoots once the target is this close (centre to centre, on the ground plane).")]
+        [SerializeField, Min(0f)] private float shootRange = 9f;
+        [Tooltip("Bow: seconds the string is pulled back before the arrow leaves; the players' warning to dodge.")]
+        [SerializeField, Min(0.01f)] private float drawSeconds = 0.6f;
+
         public string DisplayName => displayName;
         public Color Color => color;
         public int MaxHp => maxHp;
@@ -60,6 +71,9 @@ namespace CodenameVelvet.Enemies
         public float AttackCooldown => attackCooldown;
         public float AttackKnockback => attackKnockback;
         public float AttackKnockbackSeconds => attackKnockbackSeconds;
+        public EnemyWeapon Weapon => weapon;
+        public float ShootRange => shootRange;
+        public float DrawSeconds => drawSeconds;
 
         private void OnValidate()
         {

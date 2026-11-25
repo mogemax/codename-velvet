@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80b1a1aaba6db4e80ae1d95b4e6ee6a0, type: 3}
-  m_Name: Minotauro
+  m_Name: Enemy_Swordsman
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.EnemyDefinition
-  displayName: Minotaur
-  color: {r: 0.85, g: 0.2, b: 0.2, a: 1}
+  displayName: Swordsman
+  color: {r: 1, g: 1, b: 1, a: 1}
+  maxHp: 3
   wanderSpeed: 1.5
   chaseSpeed: 3.5
   wanderRadius: 5
@@ -24,3 +25,8 @@ MonoBehaviour:
   attackRange: 0.4
   attackDamage: 2
   attackCooldown: 1
+  attackKnockback: 7
+  attackKnockbackSeconds: 0.25
+  weapon: 1
+  shootRange: 9
+  drawSeconds: 0.6

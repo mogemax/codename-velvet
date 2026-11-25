@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
 using CodenameVelvet.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -10,7 +12,9 @@ using UnityEngine.UI;
 /// <list type="number">
 /// <item>Imports the art in Assets/Art/UI/MenuBackground (the sea layers wrap sideways; the boat is a sprite).</item>
 /// <item>Builds Assets/Prefabs/UI/MenuBackground.prefab: sky, then the sea from far to near, the boat between the
-/// back and front waves (the front ones hide its hull).</item>
+/// back and front waves (the front ones hide its hull), and the hidden parts of its <see cref="Shipwreck"/> (giant
+/// wave behind the boat, broken boat, splash, and the boat's pieces in front of everything; Shipwreck/Pieces.json
+/// says where each piece was in the boat).</item>
 /// <item>Puts it in the menu scenes that show it.</item>
 /// </list>
 /// Layout in the units of a 1920x1080 canvas. Opens and saves the scenes it changes; save your own changes first.
@@ -19,11 +23,13 @@ public static class VelvetMenuBackgroundSetup
 {
     private const string Tag = "[VelvetMenuBackgroundSetup]";
     private const string ArtFolder = "Assets/Art/UI/MenuBackground";
+    private const string WreckFolder = ArtFolder + "/Shipwreck";
     private const string PrefabPath = "Assets/Prefabs/UI/MenuBackground.prefab";
     private const float WaterLine = 0.32f;  // of the screen's height
     private const float LayerHeight = 760f; // the sea textures' height
     private const float BoatWidth = 520f;
     private const float BoatWaterline = 0.26f; // of the boat's height, from its bottom
+    private const float BrokenWaterline = 0.32f; // sits lower in the water than the sound boat
     private const float RestX = 0.6f;
     private const float PlaneDistance = 900f;  // menu canvases sit at 100, cameras see to 1000
     private const int SortingOrder = -100;
@@ -46,7 +52,7 @@ public static class VelvetMenuBackgroundSetup
             return;
 
         Texture2D sky = ImportTexture("MenuSky", wrap: false);
-        Sprite boat = ImportBoat();
+        Sprite boat = ImportSprite($"{ArtFolder}/MenuBoat.png");
         if (sky == null || boat == null)
         {
             Debug.LogError($"{Tag} Missing art in {ArtFolder}");
@@ -81,9 +87,8 @@ public static class VelvetMenuBackgroundSetup
         return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
     }
 
-    private static Sprite ImportBoat()
+    private static Sprite ImportSprite(string path)
     {
-        string path = $"{ArtFolder}/MenuBoat.png";
         if (AssetImporter.GetAtPath(path) is not TextureImporter importer)
             return null;
 
@@ -130,26 +135,118 @@ public static class VelvetMenuBackgroundSetup
             sea.anchorMax = new Vector2(1f, WaterLine);
             sea.sizeDelta = Vector2.zero;
 
+            var layers = new List<ScrollingWaveLayer>();
             foreach (var layer in BackLayers)
-                if (!WaveLayer(sea, layer)) return null;
-            Boat(sea, boat);
-            if (!WaveLayer(sea, FrontLayer)) return null;
+                layers.Add(WaveLayer(sea, layer));
+            RectTransform giantWave = WreckPicture("GiantWave", sea, size: new Vector2(1800f, 1300f), pivot: new Vector2(330f / 1800f, 1f - 820f / 1300f)); // the lip's tip / the water
+            RectTransform boatRect = Boat(sea, boat);
+            RectTransform broken = WreckPicture("BrokenBoat", sea, width: BoatWidth, pivot: new Vector2(0.5f, BrokenWaterline));
+            RectTransform splash = WreckPicture("Splash", sea, size: new Vector2(900f, 700f), pivot: new Vector2(0.5f, 0.12f));
+            layers.Add(WaveLayer(sea, FrontLayer));
+            Shipwreck.Piece[] pieces = Pieces(sea);
+            if (layers.Contains(null) || giantWave == null || broken == null || splash == null || pieces == null)
+                return null;
+
+            var wreck = new SerializedObject(root.AddComponent<Shipwreck>());
+            wreck.FindProperty("sea").objectReferenceValue = sea;
+            wreck.FindProperty("boat").objectReferenceValue = boatRect;
+            wreck.FindProperty("sailing").objectReferenceValue = boatRect.GetComponent<SailingBoat>();
+            wreck.FindProperty("brokenBoat").objectReferenceValue = broken;
+            wreck.FindProperty("giantWave").objectReferenceValue = giantWave;
+            wreck.FindProperty("splash").objectReferenceValue = splash;
+            SerializedProperty layerArray = wreck.FindProperty("layers");
+            layerArray.arraySize = layers.Count;
+            for (int i = 0; i < layers.Count; i++) layerArray.GetArrayElementAtIndex(i).objectReferenceValue = layers[i];
+            SerializedProperty pieceArray = wreck.FindProperty("pieces");
+            pieceArray.arraySize = pieces.Length;
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                SerializedProperty item = pieceArray.GetArrayElementAtIndex(i);
+                item.FindPropertyRelative("rect").objectReferenceValue = pieces[i].rect;
+                item.FindPropertyRelative("offset").vector2Value = pieces[i].offset;
+                item.FindPropertyRelative("size").vector2Value = pieces[i].size;
+                item.FindPropertyRelative("floats").boolValue = pieces[i].floats;
+            }
+            wreck.ApplyModifiedPropertiesWithoutUndo();
 
             return PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         }
         finally
         {
-            Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(root);
         }
     }
 
-    private static bool WaveLayer(RectTransform sea, (string texture, float surface, float y, float speed, float bob, float phase) layer)
+    /// <summary>A hidden picture of the shipwreck, its size given or <paramref name="width"/> wide.</summary>
+    private static RectTransform WreckPicture(string name, Transform parent, Vector2 pivot, Vector2 size = default, float width = 0f)
+    {
+        Sprite sprite = ImportSprite($"{WreckFolder}/{name}.png");
+        if (sprite == null)
+        {
+            Debug.LogError($"{Tag} Missing {WreckFolder}/{name}.png");
+            return null;
+        }
+
+        if (width > 0f) size = new Vector2(width, width * sprite.rect.height / sprite.rect.width);
+        RectTransform rect = Sprite(name, parent, sprite, size);
+        rect.pivot = pivot;
+        rect.gameObject.SetActive(false);
+        return rect;
+    }
+
+    [Serializable] private class PieceData { public string name; public float cx, cy, w, h; public bool floats; }
+    [Serializable] private class PieceList { public PieceData[] pieces; }
+
+    private static Shipwreck.Piece[] Pieces(Transform sea)
+    {
+        var json = AssetDatabase.LoadAssetAtPath<TextAsset>($"{WreckFolder}/Pieces.json");
+        if (json == null)
+        {
+            Debug.LogError($"{Tag} Missing {WreckFolder}/Pieces.json");
+            return null;
+        }
+
+        var holder = new GameObject("Pieces", typeof(RectTransform)).GetComponent<RectTransform>();
+        holder.SetParent(sea, false);
+        holder.sizeDelta = Vector2.zero;
+        var pieces = new List<Shipwreck.Piece>();
+        foreach (PieceData data in JsonUtility.FromJson<PieceList>(json.text).pieces)
+        {
+            Sprite sprite = ImportSprite($"{WreckFolder}/{data.name}.png");
+            if (sprite == null)
+            {
+                Debug.LogError($"{Tag} Missing {WreckFolder}/{data.name}.png");
+                return null;
+            }
+
+            var size = new Vector2(data.w, data.h);
+            RectTransform rect = Sprite(data.name, holder, sprite, size * BoatWidth);
+            rect.gameObject.SetActive(false);
+            pieces.Add(new Shipwreck.Piece { rect = rect, offset = new Vector2(data.cx, data.cy), size = size, floats = data.floats });
+        }
+        return pieces.ToArray();
+    }
+
+    private static RectTransform Sprite(string name, Transform parent, Sprite sprite, Vector2 size)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+        var rect = (RectTransform)go.transform;
+        rect.SetParent(parent, false);
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = size;
+        var image = go.GetComponent<Image>();
+        image.sprite = sprite;
+        image.raycastTarget = false;
+        return rect;
+    }
+
+    private static ScrollingWaveLayer WaveLayer(RectTransform sea, (string texture, float surface, float y, float speed, float bob, float phase) layer)
     {
         Texture2D texture = ImportTexture(layer.texture, wrap: true);
         if (texture == null)
         {
             Debug.LogError($"{Tag} Missing {ArtFolder}/{layer.texture}.png");
-            return false;
+            return null;
         }
 
         RawImage image = Picture(layer.texture.Replace("Menu", ""), sea, texture);
@@ -160,15 +257,16 @@ public static class VelvetMenuBackgroundSetup
         rect.sizeDelta = new Vector2(0f, LayerHeight);
         rect.anchoredPosition = new Vector2(0f, layer.y);
 
-        var scroll = new SerializedObject(image.gameObject.AddComponent<ScrollingWaveLayer>());
+        var component = image.gameObject.AddComponent<ScrollingWaveLayer>();
+        var scroll = new SerializedObject(component);
         scroll.FindProperty("speed").floatValue = layer.speed;
         scroll.FindProperty("bobHeight").floatValue = layer.bob;
         scroll.FindProperty("phase").floatValue = layer.phase;
         scroll.ApplyModifiedPropertiesWithoutUndo();
-        return true;
+        return component;
     }
 
-    private static void Boat(RectTransform sea, Sprite sprite)
+    private static RectTransform Boat(RectTransform sea, Sprite sprite)
     {
         var boat = new GameObject("Boat", typeof(RectTransform), typeof(Image), typeof(SailingBoat));
         var rect = (RectTransform)boat.transform;
@@ -180,6 +278,7 @@ public static class VelvetMenuBackgroundSetup
         image.sprite = sprite;
         image.preserveAspect = true;
         image.raycastTarget = false;
+        return rect;
     }
 
     private static RawImage Picture(string name, Transform parent, Texture texture)
@@ -194,8 +293,8 @@ public static class VelvetMenuBackgroundSetup
 
     private static void Place(GameObject prefab)
     {
-        MenuBackground existing = Object.FindFirstObjectByType<MenuBackground>(FindObjectsInactive.Include);
-        if (existing != null) Object.DestroyImmediate(existing.gameObject);
+        MenuBackground existing = UnityEngine.Object.FindFirstObjectByType<MenuBackground>(FindObjectsInactive.Include);
+        if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
         var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         instance.transform.SetAsFirstSibling();
         EditorSceneManager.MarkSceneDirty(instance.scene);

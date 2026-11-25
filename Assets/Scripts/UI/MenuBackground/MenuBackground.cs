@@ -15,6 +15,9 @@ namespace CodenameVelvet.UI
     {
         private static MenuBackground current;
 
+        /// <summary>The menus' background, if one is up.</summary>
+        public static MenuBackground Current => current;
+
         private Canvas canvas;
         private Scene shownIn;
 

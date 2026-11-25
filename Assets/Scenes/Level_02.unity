@@ -490,11 +490,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.5
   maxEnemies: 14
   dayEnemies: 4
@@ -990,11 +990,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.5
   maxEnemies: 28
   dayEnemies: 6
@@ -1128,11 +1128,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.2
   maxEnemies: 40
   dayEnemies: 8
@@ -1521,11 +1521,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.5
   maxEnemies: 12
   dayEnemies: 4
@@ -1659,11 +1659,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.5
   maxEnemies: 10
   dayEnemies: 3
@@ -2241,11 +2241,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1
   maxEnemies: 5
   dayEnemies: 2
@@ -2806,11 +2806,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 2.5
   maxEnemies: 8
   dayEnemies: 3
@@ -3614,11 +3614,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 1.5
   maxEnemies: 12
   dayEnemies: 4
@@ -3811,7 +3811,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SpawnZone
   enemyPrefab: {fileID: 0}
-  enemies: []
+  enemies:
+  - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
+    weight: 50
+  - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
+    weight: 30
+  - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
+    weight: 20
   nightEnemyDensity: 0
   maxEnemies: 0
   dayEnemies: 0
@@ -3941,11 +3947,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 2
   maxEnemies: 5
   dayEnemies: 2
@@ -4368,11 +4374,11 @@ MonoBehaviour:
   enemyPrefab: {fileID: 482342608020965080, guid: 0ec7e618455264376971cb086690fd4f, type: 3}
   enemies:
   - definition: {fileID: 11400000, guid: e2620cb74324d4177b458714ccfb770c, type: 2}
-    weight: 1
+    weight: 50
   - definition: {fileID: 11400000, guid: c1eec4277139c49cab00d952d78b955d, type: 2}
-    weight: 1
+    weight: 30
   - definition: {fileID: 11400000, guid: e6c7e082248a5460a89aad9cf7a6693a, type: 2}
-    weight: 1
+    weight: 20
   nightEnemyDensity: 2.5
   maxEnemies: 8
   dayEnemies: 3
