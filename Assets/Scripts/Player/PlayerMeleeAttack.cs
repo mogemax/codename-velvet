@@ -21,6 +21,7 @@ namespace CodenameVelvet.Player
     {
         private const string PlayerTag = "Player";
         private const string LogCategory = "Player";
+        private static readonly int AttackTrigger = Animator.StringToHash("Attack");
 
         [Header("Swing")]
         [SerializeField] private int damage = 1;
@@ -37,6 +38,10 @@ namespace CodenameVelvet.Player
         [Tooltip("Initial push speed (units/second) given to targets that support knockback.")]
         [SerializeField] private float knockbackForce = 22f;
         [SerializeField] private float stunSeconds = 0.35f;
+
+        [Header("Animation")]
+        [Tooltip("Optional: gets the \"Attack\" trigger on every swing. Empty for rigs without an attack animation.")]
+        [SerializeField] private Animator attackAnimator;
 
         [Header("Sound")]
         [SerializeField] private AudioSource audioSource;
@@ -96,6 +101,7 @@ namespace CodenameVelvet.Player
             }
 
             nextAttackTime = Time.time + cooldown;
+            if (attackAnimator != null) attackAnimator.SetTrigger(AttackTrigger);
             Swing();
         }
 

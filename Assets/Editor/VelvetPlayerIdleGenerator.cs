@@ -14,7 +14,7 @@ using UnityEngine;
 ///  - Bones pointing DOWN (arms, legs): positive rotation = tip moves forward.
 ///  - Bones pointing UP (body, head, ears): positive rotation = tip moves backward.
 /// </summary>
-public static class VelvetPlayerIdleGenerator
+public static partial class VelvetPlayerIdleGenerator
 {
     const string PrefabPath = "Assets/Assets/CHARACTERS/PLAYER.prefab";
     const string AnimFolder = "Assets/Animators/Animations";

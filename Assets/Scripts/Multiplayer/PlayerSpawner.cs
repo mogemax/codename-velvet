@@ -84,12 +84,17 @@ namespace CodenameVelvet.Multiplayer
         {
             Transform point = spawnPoints.Length > 0 ? spawnPoints[slot % spawnPoints.Length] : transform;
 
+            CharacterDefinition character = characterIndex >= 0 && characterIndex < catalog.Count
+                ? catalog.Get(characterIndex)
+                : null;
+            GameObject prefab = character != null && character.PlayerPrefab != null ? character.PlayerPrefab : playerPrefab.gameObject;
+
             PlayerInput player = devices.Length > 0
-                ? PlayerInput.Instantiate(playerPrefab.gameObject, slot, scheme, -1, devices)
-                : PlayerInput.Instantiate(playerPrefab.gameObject, slot);
+                ? PlayerInput.Instantiate(prefab, slot, scheme, -1, devices)
+                : PlayerInput.Instantiate(prefab, slot);
             // The player's Rigidbody interpolates, so it ignores Transform-only moves: place both.
             Vector3 position = OnGround(point.position);
-            player.transform.SetPositionAndRotation(position, playerPrefab.transform.rotation);
+            player.transform.SetPositionAndRotation(position, prefab.transform.rotation);
             if (player.TryGetComponent(out Rigidbody body))
             {
                 body.position = position;
@@ -97,9 +102,6 @@ namespace CodenameVelvet.Multiplayer
             }
             player.name = $"Player{slot + 1}";
 
-            CharacterDefinition character = characterIndex >= 0 && characterIndex < catalog.Count
-                ? catalog.Get(characterIndex)
-                : null;
             if (player.TryGetComponent(out PlayerIdentity identity))
                 identity.Initialize(slot, character != null ? character.Color : Color.white);
 
