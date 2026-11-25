@@ -2,6 +2,7 @@ using CodenameVelvet.Characters;
 using CodenameVelvet.Multiplayer;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace CodenameVelvet.UI
@@ -16,12 +17,14 @@ namespace CodenameVelvet.UI
     {
         [Header("Frame")]
         [SerializeField] private Image frame;
-        [SerializeField] private Sprite freeSprite;
-        [SerializeField] private Sprite choosingSprite;
-        [SerializeField] private Sprite lockedSprite;
+        [Tooltip("Same frame in every state (free, choosing, locked).")]
+        [FormerlySerializedAs("choosingSprite")]
+        [SerializeField] private Sprite frameSprite;
 
         [Header("Content")]
         [SerializeField] private Image portrait;
+        [Tooltip("Fill of an empty slot; matches the banners' background.")]
+        [SerializeField] private Color emptyColor = new Color32(0xAA, 0x5D, 0x01, 0xFF);
         [Tooltip("The < > hint; only visible while choosing.")]
         [SerializeField] private GameObject arrows;
         [Tooltip("The confirm / leave plate; shown instead of the status text while choosing.")]
@@ -32,24 +35,17 @@ namespace CodenameVelvet.UI
         {
             bool joined = state != LobbySlotState.Free;
 
-            frame.sprite = state switch
-            {
-                LobbySlotState.Choosing => choosingSprite,
-                LobbySlotState.Locked => lockedSprite,
-                _ => freeSprite,
-            };
+            frame.sprite = frameSprite;
 
             bool choosing = state == LobbySlotState.Choosing;
-            portrait.gameObject.SetActive(joined);
             arrows.SetActive(choosing);
             if (choosingHint != null) choosingHint.SetActive(choosing);
             status.gameObject.SetActive(!choosing || choosingHint == null);
 
-            if (joined)
-            {
-                portrait.sprite = character.Portrait;
-                portrait.color = character.Portrait != null ? Color.white : character.Color;
-            }
+            portrait.gameObject.SetActive(true);
+            portrait.sprite = joined ? character.Portrait : null;
+            portrait.color = !joined ? emptyColor
+                : character.Portrait != null ? Color.white : character.Color;
 
             status.text = StatusText(state, isHost, canStart);
         }
