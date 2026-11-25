@@ -30,6 +30,17 @@ namespace CodenameVelvet.Player
             CurrentHp = Math.Max(0, CurrentHp - amount);
         }
 
+        /// <summary>Restores up to <paramref name="amount"/> HP, never above max, and returns how much it restored. The dead can't heal.</summary>
+        public int Heal(int amount)
+        {
+            if (amount <= 0 || IsDead)
+                return 0;
+
+            int healed = Math.Min(amount, MaxHp - CurrentHp);
+            CurrentHp += healed;
+            return healed;
+        }
+
         public void ResetToFull()
         {
             CurrentHp = MaxHp;

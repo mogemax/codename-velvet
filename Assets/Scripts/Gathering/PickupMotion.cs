@@ -7,10 +7,9 @@ namespace CodenameVelvet.Gathering
     /// <summary>
     /// How a dropped piece moves: it flies out of the node in an arc and bounces once where it lands, then a living
     /// player nearby who has room for it pulls it in, faster and faster, until their body touches it and
-    /// <see cref="ResourcePickup"/> collects it. A full player is ignored, so pieces never chase someone who can't
-    /// take them.
+    /// the pickup (<see cref="IPickup"/>: a resource, an apple) is taken. Players who can't take it (full inventory,
+    /// full health) are ignored, so pieces never chase someone who can't take them.
     /// </summary>
-    [RequireComponent(typeof(ResourcePickup))]
     public class PickupMotion : MonoBehaviour
     {
         [Header("Drop")]
@@ -27,17 +26,17 @@ namespace CodenameVelvet.Gathering
         [SerializeField] private LayerMask playerMask = 1 << 6;
 
         private readonly Collider[] nearby = new Collider[8];
-        private ResourcePickup pickup;
+        private IPickup pickup;
         private Vector3 launchPoint;
         private Vector3 landingPoint;
         private float flightTime = -1f; // < 0 = not flying
-        private PlayerInventory target;
+        private PlayerHealth target;
         private float speed;
         private float nextSearch;
 
         private bool IsFlying => flightTime >= 0f;
 
-        private void Awake() => pickup = GetComponent<ResourcePickup>();
+        private void Awake() => pickup = GetComponent<IPickup>();
 
         /// <summary>Flies from <paramref name="origin"/> to where the piece was placed.</summary>
         public void LaunchFrom(Vector3 origin)
@@ -85,15 +84,15 @@ namespace CodenameVelvet.Gathering
                 flightTime = -1f;
         }
 
-        private PlayerInventory FindTaker()
+        private PlayerHealth FindTaker()
         {
             Vector3 origin = transform.position;
             int count = Physics.OverlapSphereNonAlloc(origin, magnetRadius, nearby, playerMask, QueryTriggerInteraction.Ignore);
-            PlayerInventory best = null;
+            PlayerHealth best = null;
             float bestDistance = float.MaxValue;
             for (int i = 0; i < count; i++)
             {
-                PlayerInventory candidate = nearby[i].GetComponentInParent<PlayerInventory>();
+                PlayerHealth candidate = nearby[i].GetComponentInParent<PlayerHealth>();
                 nearby[i] = null;
                 if (!CanTake(candidate))
                     continue;
@@ -107,15 +106,11 @@ namespace CodenameVelvet.Gathering
             return best;
         }
 
-        private bool CanTake(PlayerInventory inventory)
-        {
-            if (inventory == null || inventory.SpaceFor(pickup.Type) <= 0)
-                return false;
-            return !inventory.TryGetComponent(out PlayerHealth health) || health.IsAlive;
-        }
+        private bool CanTake(PlayerHealth player) =>
+            player != null && pickup != null && player.IsAlive && pickup.CanBeTakenBy(player);
 
         // A little slack, so a target at the edge of the radius isn't dropped and picked again every search.
-        private bool OutOfReach(PlayerInventory inventory) =>
-            (inventory.transform.position - transform.position).sqrMagnitude > magnetRadius * magnetRadius * 2.25f;
+        private bool OutOfReach(PlayerHealth player) =>
+            (player.transform.position - transform.position).sqrMagnitude > magnetRadius * magnetRadius * 2.25f;
     }
 }

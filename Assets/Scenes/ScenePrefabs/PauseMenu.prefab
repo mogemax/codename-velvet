@@ -185,7 +185,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 200
   m_TargetDisplay: 0
 --- !u!114 &3427163966074193325
 MonoBehaviour:
@@ -239,7 +239,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: f77f56cbcbfaab7439da084125898492, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -648,6 +648,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4197365903006764545}
+  - component: {fileID: 1440535949748305452}
   m_Layer: 0
   m_Name: PauseMenu
   m_TagString: Untagged
@@ -671,3 +672,23 @@ Transform:
   - {fileID: 1350156795594269888}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1440535949748305452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8653120073318380682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ba44296c4ed94a008709ff04e4afa5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.UI.MenuScreen
+  content: {fileID: 3139649196028669165}
+  animator: {fileID: 8455283651613339348}
+  exitSeconds: 0.5
+  firstSelected: {fileID: 7358250225337037870}
+  resumeButton: {fileID: 7358250225337037870}
+  restartButton: {fileID: 0}
+  mainMenuButton: {fileID: 1242702343540900397}
+  quitButton: {fileID: 2811872619777748264}

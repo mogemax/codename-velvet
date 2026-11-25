@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using CodenameVelvet.Inventory;
 using UnityEngine;
 
@@ -25,6 +27,10 @@ namespace CodenameVelvet.Gathering
         [Tooltip("Seconds a depleted node stays gone before it comes back. 0 = never respawns.")]
         [SerializeField] private float respawnSeconds;
 
+        [Header("Bonus drops")]
+        [Tooltip("Each one is rolled once when the node is depleted (e.g. a tree: apple, rope).")]
+        [SerializeField] private BonusDrop[] bonusDrops = new BonusDrop[0];
+
         [Header("Sound")]
         [Tooltip("One at random on every hit.")]
         [SerializeField] private AudioClip[] hitSounds;
@@ -36,6 +42,10 @@ namespace CodenameVelvet.Gathering
         public int PiecesPerHit => piecesPerHit;
         public float RespawnSeconds => respawnSeconds;
         public AudioClip[] HitSounds => hitSounds;
+        public IReadOnlyList<BonusDrop> BonusDrops => bonusDrops;
+
+        /// <summary>Editor setup only.</summary>
+        public void SetBonusDrops(BonusDrop[] drops) => bonusDrops = drops;
 
         private void OnValidate()
         {
@@ -43,5 +53,13 @@ namespace CodenameVelvet.Gathering
             piecesPerHit = Mathf.Max(1, piecesPerHit);
             respawnSeconds = Mathf.Max(0f, respawnSeconds);
         }
+    }
+
+    /// <summary>A pickup prefab that may drop when a node is depleted, with its chance (0-1).</summary>
+    [Serializable]
+    public struct BonusDrop
+    {
+        public GameObject prefab;
+        [Range(0f, 1f)] public float chance;
     }
 }

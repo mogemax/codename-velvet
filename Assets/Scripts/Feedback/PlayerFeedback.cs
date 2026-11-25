@@ -11,7 +11,7 @@ namespace CodenameVelvet.Feedback
     /// <list type="bullet">
     /// <item>Swing: a hit on an enemy freezes the swing for an instant (local hit stop), rumbles and shakes a little;
     /// a hit on a resource node, a lighter version; a miss, a stretch of the body.</item>
-    /// <item>Pickup: a small flash, squash and sparkle.</item>
+    /// <item>Pickup: a small flash, squash and sparkle; eating food, a green glow.</item>
     /// <item>Dust: a puff when dashing and small puffs while running.</item>
     /// </list>
     /// </summary>
@@ -44,6 +44,11 @@ namespace CodenameVelvet.Feedback
         [SerializeField] private Vector2 pickupRumble = new Vector2(0f, 0.12f);
         [SerializeField, Min(0f)] private float pickupRumbleSeconds = 0.04f;
 
+        [Header("Food")]
+        [SerializeField] private Color healFlash = new Color(0.55f, 1f, 0.5f, 0.6f);
+        [SerializeField, Min(0f)] private float healFlashSeconds = 0.25f;
+        [SerializeField] private BurstStyle healBurst;
+
         [Header("Dust")]
         [SerializeField] private BurstStyle dust;
         [Tooltip("Burst size of the dash puff relative to a step.")]
@@ -56,6 +61,7 @@ namespace CodenameVelvet.Feedback
         private PlayerMovement movement;
         private PlayerMeleeAttack attack;
         private PlayerInventory inventory;
+        private PlayerHealth health;
         private Rigidbody body;
         private PlayerInput input;
         private PlayerRumble rumble;
@@ -70,6 +76,7 @@ namespace CodenameVelvet.Feedback
             movement = GetComponent<PlayerMovement>();
             attack = GetComponent<PlayerMeleeAttack>();
             inventory = GetComponent<PlayerInventory>();
+            health = GetComponent<PlayerHealth>();
             body = GetComponent<Rigidbody>();
             input = GetComponent<PlayerInput>();
             rumble = FeedbackRig.GetOrAdd<PlayerRumble>(gameObject);
@@ -82,12 +89,14 @@ namespace CodenameVelvet.Feedback
         {
             if (attack != null) attack.Swung += OnSwung;
             if (inventory != null) inventory.Added += OnPickedUp;
+            if (health != null) health.Healed += OnHealed;
         }
 
         private void OnDisable()
         {
             if (attack != null) attack.Swung -= OnSwung;
             if (inventory != null) inventory.Added -= OnPickedUp;
+            if (health != null) health.Healed -= OnHealed;
         }
 
         private void OnSwung(SwingResult swing)
@@ -112,6 +121,13 @@ namespace CodenameVelvet.Feedback
             squash.Kick(pickupSquash);
             rumble.Pulse(pickupRumble.x, pickupRumble.y, pickupRumbleSeconds);
             Bursts.Emit(pickupBurst, transform.position + Vector3.up * 1.5f);
+        }
+
+        private void OnHealed(int amount)
+        {
+            flash.Flash(healFlash, healFlashSeconds);
+            squash.Kick(new Vector2(-0.08f, 0.12f));
+            Bursts.Emit(healBurst, transform.position + Vector3.up * 2f, 1.5f);
         }
 
         private void Update()

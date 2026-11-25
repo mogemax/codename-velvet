@@ -5,6 +5,7 @@ namespace CodenameVelvet.Inventory
     {
         Wood,
         Stone,
-        Mineral
+        Mineral,
+        Rope
     }
 }

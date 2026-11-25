@@ -48,6 +48,9 @@ namespace CodenameVelvet.Player
 
         public event Action<DamageEvent> Damaged;
 
+        /// <summary>HP was restored (food): how much.</summary>
+        public event Action<int> Healed;
+
         public int CurrentHp => healthState.CurrentHp;
         public int MaxHp => healthState.MaxHp;
         public bool IsAlive => !healthState.IsDead && !isDying;
@@ -93,6 +96,22 @@ namespace CodenameVelvet.Player
 
             if (healthState.IsDead)
                 StartCoroutine(DeathSequence());
+        }
+
+        /// <summary>Restores up to <paramref name="amount"/> HP (never above max, never while dead) and returns how much.</summary>
+        public int Heal(int amount)
+        {
+            if (!IsAlive)
+                return 0;
+
+            int healed = healthState.Heal(amount);
+            if (healed > 0)
+            {
+                if (debugLogs)
+                    VelvetLog.Info(LogCategory, this, $"Healed {healed}, HP {healthState.CurrentHp}/{healthState.MaxHp}");
+                Healed?.Invoke(healed);
+            }
+            return healed;
         }
 
         private IEnumerator DeathSequence()

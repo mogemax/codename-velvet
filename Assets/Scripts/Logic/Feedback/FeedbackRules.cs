@@ -35,6 +35,19 @@ namespace CodenameVelvet.Feedback
             return 4f * height * BounceRatio * v * (1f - v);
         }
 
+        /// <summary>
+        /// A heartbeat (0-1) at <paramref name="time"/> seconds: a quick double pulse, then a rest. Shared by the low
+        /// health vignette and the last heart of the HUD, so both beat together.
+        /// </summary>
+        public static float Heartbeat(float time, float beatsPerSecond)
+        {
+            float t = time * beatsPerSecond;
+            t -= (float)Math.Floor(t);
+            return Math.Max(Bump(t, 0.08f), 0.7f * Bump(t, 0.28f));
+        }
+
+        private static float Bump(float t, float center) => Math.Clamp(1f - Math.Abs(t - center) / 0.1f, 0f, 1f);
+
         /// <summary>Gamepad rumble for taking <paramref name="damage"/>: stronger with the hit, capped at 1.</summary>
         public static float HurtIntensity(int damage, float baseIntensity, float perExtraPoint) =>
             Math.Clamp(baseIntensity + perExtraPoint * Math.Max(0, damage - 1), 0f, 1f);

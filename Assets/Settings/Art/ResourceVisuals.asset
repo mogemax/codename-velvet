@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b4cdc08e5a934c349b300050fb132e3, type: 3}
+  m_Name: ResourceVisuals
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Gathering.ResourceVisuals
+  entries:
+  - type: 0
+    sprite: {fileID: 21300000, guid: 682ace7dda4824bf39d6756adea420ce, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    worldHeight: 1.6
+  - type: 1
+    sprite: {fileID: 21300000, guid: f186a8d3210fc4f1f8bb12c19ac73290, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    worldHeight: 1.4
+  - type: 2
+    sprite: {fileID: 21300000, guid: f186a8d3210fc4f1f8bb12c19ac73290, type: 3}
+    tint: {r: 0.55, g: 0.85, b: 1, a: 1}
+    worldHeight: 1.4
+  - type: 3
+    sprite: {fileID: 21300000, guid: 0ef8fc204d14044e3a85ab46035f1245, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    worldHeight: 1.5

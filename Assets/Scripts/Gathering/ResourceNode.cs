@@ -3,6 +3,7 @@ using System.Threading;
 using CodenameVelvet.Audio;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
+using CodenameVelvet.Map;
 using UnityEngine;
 
 namespace CodenameVelvet.Gathering
@@ -28,6 +29,13 @@ namespace CodenameVelvet.Gathering
 
         [Tooltip("Seconds it stays visible after the last hit, so its depletion can be seen.")]
         [SerializeField, Min(0f)] private float vanishSeconds = 0.15f;
+
+        [Tooltip("Shown in place of the node while it is depleted (a felled tree's stump); optional. It is not hit, " +
+                 "and its renderers are left out of the node's own.")]
+        [SerializeField] private GameObject depletedVisual;
+
+        [Tooltip("Grass cleared around the base, as a fraction of the drawing's half width (1 = all under it).")]
+        [SerializeField, Range(0f, 1.5f)] private float grassClearFactor = 0.8f;
 
         [Header("Debug")]
         [Tooltip("Logs every hit, the pieces dropped, depletion and respawn.")]
@@ -64,12 +72,27 @@ namespace CodenameVelvet.Gathering
             StopRespawn();
             transform.position = position;
             Restore();
+            ClearGrass();
+        }
+
+        private void Start() => ClearGrass();
+
+        /// <summary>No grass growing through the node: clears about its drawing's width around its base.</summary>
+        private void ClearGrass()
+        {
+            float halfWidth = 0f;
+            foreach (Renderer part in renderers)
+                if (part is SpriteRenderer)
+                    halfWidth = Mathf.Max(halfWidth, part.bounds.extents.x);
+            if (halfWidth > 0f)
+                GrassField.ClearAround(transform.position, halfWidth * grassClearFactor);
         }
 
         private void Awake()
         {
-            renderers = GetComponentsInChildren<Renderer>(true);
-            colliders = GetComponentsInChildren<Collider>(true);
+            renderers = Array.FindAll(GetComponentsInChildren<Renderer>(true), part => !IsDepletedVisual(part));
+            colliders = Array.FindAll(GetComponentsInChildren<Collider>(true), part => !IsDepletedVisual(part));
+            ShowDepleted(false);
 
             if (definition == null)
             {
@@ -95,6 +118,7 @@ namespace CodenameVelvet.Gathering
             {
                 // Disabling stops the coroutine: finish hiding now.
                 SetVisible(false);
+                ShowDepleted(true);
                 vanishing = null;
             }
         }
@@ -146,6 +170,22 @@ namespace CodenameVelvet.Gathering
         }
 
         /// <summary>A random point on the drop ring around the node, at the node's height.</summary>
+        /// <summary>Rolls each bonus drop of the definition once (a tree's apple and rope).</summary>
+        private void DropBonus()
+        {
+            foreach (BonusDrop drop in definition.BonusDrops)
+            {
+                if (drop.prefab == null || UnityEngine.Random.value >= drop.chance)
+                    continue;
+
+                GameObject bonus = Instantiate(drop.prefab, RandomDropPosition(), Quaternion.identity);
+                if (bonus.TryGetComponent(out PickupMotion motion))
+                    motion.LaunchFrom(transform.position);
+                if (debugLogs)
+                    VelvetLog.Info(LogCategory, this, $"Bonus drop: {drop.prefab.name}");
+            }
+        }
+
         private Vector3 RandomDropPosition()
         {
             float minRadius = Mathf.Max(0f, dropRadius.x);
@@ -157,6 +197,7 @@ namespace CodenameVelvet.Gathering
 
         private void Deplete()
         {
+            DropBonus();
             isDepleted = true;
             SetCollidable(false);
             vanishing = StartCoroutine(HideAfter(vanishSeconds));
@@ -189,6 +230,7 @@ namespace CodenameVelvet.Gathering
             hitsRemaining = definition.HitsToDeplete;
             if (vanishing != null) StopCoroutine(vanishing);
             SetPresent(true);
+            ShowDepleted(false);
 
             if (debugLogs)
                 VelvetLog.Info(LogCategory, this, "Respawned");
@@ -210,6 +252,15 @@ namespace CodenameVelvet.Gathering
                 nodeRenderer.enabled = visible;
         }
 
+        private bool IsDepletedVisual(Component part) =>
+            depletedVisual != null && part.transform.IsChildOf(depletedVisual.transform);
+
+        private void ShowDepleted(bool show)
+        {
+            if (depletedVisual != null)
+                depletedVisual.SetActive(show);
+        }
+
         private void SetCollidable(bool collidable)
         {
             foreach (Collider nodeCollider in colliders)
@@ -220,6 +271,7 @@ namespace CodenameVelvet.Gathering
         {
             yield return new WaitForSeconds(seconds);
             SetVisible(false);
+            ShowDepleted(true);
             vanishing = null;
         }
 

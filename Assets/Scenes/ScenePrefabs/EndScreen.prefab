@@ -260,7 +260,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 200
   m_TargetDisplay: 0
 --- !u!114 &9213270201516591014
 MonoBehaviour:
@@ -314,7 +314,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: a2056b9866d8c774bae2649c8a2a2148, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -528,6 +528,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8566009685321115259}
+  - component: {fileID: 5886508393034615820}
   m_Layer: 0
   m_Name: EndScreen
   m_TagString: Untagged
@@ -551,6 +552,26 @@ Transform:
   - {fileID: 1183785093382925486}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5886508393034615820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7354746230033007270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ba44296c4ed94a008709ff04e4afa5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.UI.MenuScreen
+  content: {fileID: 5351319564015797102}
+  animator: {fileID: 8950463704609688253}
+  exitSeconds: 0.5
+  firstSelected: {fileID: 4363021463574959436}
+  resumeButton: {fileID: 0}
+  restartButton: {fileID: 4363021463574959436}
+  mainMenuButton: {fileID: 1353978827130367675}
+  quitButton: {fileID: 4844575128326948726}
 --- !u!1 &7641865407250094049
 GameObject:
   m_ObjectHideFlags: 0

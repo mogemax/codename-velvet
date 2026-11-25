@@ -156,3 +156,64 @@ namespace CodenameVelvet.Tests
         }
     }
 }
+
+namespace CodenameVelvet.Tests
+{
+    using CodenameVelvet.Player;
+
+    public class HealTests
+    {
+        [Test]
+        public void Heal_RestoresUpToMax()
+        {
+            var state = new PlayerHealthState(3);
+            state.ApplyDamage(2);
+            Assert.That(state.Heal(1), Is.EqualTo(1));
+            Assert.That(state.CurrentHp, Is.EqualTo(2));
+            Assert.That(state.Heal(5), Is.EqualTo(1));
+            Assert.That(state.CurrentHp, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Heal_AtFullOrDead_DoesNothing()
+        {
+            var state = new PlayerHealthState(3);
+            Assert.That(state.Heal(1), Is.EqualTo(0));
+            state.ApplyDamage(3);
+            Assert.That(state.Heal(1), Is.EqualTo(0));
+            Assert.That(state.IsDead, Is.True);
+        }
+
+        [Test]
+        public void Heal_NonPositive_Ignored()
+        {
+            var state = new PlayerHealthState(3);
+            state.ApplyDamage(1);
+            Assert.That(state.Heal(0), Is.EqualTo(0));
+            Assert.That(state.Heal(-2), Is.EqualTo(0));
+            Assert.That(state.CurrentHp, Is.EqualTo(2));
+        }
+    }
+}
+
+namespace CodenameVelvet.Tests
+{
+    using CodenameVelvet.Feedback;
+
+    public class HeartbeatTests
+    {
+        [Test]
+        public void Heartbeat_PeaksOnFirstBeat_RestsAfter()
+        {
+            Assert.That(FeedbackRules.Heartbeat(0.08f, 1f), Is.EqualTo(1f).Within(1e-4));
+            Assert.That(FeedbackRules.Heartbeat(0.28f, 1f), Is.EqualTo(0.7f).Within(1e-4));
+            Assert.That(FeedbackRules.Heartbeat(0.7f, 1f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void Heartbeat_Repeats()
+        {
+            Assert.That(FeedbackRules.Heartbeat(2.08f, 1f), Is.EqualTo(FeedbackRules.Heartbeat(0.08f, 1f)).Within(1e-3));
+        }
+    }
+}

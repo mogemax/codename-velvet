@@ -178,9 +178,7 @@ MonoBehaviour:
   type: 0
   amount: 1
   pickupDelaySeconds: 0.4
-  woodColor: {r: 0.55, g: 0.35, b: 0.17, a: 1}
-  stoneColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
-  mineralColor: {r: 0, g: 1, b: 1, a: 1}
+  visuals: {fileID: 11400000, guid: b8a4b79e87e7a45c3b6a42165c3e287b, type: 2}
   debugLogs: 1
 --- !u!210 &8785190371905622603
 SortingGroup:

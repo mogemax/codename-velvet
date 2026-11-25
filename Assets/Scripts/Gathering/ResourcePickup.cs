@@ -13,7 +13,7 @@ namespace CodenameVelvet.Gathering
     /// Detection relies on a trigger Collider on this object; the players' Rigidbody fires the callbacks.
     /// Spawned pickups get their contents from <see cref="Initialize"/>; scene-placed ones use the serialized values.
     /// </summary>
-    public class ResourcePickup : MonoBehaviour
+    public class ResourcePickup : MonoBehaviour, IPickup
     {
         private const string LogCategory = "Inventory";
 
@@ -22,10 +22,8 @@ namespace CodenameVelvet.Gathering
         [Tooltip("Seconds after spawning before anyone can collect it, so drops are visible for a moment.")]
         [SerializeField] private float pickupDelaySeconds = 0.4f;
 
-        [Header("Placeholder tint")]
-        [SerializeField] private Color woodColor = new Color(0.55f, 0.35f, 0.17f);
-        [SerializeField] private Color stoneColor = new Color(0.55f, 0.55f, 0.55f);
-        [SerializeField] private Color mineralColor = Color.cyan;
+        [Tooltip("Drawing, tint and size of each resource.")]
+        [SerializeField] private ResourceVisuals visuals;
 
         [Header("Debug")]
         [Tooltip("Logs who collected how much and what remains.")]
@@ -43,7 +41,7 @@ namespace CodenameVelvet.Gathering
 
         private void Start()
         {
-            ApplyTint();
+            ApplyLook();
         }
 
         /// <summary>Sets what this pickup holds. Call right after Instantiate. Amount must be positive.</summary>
@@ -54,7 +52,7 @@ namespace CodenameVelvet.Gathering
 
             type = resourceType;
             amount = resourceAmount;
-            ApplyTint();
+            ApplyLook();
         }
 
         private void OnTriggerStay(Collider other)
@@ -84,21 +82,13 @@ namespace CodenameVelvet.Gathering
                 Destroy(gameObject);
         }
 
-        private void ApplyTint()
-        {
-            Color tint = ColorFor(type);
-            foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>())
-                sprite.color = tint;
-        }
+        public bool CanBeTakenBy(PlayerHealth player) =>
+            player.TryGetComponent(out PlayerInventory inventory) && inventory.SpaceFor(type) > 0;
 
-        private Color ColorFor(ResourceType resourceType)
+        private void ApplyLook()
         {
-            switch (resourceType)
-            {
-                case ResourceType.Wood: return woodColor;
-                case ResourceType.Stone: return stoneColor;
-                default: return mineralColor;
-            }
+            if (visuals != null && visuals.TryGet(type, out ResourceVisuals.Entry look))
+                PickupVisual.Apply(gameObject, look.sprite, look.tint, look.worldHeight);
         }
     }
 }

@@ -144,15 +144,11 @@ namespace CodenameVelvet.Feedback
             float low = 0f;
             if (FeedbackRules.IsLowHealth(health.CurrentHp, health.MaxHp, lowHealthFraction))
             {
-                // A heartbeat: a quick double pulse, then a rest.
-                float beat = Mathf.Repeat(Time.time * heartbeatRate, 1f);
-                float pulse = Mathf.Max(Bump(beat, 0.08f), 0.7f * Bump(beat, 0.28f));
+                float pulse = FeedbackRules.Heartbeat(Time.time, heartbeatRate);
                 low = lowHealthOpacity * (0.45f + 0.55f * pulse);
             }
 
             vignette.Opacity = Mathf.Max(flash, low);
         }
-
-        private static float Bump(float t, float center) => Mathf.Clamp01(1f - Mathf.Abs(t - center) / 0.1f);
     }
 }

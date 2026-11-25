@@ -5,7 +5,9 @@
 // - receives the sun's shadows (a character under a cliff darkens like the ground);
 // - takes the sun's hue (warm at dusk, blue at night) and the global night darkness;
 // - fades into the fog like the map;
-// - optional wind sway (more at the top than at the base), per material.
+// - optional wind sway (more at the top than at the base), per material;
+// - optional billboard, per material: faces whichever camera draws it (each split-screen view), with no script per
+//   sprite (for hundreds of grass tufts).
 // Globals (set by DayNightLighting; unset = 0 = no effect):
 //   _VelvetDarkness, _VelvetSunTint, _VelvetShadowStrength, _VelvetCastShadow.
 // Per object (own material copy, see SpriteMaterials): _ShadowGround = (ground height, 1 = set; unset = the
@@ -19,6 +21,7 @@ Shader "Velvet/Sprite"
         _WindStrength ("Wind Strength (shear at the top)", Range(0, 0.3)) = 0
         _WindSpeed ("Wind Speed", Float) = 1.5
         _ShadowMaxLength ("Cast Shadow Max Length (× height)", Range(0, 4)) = 1.6
+        [Toggle] _Billboard ("Billboard (face the camera, no ViewTilt needed)", Float) = 0
         [HideInInspector] _ShadowGround ("Shadow Ground (height, set)", Vector) = (0, 0, 0, 0)
         [HideInInspector] _FlashColor ("Flash (rgb color, a amount)", Color) = (1, 1, 1, 0)
 
@@ -43,6 +46,7 @@ Shader "Velvet/Sprite"
             half _WindStrength;
             half _WindSpeed;
             half _ShadowMaxLength;
+            half _Billboard;
             float4 _ShadowGround;
             half4 _FlashColor;
         CBUFFER_END
@@ -71,6 +75,19 @@ Shader "Velvet/Sprite"
             float phase = dot(UNITY_MATRIX_M._m03_m23, float2(0.37, 0.71));
             position.x += sin(_Time.y * _WindSpeed + phase) * _WindStrength * max(position.y, 0.0);
             return position;
+        }
+
+        // World position of a vertex: the usual transform, or, as a billboard, laid out along the drawing camera's
+        // right and up axes from the object's origin (keeping the object's scale, ignoring its rotation).
+        float3 SpritePositionWS(inout Attributes input)
+        {
+            float3 positionOS = SpritePositionOS(input);
+            if (_Billboard < 0.5)
+                return TransformObjectToWorld(positionOS);
+
+            float3 origin = UNITY_MATRIX_M._m03_m13_m23;
+            float2 scale = float2(length(UNITY_MATRIX_M._m00_m10_m20), length(UNITY_MATRIX_M._m01_m11_m21));
+            return origin + UNITY_MATRIX_V[0].xyz * (positionOS.x * scale.x) + UNITY_MATRIX_V[1].xyz * (positionOS.y * scale.y);
         }
     ENDHLSL
 
@@ -120,7 +137,7 @@ Shader "Velvet/Sprite"
                 Varyings output = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
 
-                float3 positionWS = TransformObjectToWorld(SpritePositionOS(input));
+                float3 positionWS = SpritePositionWS(input);
                 float groundY = _ShadowGround.y > 0.5 ? _ShadowGround.x : UNITY_MATRIX_M._m13;
 
                 // Slide each point down the sun's direction until it reaches the ground, capped in length.
@@ -191,7 +208,7 @@ Shader "Velvet/Sprite"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                output.positionWS = TransformObjectToWorld(SpritePositionOS(input));
+                output.positionWS = SpritePositionWS(input);
                 output.positionCS = TransformWorldToHClip(output.positionWS);
                 output.fogFactor = ComputeFogFactor(output.positionCS.z);
                 output.uv = input.uv;
