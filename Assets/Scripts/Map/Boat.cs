@@ -33,6 +33,9 @@ namespace CodenameVelvet.Map
         };
         [Tooltip("Shown one by one, in this order, as materials arrive. The last one appears when it is finished.")]
         [SerializeField] private GameObject[] parts = new GameObject[0];
+        [Tooltip("Optional, index-aligned with Parts: each one hides when its part shows (the broken boat giving way " +
+                 "to the repaired one). Empty entries are fine.")]
+        [SerializeField] private GameObject[] replacedParts = new GameObject[0];
         [Tooltip("No grass grows closer than this.")]
         [SerializeField, Min(0f)] private float grassClearRadius = 8f;
 
@@ -113,7 +116,10 @@ namespace CodenameVelvet.Map
             Status = progress.ToString();
             int shown = progress.StepsDone(parts.Length);
             for (int i = 0; i < parts.Length; i++)
+            {
                 parts[i].SetActive(i < shown);
+                if (i < replacedParts.Length && replacedParts[i] != null) replacedParts[i].SetActive(i >= shown);
+            }
         }
     }
 }

@@ -9,7 +9,8 @@ namespace CodenameVelvet.UI
     /// <summary>
     /// Draws one CharacterMenu frame from the lobby state it is given. Holds no
     /// state of its own; <see cref="LobbyManager"/> calls <see cref="Show"/> after
-    /// every change. Placeholder look: color swatch portrait plus text labels.
+    /// every change. The player badge (P1-P4), the arrows and the choosing hint are drawings placed in the scene;
+    /// the other states' hints are text for now.
     /// </summary>
     public class LobbySlotView : MonoBehaviour
     {
@@ -21,10 +22,10 @@ namespace CodenameVelvet.UI
 
         [Header("Content")]
         [SerializeField] private Image portrait;
-        [SerializeField] private TMP_Text playerLabel;
-        [SerializeField] private TMP_Text characterName;
         [Tooltip("The < > hint; only visible while choosing.")]
         [SerializeField] private GameObject arrows;
+        [Tooltip("The confirm / leave plate; shown instead of the status text while choosing.")]
+        [SerializeField] private GameObject choosingHint;
         [SerializeField] private TMP_Text status;
 
         public void Show(int slot, LobbySlotState state, CharacterDefinition character, bool isHost, bool canStart)
@@ -38,17 +39,16 @@ namespace CodenameVelvet.UI
                 _ => freeSprite,
             };
 
-            playerLabel.text = isHost ? $"P{slot + 1} · Host" : $"P{slot + 1}";
-
+            bool choosing = state == LobbySlotState.Choosing;
             portrait.gameObject.SetActive(joined);
-            characterName.gameObject.SetActive(joined);
-            arrows.SetActive(state == LobbySlotState.Choosing);
+            arrows.SetActive(choosing);
+            if (choosingHint != null) choosingHint.SetActive(choosing);
+            status.gameObject.SetActive(!choosing || choosingHint == null);
 
             if (joined)
             {
                 portrait.sprite = character.Portrait;
                 portrait.color = character.Portrait != null ? Color.white : character.Color;
-                characterName.text = character.DisplayName;
             }
 
             status.text = StatusText(state, isHost, canStart);

@@ -1401,13 +1401,17 @@ MonoBehaviour:
   arrowPrefab: {fileID: 3846658516891773800, guid: f4880d78e251f4a6497f7243b046730c, type: 3}
   damage: 1
   cooldown: 2
+  drawSeconds: 0.25
   aimRange: 14
   shotHeight: 2
   aimMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  bowSprite: {fileID: 21300000, guid: eb6c1756df101479591a1ebdc3a6a359, type: 3}
-  showSeconds: 0.35
+  heldBowPrefab: {fileID: 7469767022743112598, guid: 8f471e777e8e0488bb47a303222d5fc3, type: 3}
+  showAfterRelease: 0.3
+  snapSeconds: 0.08
+  heldSize: 4.5
+  heldOffset: {x: 1.2, y: 2.2}
 --- !u!1 &759181274004830134
 GameObject:
   m_ObjectHideFlags: 0

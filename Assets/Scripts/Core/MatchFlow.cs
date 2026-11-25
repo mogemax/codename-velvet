@@ -66,6 +66,9 @@ namespace CodenameVelvet.Core
             }
         }
 
+        // The loading screen's video gets ready during the level, for when the players leave it.
+        private void Start() => LoadingScreen.Preload(loadingScreen);
+
         private void OnDestroy()
         {
             foreach (PlayerHealth player in players)
@@ -108,7 +111,7 @@ namespace CodenameVelvet.Core
 
             isLeaving = true;
             Freeze(true); // nobody gets hurt behind the loading screen; unloading this scene unfreezes
-            Instantiate(loadingScreen).Load(scene);
+            LoadingScreen.Load(loadingScreen, scene);
         }
 
         /// <summary>

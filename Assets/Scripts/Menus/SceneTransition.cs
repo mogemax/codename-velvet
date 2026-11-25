@@ -18,6 +18,9 @@ public class SceneTransition : MonoBehaviour
 
     private bool isTransitioning;
 
+    // The loading screen's video gets ready while the menu is up.
+    private void Start() => LoadingScreen.Preload(loadingScreen);
+
     public void GoToNextScene()
     {
         if (isTransitioning) return; // repeated clicks would load the scene twice
@@ -29,7 +32,7 @@ public class SceneTransition : MonoBehaviour
     {
         menuAnimator.SetTrigger("Exit");
         yield return new WaitForSeconds(exitAnimationSeconds);
-        if (loadingScreen != null) Instantiate(loadingScreen).Load(nextSceneName);
+        if (loadingScreen != null) LoadingScreen.Load(loadingScreen, nextSceneName);
         else SceneManager.LoadScene(nextSceneName);
     }
 }
