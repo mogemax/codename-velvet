@@ -41,6 +41,20 @@ namespace CodenameVelvet.Tests
             Assert.That(roster.IsArmed(0), Is.False);
         }
 
+        [Test]
+        public void Bow_IsKeptPerSlot_ApartFromTheSword_UntilCleared()
+        {
+            var roster = new SessionRoster();
+            roster.SetHasBow(1, true);
+
+            Assert.That(roster.HasBow(1), Is.True);
+            Assert.That(roster.HasBow(0), Is.False);
+            Assert.That(roster.IsArmed(1), Is.False);
+
+            roster.Clear();
+            Assert.That(roster.HasBow(1), Is.False);
+        }
+
         private static int AddDevice(SessionRoster roster, int deviceId)
         {
             Assert.That(roster.TryAdd(new[] { deviceId }, Gamepad, out int slot), Is.True);

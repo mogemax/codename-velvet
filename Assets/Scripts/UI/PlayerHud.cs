@@ -54,9 +54,6 @@ namespace CodenameVelvet.UI
         private Camera viewCamera;
         private GameObject canvasRoot;
         private RectTransform viewport;
-        private Canvas canvas;
-        private Rect appliedRect;
-        private int appliedScreenHeight;
 
         private void Awake()
         {
@@ -93,7 +90,6 @@ namespace CodenameVelvet.UI
         {
             if (viewport == null)
                 return;
-            FitViewport();
             RefreshHearts(animate: true);
             BeatLastHeart();
         }
@@ -139,12 +135,10 @@ namespace CodenameVelvet.UI
         private void Build()
         {
             canvasRoot = new GameObject($"{name} HUD");
-            canvas = canvasRoot.AddComponent<Canvas>();
+            Canvas canvas = canvasRoot.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = sortingOrder;
-
-            viewport = NewRect("Viewport", canvasRoot.transform);
-            FitViewport();
+            viewport = ViewportCanvas.Fit(canvas, viewCamera, ReferenceHeight).Viewport;
 
             for (int i = 0; i < health.MaxHp; i++)
             {
@@ -186,23 +180,6 @@ namespace CodenameVelvet.UI
                 slot.Setup(icon, count);
                 slots.Add(slot);
             }
-        }
-
-        /// <summary>Keeps the HUD on this player's part of the screen, scaled to it (a split view gets a smaller HUD).</summary>
-        private void FitViewport()
-        {
-            Rect rect = viewCamera != null ? viewCamera.rect : new Rect(0f, 0f, 1f, 1f);
-            if (rect == appliedRect && Screen.height == appliedScreenHeight)
-                return;
-            appliedRect = rect;
-            appliedScreenHeight = Screen.height;
-
-            viewport.anchorMin = rect.min;
-            viewport.anchorMax = rect.max;
-            viewport.offsetMin = viewport.offsetMax = Vector2.zero;
-            // Child sizes are in 1080p pixels of a full screen; a viewport half as tall or wide halves them.
-            float scale = Screen.height / ReferenceHeight * Mathf.Min(rect.width, rect.height);
-            canvas.scaleFactor = Mathf.Max(0.01f, scale);
         }
 
         private static RectTransform NewRect(string objectName, Transform parent)

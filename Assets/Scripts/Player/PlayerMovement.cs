@@ -71,6 +71,9 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>Yaw of this player's camera, written by CameraFollow: controls and sprite flip are relative to it.</summary>
     public float ViewYaw { get; set; }
 
+    /// <summary>The drawing's root: flipped to face left or right (null if unset).</summary>
+    public Transform SpriteRoot => spriteRoot;
+
     /// <summary>The part of a climb before reaching the top; false while stepping onto the ledge.</summary>
     public bool IsOnLadder { get; private set; }
 

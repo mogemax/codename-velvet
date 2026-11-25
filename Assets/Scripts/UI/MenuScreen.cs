@@ -37,6 +37,10 @@ namespace CodenameVelvet.UI
         private bool isClosing;
 
         public bool IsOpen { get; private set; }
+        public GameObject Content => content;
+        public Button RestartButton => restartButton;
+        public Button MainMenuButton => mainMenuButton;
+        public Button QuitButton => quitButton;
 
         private void Awake()
         {
@@ -47,14 +51,36 @@ namespace CodenameVelvet.UI
             content.SetActive(false);
         }
 
-        public void Open()
+        /// <summary>
+        /// Shows the screen. <paramref name="selectFirst"/> gives the first shown button the shared UI focus (for
+        /// gamepads); screens that one player answers with their own buttons don't take it.
+        /// </summary>
+        public void Open(bool selectFirst = true)
         {
             StopAllCoroutines();
             isClosing = false;
             IsOpen = true;
             content.SetActive(true); // enabling the animator plays the intro from the start
-            if (firstSelected != null && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(firstSelected.gameObject);
+            Selectable first = FirstShown();
+            if (selectFirst && first != null && EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(first.gameObject);
+        }
+
+        /// <summary>Takes a button off this screen (e.g. the end screen without "Reborn").</summary>
+        public void Hide(Button button)
+        {
+            if (button != null)
+                button.gameObject.SetActive(false);
+        }
+
+        private Selectable FirstShown()
+        {
+            if (firstSelected != null && firstSelected.gameObject.activeSelf)
+                return firstSelected;
+            foreach (Button button in new[] { resumeButton, restartButton, mainMenuButton, quitButton })
+                if (button != null && button.gameObject.activeSelf)
+                    return button;
+            return null;
         }
 
         /// <summary>Plays the outro, hides, then calls <paramref name="closed"/>. Ignored if closed or closing.</summary>

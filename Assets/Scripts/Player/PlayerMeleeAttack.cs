@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using CodenameVelvet.Audio;
 using CodenameVelvet.Combat;
 using CodenameVelvet.Core.Debugging;
+using CodenameVelvet.Gathering;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace CodenameVelvet.Player
 {
@@ -24,9 +26,13 @@ namespace CodenameVelvet.Player
         private static readonly int AttackTrigger = Animator.StringToHash("Attack");
 
         [Header("Swing")]
-        [SerializeField] private int damage = 1;
-        [Tooltip("Reach as the gap between bodies (this player's collider surface to the target's), on the ground plane. 0 = touching.")]
-        [SerializeField] private float range = 1f;
+        [Tooltip("Damage of a bare-handed swing; with a sword in hand the sword's damage counts instead.")]
+        [FormerlySerializedAs("damage")]
+        [SerializeField, Min(1)] private int unarmedDamage = 1;
+        [Tooltip("Reach against enemies, as the gap between bodies (this player's collider surface to the target's), on the ground plane. 0 = touching.")]
+        [SerializeField] private float range = 2.5f;
+        [Tooltip("Reach against resource nodes (trees, rocks, veins), measured the same way; shorter, so gathering means walking up to them.")]
+        [SerializeField] private float gatherRange = 1f;
         [Tooltip("Total width of the swing in degrees, centred on the aim direction.")]
         [SerializeField] private float arcDegrees = 150f;
         [Tooltip("Seconds between swings.")]
@@ -62,6 +68,7 @@ namespace CodenameVelvet.Player
 
         private PlayerMovement movement;
         private PlayerHealth health;
+        private PlayerSword sword;
         private Collider body;
         private Collider[] hits;
         private readonly HashSet<IDamageable> struckThisSwing = new HashSet<IDamageable>();
@@ -72,6 +79,7 @@ namespace CodenameVelvet.Player
         private readonly List<float> candidateGaps = new List<float>();
         // Enemy = candidate that can be knocked back; index-aligned with the lists above.
         private readonly List<bool> candidateIsEnemy = new List<bool>();
+        private readonly List<float> candidateReach = new List<float>();
         // Enemy-only subset handed to the aim assist, so enemies win over nodes.
         private readonly List<Vector3> enemyPositions = new List<Vector3>();
         private readonly List<float> enemyGaps = new List<float>();
@@ -84,9 +92,15 @@ namespace CodenameVelvet.Player
         {
             movement = GetComponent<PlayerMovement>();
             health = GetComponent<PlayerHealth>();
+            sword = GetComponent<PlayerSword>();
             body = GetComponent<Collider>();
             hits = new Collider[Mathf.Max(1, maxHits)];
         }
+
+        /// <summary>What a swing deals right now: the sword's damage with one in hand, otherwise bare-handed.</summary>
+        public int Damage => sword != null
+            ? WeaponRules.SwingDamage(sword.HasSword, unarmedDamage, sword.Damage)
+            : unarmedDamage;
 
         private void OnAttack(InputValue value)
         {
@@ -143,10 +157,10 @@ namespace CodenameVelvet.Player
                 Component owner = candidateOwners[i];
                 Vector3 targetPosition = candidatePositions[i];
                 float gap = candidateGaps[i];
-                bool inArc = MeleeArc.IsInArc(origin, aim, targetPosition, gap, range, arcDegrees);
+                bool inArc = MeleeArc.IsInArc(origin, aim, targetPosition, gap, candidateReach[i], arcDegrees);
 
                 if (debugLogs)
-                    LogCandidate(owner, origin, aim, targetPosition, gap, inArc);
+                    LogCandidate(owner, origin, aim, targetPosition, gap, candidateReach[i], inArc);
 
                 if (!inArc)
                     continue;
@@ -164,6 +178,7 @@ namespace CodenameVelvet.Player
             candidatePositions.Clear();
             candidateGaps.Clear();
             candidateIsEnemy.Clear();
+            candidateReach.Clear();
             enemyPositions.Clear();
             enemyGaps.Clear();
 
@@ -175,11 +190,12 @@ namespace CodenameVelvet.Player
         /// Fills the candidate buffers with every valid target whose collider may be within
         /// reach, once per target even when it owns several colliders (the first collider
         /// found measures the gap). The query grows by this body's radius because range is
-        /// a gap from its surface. Returns the collider count.
+        /// a gap from its surface. Each target keeps its own reach: resource nodes use
+        /// <see cref="gatherRange"/>, everything else <see cref="range"/>. Returns the collider count.
         /// </summary>
         private int CollectCandidates(Vector3 origin)
         {
-            float queryRadius = range + BodyDistance.PlanarRadius(body);
+            float queryRadius = Mathf.Max(range, gatherRange) + BodyDistance.PlanarRadius(body);
             int count = Physics.OverlapSphereNonAlloc(origin, queryRadius, hits, hitMask);
             for (int i = 0; i < count; i++)
             {
@@ -198,6 +214,7 @@ namespace CodenameVelvet.Player
                 candidatePositions.Add(owner.transform.position);
                 candidateGaps.Add(BodyDistance.PlanarGap(origin, body, owner.transform.position, hit));
                 candidateIsEnemy.Add(owner.GetComponentInParent<IKnockbackable>() != null);
+                candidateReach.Add(owner is ResourceNode ? gatherRange : range);
             }
 
             struckThisSwing.Clear();
@@ -221,9 +238,10 @@ namespace CodenameVelvet.Player
                 enemyInRange |= candidateGaps[i] <= range;
             }
 
+            // With no enemy in reach, only what is within gathering reach can pull the aim (nodes).
             return enemyInRange
                 ? MeleeAim.ChooseAimDirection(origin, facing, enemyPositions, enemyGaps, range)
-                : MeleeAim.ChooseAimDirection(origin, facing, candidatePositions, candidateGaps, range);
+                : MeleeAim.ChooseAimDirection(origin, facing, candidatePositions, candidateGaps, gatherRange);
         }
 
         /// <summary>Debug-only: "assist → enemy/node name" when the aim points at a candidate, otherwise "facing".</summary>
@@ -236,7 +254,7 @@ namespace CodenameVelvet.Player
             {
                 Vector3 position = candidatePositions[i];
                 Vector2 toTarget = new Vector2(position.x - origin.x, position.z - origin.z);
-                if (candidateGaps[i] <= range && (toTarget.normalized - aim).sqrMagnitude < 1e-6f)
+                if (candidateGaps[i] <= candidateReach[i] && (toTarget.normalized - aim).sqrMagnitude < 1e-6f)
                     return $"assist → {(candidateIsEnemy[i] ? "enemy" : "node")} {candidateOwners[i].name}";
             }
 
@@ -244,12 +262,12 @@ namespace CodenameVelvet.Player
         }
 
         /// <summary>Debug-only: body gap, centre distance and angle from the aim, plus the swing outcome.</summary>
-        private void LogCandidate(Component owner, Vector3 origin, Vector2 aim, Vector3 targetPosition, float gap, bool inArc)
+        private void LogCandidate(Component owner, Vector3 origin, Vector2 aim, Vector3 targetPosition, float gap, float reach, bool inArc)
         {
             Vector2 toTarget = new Vector2(targetPosition.x - origin.x, targetPosition.z - origin.z);
             float distance = toTarget.magnitude;
             float angle = Vector2.Angle(aim, toTarget);
-            string outcome = inArc ? "hit" : gap > range ? "out of range" : "outside arc";
+            string outcome = inArc ? "hit" : gap > reach ? "out of range" : "outside arc";
 
             VelvetLog.Info(LogCategory, this, $"  {owner.name}: gap {gap:F2}, centres {distance:F2}, angle {angle:F1}° from aim → {outcome}");
         }
@@ -266,6 +284,7 @@ namespace CodenameVelvet.Player
 
         private void Strike(IDamageable target, Component owner, Vector3 origin, Vector3 targetPosition, Vector2 aim)
         {
+            int damage = Damage;
             target.ApplyDamage(damage);
 
             IKnockbackable knockbackable = owner.GetComponentInParent<IKnockbackable>();

@@ -21,7 +21,7 @@ namespace CodenameVelvet.UI
         [SerializeField] private RawImage picture;
         [SerializeField] private CanvasGroup group;
         [Tooltip("Shown at least this long, however fast the scene loads.")]
-        [SerializeField, Min(0f)] private float minSeconds = 4f;
+        [SerializeField, Min(0f)] private float minSeconds = 3f;
         [SerializeField, Min(0.01f)] private float fadeSeconds = 0.4f;
 
         public void Load(string scene)

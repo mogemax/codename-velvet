@@ -9,7 +9,8 @@ namespace CodenameVelvet.UI
 {
     /// <summary>
     /// The Interact key, bobbing over the player's head while a ladder can be climbed or a boat can be used (what it
-    /// has so far goes under the key); while down, the seconds left to respawn; otherwise, a call to the boss arena while the fight waits for everyone, or a
+    /// has so far goes under the key); while everyone is down in a boss fight, that it starts over (each player's own
+    /// countdown is on their death screen); otherwise, a call to the boss arena while the fight waits for everyone, or a
     /// reminder to repair the boat first near a closed arena. Lives
     /// on an overlay Canvas child of the player, placed through that player's own camera so it also works in split screen.
     /// </summary>
@@ -56,7 +57,7 @@ namespace CodenameVelvet.UI
             bool canUseBoat = boat != null && boat.CanUse;
             bool showKey = cam != null && (climb.CanClimb || canUseBoat);
             // Not while frozen: nobody comes back behind an end screen.
-            bool down = cam != null && !health.IsAlive && Time.timeScale > 0f;
+            bool down = cam != null && !health.IsAlive && Time.timeScale > 0f && encounter != null && encounter.IsRestarting;
             bool waiting = cam != null && !showKey && boat == null && encounter != null && encounter.WaitingForPlayers;
             bool gated = cam != null && !showKey && boat == null && encounter != null && encounter.IsGatedFor(climb.transform.position);
 
@@ -69,9 +70,7 @@ namespace CodenameVelvet.UI
                     : canUseBoat ? "The boat is ready. Set sail!"
                     : "All players must come to the boat";
             else if (down)
-                label.text = encounter != null && encounter.IsRestarting
-                    ? "Everyone is down. The fight starts over!"
-                    : $"Respawning in {Mathf.CeilToInt(health.RespawnSecondsLeft)}";
+                label.text = "Everyone is down. The fight starts over!";
             else if (waiting)
                 label.text = "All players must go to the boss arena";
             else if (gated)

@@ -59,6 +59,8 @@ namespace CodenameVelvet.Multiplayer
                     rosterAsset.Roster.SetCarried(identity.SlotIndex, inventory.Slots);
                 if (player.TryGetComponent(out PlayerSword sword))
                     rosterAsset.Roster.SetArmed(identity.SlotIndex, sword.HasSword);
+                if (player.TryGetComponent(out PlayerBow bow))
+                    rosterAsset.Roster.SetHasBow(identity.SlotIndex, bow.HasBow);
             }
         }
 
@@ -118,6 +120,9 @@ namespace CodenameVelvet.Multiplayer
 
             if (rosterAsset.Roster.IsArmed(slot) && player.TryGetComponent(out PlayerSword sword))
                 sword.Equip();
+
+            if (rosterAsset.Roster.HasBow(slot) && player.TryGetComponent(out PlayerBow bow))
+                bow.Equip();
 
             if (matchFlow != null && player.TryGetComponent(out PlayerHealth health))
                 matchFlow.RegisterPlayer(health);

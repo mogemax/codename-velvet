@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
   displayName: Perrito Morado
   color: {r: 0.33, g: 0.2, b: 0.62, a: 1}
-  portrait: {fileID: 21300000, guid: c71943b027520cd4c830bc84cf037731, type: 3}
+  portrait: {fileID: 21300000, guid: 61eeff9b34dcc4c8f82185a9c438da5a, type: 3}
   playerPrefab: {fileID: 8869829545852977679, guid: ed00e9e09e32f864baf379c45a07a22a, type: 3}

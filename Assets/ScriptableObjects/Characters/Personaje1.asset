@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77e5b8e25ac0d4266849963a13dbb464, type: 3}
   m_Name: Personaje1
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
-  displayName: Character 1
-  color: {r: 0.86, g: 0.3, b: 0.3, a: 1}
-  portrait: {fileID: 0}
+  displayName: Odizorro
+  color: {r: 0.3, g: 0.55, b: 0.9, a: 1}
+  portrait: {fileID: 21300000, guid: a2ab0726fd742438cb7bc93d6e475631, type: 3}
+  playerPrefab: {fileID: 0}

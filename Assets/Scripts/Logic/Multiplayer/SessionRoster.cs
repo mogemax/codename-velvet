@@ -19,6 +19,7 @@ namespace CodenameVelvet.Multiplayer
         private readonly RosterEntry[] slots;
         private readonly ResourceInventory.Slot[][] carried;
         private readonly bool[] armed;
+        private readonly bool[] withBow;
 
         /// <summary>Match time (day/night) when the players arrived at the current level.</summary>
         public float ClockSeconds { get; set; }
@@ -39,6 +40,7 @@ namespace CodenameVelvet.Multiplayer
             slots = new RosterEntry[maxPlayers];
             carried = new ResourceInventory.Slot[maxPlayers][];
             armed = new bool[maxPlayers];
+            withBow = new bool[maxPlayers];
         }
 
         /// <summary>
@@ -109,6 +111,12 @@ namespace CodenameVelvet.Multiplayer
         /// <summary>The slot came to this level with a sword. Kept, so restarting the level gives it again.</summary>
         public bool IsArmed(int slotIndex) => armed[slotIndex];
 
+        /// <summary>Records whether a slot takes a bow to the next level (also without a roster entry, for test players).</summary>
+        public void SetHasBow(int slotIndex, bool hasBow) => withBow[slotIndex] = hasBow;
+
+        /// <summary>The slot came to this level with a bow. Kept, so restarting the level gives it again.</summary>
+        public bool HasBow(int slotIndex) => withBow[slotIndex];
+
         /// <summary>One-way for the session; only <see cref="Clear"/> unlocks.</summary>
         public void Lock()
         {
@@ -121,6 +129,7 @@ namespace CodenameVelvet.Multiplayer
             Array.Clear(slots, 0, slots.Length);
             Array.Clear(carried, 0, carried.Length);
             Array.Clear(armed, 0, armed.Length);
+            Array.Clear(withBow, 0, withBow.Length);
             ClockSeconds = 0f;
             Count = 0;
             IsLocked = false;

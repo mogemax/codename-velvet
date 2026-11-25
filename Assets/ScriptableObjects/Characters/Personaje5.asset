@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
   displayName: Perrito Verde
   color: {r: 0.2, g: 0.42, b: 0.08, a: 1}
-  portrait: {fileID: 21300000, guid: 76dcd3c942c6e294f97dab08ba069f55, type: 3}
+  portrait: {fileID: 21300000, guid: b05b32f4a430a4fbe9df1145fac7865a, type: 3}
   playerPrefab: {fileID: 230002776108923523, guid: 8e27ee81c46d634409528d35277dbf72, type: 3}

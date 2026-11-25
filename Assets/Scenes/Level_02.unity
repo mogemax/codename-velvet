@@ -413,12 +413,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -449,6 +449,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -909,12 +913,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -945,6 +949,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -1043,12 +1051,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -1079,6 +1087,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -1432,12 +1444,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -1468,6 +1480,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -1566,12 +1582,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -1602,6 +1618,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -2144,12 +2164,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -2180,6 +2200,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -2705,12 +2729,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -2741,6 +2765,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -2802,48 +2830,48 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: cost.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[0].type'
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[0].amount'
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[1].type'
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[1].amount'
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[2].type'
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[2].amount'
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[3].type'
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
-      propertyPath: 'cost.Array.data[3].amount'
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
       propertyPath: matchFlow
       value: 
       objectReference: {fileID: 370101935}
     - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
       propertyPath: nextLevel
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[0].type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[1].type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[2].type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[3].type
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[0].amount
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[1].amount
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[2].amount
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: cost.Array.data[3].amount
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3509,12 +3537,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -3545,6 +3573,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -3643,27 +3675,6 @@ MonoBehaviour:
   - {fileID: 1029071272}
   music: {fileID: 568814946}
   fightMusic: {fileID: 8300000, guid: 3abafffd097abdc409554b2f382d302a, type: 3}
---- !u!114 &1487975774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1487975760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c0db8e9f4f584e42a3597fee7664a31, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.BossReveal
-  boat: {fileID: 1257890672}
-  boss: {fileID: 2080241222855773941}
-  matchFlow: {fileID: 370101935}
-  focusHeight: 8.5
-  arcHeight: 15
-  startDelay: 0.8
-  goSeconds: 2
-  holdSeconds: 2
-  returnSeconds: 1.5
 --- !u!4 &1487975762
 Transform:
   m_ObjectHideFlags: 0
@@ -3786,6 +3797,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1487975774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1487975760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0db8e9f4f584e42a3597fee7664a31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Enemies.BossReveal
+  boat: {fileID: 1257890672}
+  boss: {fileID: 2080241222855773941}
+  matchFlow: {fileID: 370101935}
+  focusHeight: 8.5
+  arcHeight: 15
+  startDelay: 0.8
+  goSeconds: 2
+  holdSeconds: 2
+  returnSeconds: 1.5
 --- !u!1 &1572831798
 GameObject:
   m_ObjectHideFlags: 0
@@ -3832,12 +3864,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -3868,6 +3900,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65
@@ -4255,12 +4291,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -4291,6 +4327,10 @@ MonoBehaviour:
   nodeDensity: 2.5
   maxNodes: 40
   nodeRespawnSeconds: 30
+  respawnInView: 0
+  nodePassThrough:
+    serializedVersion: 2
+    m_Bits: 0
   patchSize: 60
   emptyBelow: 0.3
   fullPatch: 0.65

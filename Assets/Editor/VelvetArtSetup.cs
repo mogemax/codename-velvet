@@ -20,7 +20,7 @@ using UnityEngine;
 /// and rope pickups, trees dropping them when felled (apple 35%, rope 50%), and the player HUD (hearts + slots).</item>
 /// <item><b>Grass</b> (open scene): a <see cref="GrassField"/> covering the scene's ground.</item>
 /// <item><b>Trees</b> (project + open scene): oak and pine variants of the tree with their art and a stump shown
-/// once felled; the scene's spawn zones grow them instead of the placeholder tree, half and half.</item>
+/// once felled; the scene's spawn zones grow them instead of the placeholder tree, half and half, one by one.</item>
 /// </list>
 /// </summary>
 public static class VelvetArtSetup
@@ -393,7 +393,7 @@ public static class VelvetArtSetup
         definition.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    /// <summary>Each placeholder entry becomes one entry per species, splitting its weight (same clusters and sizes).</summary>
+    /// <summary>Each placeholder entry becomes one entry per species, splitting its weight (same sizes); trees always spawn alone.</summary>
     private static bool ReplaceTreeEntries(SpawnZone zone, ResourceNode placeholder, ResourceNode[] variants)
     {
         var serialized = new SerializedObject(zone);
@@ -412,6 +412,17 @@ public static class VelvetArtSetup
                 nodes.InsertArrayElementAtIndex(i); // copies the entry
                 nodes.GetArrayElementAtIndex(i + 1).FindPropertyRelative("prefab").objectReferenceValue = variants[v];
             }
+            changed = true;
+        }
+
+        // Trees stand alone, never in groves (rocks keep their clusters).
+        for (int i = 0; i < nodes.arraySize; i++)
+        {
+            SerializedProperty entry = nodes.GetArrayElementAtIndex(i);
+            if (!variants.Contains(entry.FindPropertyRelative("prefab").objectReferenceValue as ResourceNode)) continue;
+            SerializedProperty cluster = entry.FindPropertyRelative("clusterSize");
+            if (cluster.vector2IntValue == Vector2Int.one) continue;
+            cluster.vector2IntValue = Vector2Int.one;
             changed = true;
         }
         if (changed) serialized.ApplyModifiedProperties();

@@ -15,10 +15,10 @@ namespace CodenameVelvet.Core
     /// <list type="bullet">
     /// <item><b>Pause</b>: Esc or any gamepad's Start opens the pause menu (resume, main menu, quit); pressing it
     /// again resumes.</item>
-    /// <item><b>Game over</b>: every player is down at the same time. While one is alive, downed players
-    /// respawn as usual (PlayerHealth). Playing solo, dying is game over, unless <see cref="WipeHandler"/> takes
-    /// care of it (the boss fight starts over instead). The end screen offers to restart the level from the start,
-    /// go to the main menu or quit.</item>
+    /// <item><b>Game over</b>: every player is down at the same time (even if some were about to come back).
+    /// Until then each downed player has their own death screen and comes back when they choose
+    /// (PlayerDeathScreen). Playing solo, dying is game over, unless <see cref="WipeHandler"/> takes care of it
+    /// (the boss fight starts over instead). The end screen offers the main menu or quit.</item>
     /// <item><b>Victory</b>: someone calls <see cref="Victory"/> (the boss on death). Its panel shows and the
     /// menu loads after a few real-time seconds.</item>
     /// </list>
@@ -60,7 +60,7 @@ namespace CodenameVelvet.Core
             }
             if (endScreen != null)
             {
-                endScreen.RestartRequested += Restart;
+                endScreen.Hide(endScreen.RestartButton); // coming back is each player's own screen
                 endScreen.MainMenuRequested += GoToMenu;
                 endScreen.QuitRequested += Quit;
             }
@@ -162,6 +162,9 @@ namespace CodenameVelvet.Core
         {
             if (isOver) return false;
             isOver = true;
+            // The match's own screen replaces every player's death screen.
+            foreach (PlayerDeathScreen deathScreen in FindObjectsByType<PlayerDeathScreen>(FindObjectsSortMode.None))
+                deathScreen.Dismiss();
             VelvetLog.Info(LogCategory, this, reason);
             if (pauseMenu != null && pauseMenu.IsOpen) pauseMenu.Close();
             Freeze(true);
@@ -179,8 +182,6 @@ namespace CodenameVelvet.Core
         }
 
         // ---- Leaving -------------------------------------------------------------------------------------------
-
-        private void Restart() => Load(SceneManager.GetActiveScene().name);
 
         private void GoToMenu() => Load(menuScene);
 

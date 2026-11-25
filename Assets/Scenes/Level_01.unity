@@ -165,12 +165,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -334,12 +334,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}
@@ -800,6 +800,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Spawning.SwordScatter
   rosterAsset: {fileID: 11400000, guid: 4654ff5d2c8a04c45aeea8cb05f3b86f, type: 2}
   swordPrefab: {fileID: 137867694576455483, guid: 5ad608cce2fbe61459d2acc34ac2bfb2, type: 3}
+  bowPrefab: {fileID: 7051267137899892586, guid: 2b0f5ce9273cc4ba4894d10263834eaa, type: 3}
+  bowCount: 2
   spots:
   - {fileID: 2128433166}
   - {fileID: 2118565727}
@@ -1284,12 +1286,12 @@ MonoBehaviour:
   nodes:
   - prefab: {fileID: 2938555114501744022, guid: 1140af310e5924991a7229f4e9d4002e, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 5241770239589728655, guid: 9a06307dc96ff4fc0b0c5ac0d3bd1424, type: 3}
     weight: 0.5
-    clusterSize: {x: 2, y: 6}
+    clusterSize: {x: 1, y: 1}
     clusterSpread: 3
     scaleRange: {x: 0.8, y: 1.25}
   - prefab: {fileID: 4471014779931306190, guid: 2085594203864723b428f943fe17a26f, type: 3}

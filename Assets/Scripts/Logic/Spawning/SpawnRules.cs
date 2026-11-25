@@ -129,6 +129,17 @@ namespace CodenameVelvet.Spawning
         }
 
         /// <summary>
+        /// Spots for the weapons left on the ground: <paramref name="swords"/> and <paramref name="bows"/>, never two
+        /// on the same spot (free spots first, as <see cref="PickSpots"/>). With too few spots the swords come first.
+        /// </summary>
+        public static (List<int> swords, List<int> bows) PickWeaponSpots(IReadOnlyList<bool> isFree, int swords, int bows, System.Random random)
+        {
+            List<int> picked = PickSpots(isFree, Math.Max(0, swords) + Math.Max(0, bows), random);
+            int swordCount = Math.Min(Math.Max(0, swords), picked.Count);
+            return (picked.GetRange(0, swordCount), picked.GetRange(swordCount, picked.Count - swordCount));
+        }
+
+        /// <summary>
         /// True when a viewport-space point (Camera.WorldToViewportPoint) is on screen, with the view grown
         /// by <paramref name="margin"/> so spawns never pop in right at the edge.
         /// </summary>

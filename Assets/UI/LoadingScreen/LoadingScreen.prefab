@@ -287,5 +287,5 @@ MonoBehaviour:
   video: {fileID: 3975199092659390117}
   picture: {fileID: 6343979461648574061}
   group: {fileID: 6094520109695221604}
-  minSeconds: 4
+  minSeconds: 3
   fadeSeconds: 0.4

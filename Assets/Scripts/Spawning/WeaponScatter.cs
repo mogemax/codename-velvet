@@ -10,16 +10,20 @@ using UnityEngine;
 namespace CodenameVelvet.Spawning
 {
     /// <summary>
-    /// Leaves one sword per player on the ground when the level starts, each at a different random spot. Spots over
-    /// water or with something solid on them are only used when there are not enough free ones.
+    /// Leaves the weapons on the ground when the level starts: one sword per player and a fixed number of bows,
+    /// each at a different random spot. Spots over water or with something solid on them are only used when there
+    /// are not enough free ones.
     /// </summary>
-    public class SwordScatter : MonoBehaviour
+    public class WeaponScatter : MonoBehaviour
     {
-        private const string LogCategory = "SwordScatter";
+        private const string LogCategory = "WeaponScatter";
 
         [SerializeField] private SessionRosterAsset rosterAsset;
         [SerializeField] private SwordPickup swordPrefab;
-        [Tooltip("Where a sword may appear; at least one per player.")]
+        [SerializeField] private BowPickup bowPrefab;
+        [Tooltip("Bows on the ground, however many players there are.")]
+        [SerializeField, Min(0)] private int bowCount = 2;
+        [Tooltip("Where a weapon may appear; at least one per player plus one per bow.")]
         [SerializeField] private Transform[] spots = new Transform[0];
         [Tooltip("Empty = 'Ground' layer.")]
         [SerializeField] private LayerMask groundMask;
@@ -41,14 +45,21 @@ namespace CodenameVelvet.Spawning
             Vector3[] points = spots.Where(spot => spot != null)
                 .Select(spot => PlayerSpawner.OnGround(spot.position, groundMask))
                 .ToArray();
-            int count = Mathf.Max(1, rosterAsset.Roster.Count); // empty roster = PlayerSpawner's test player
-            if (points.Length < count)
-                VelvetLog.Warn(LogCategory, this, $"{points.Length} spots for {count} players");
+            int swords = Mathf.Max(1, rosterAsset.Roster.Count); // empty roster = PlayerSpawner's test player
+            int bows = bowPrefab != null ? bowCount : 0;
+            if (points.Length < swords + bows)
+                VelvetLog.Warn(LogCategory, this, $"{points.Length} spots for {swords} swords and {bows} bows");
 
             var random = new System.Random(Random.Range(int.MinValue, int.MaxValue));
-            List<int> picked = SpawnRules.PickSpots(points.Select(IsFree).ToArray(), count, random);
-            foreach (int index in picked)
-                Instantiate(swordPrefab, points[index], swordPrefab.transform.rotation);
+            (List<int> swordSpots, List<int> bowSpots) = SpawnRules.PickWeaponSpots(points.Select(IsFree).ToArray(), swords, bows, random);
+            Place(swordPrefab, swordSpots, points);
+            Place(bowPrefab, bowSpots, points);
+        }
+
+        private static void Place(WeaponPickup prefab, List<int> spots, Vector3[] points)
+        {
+            foreach (int index in spots)
+                Instantiate(prefab, points[index], prefab.transform.rotation);
         }
 
         // The water surface can run under dry ground near the shore, so it is not an obstacle by itself.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CodenameVelvet.Spawning;
 using NUnit.Framework;
 using UnityEngine;
@@ -175,6 +176,29 @@ namespace CodenameVelvet.Tests
         public void PickSpots_FewerSpotsThanAsked_ReturnsThemAll()
         {
             Assert.That(SpawnRules.PickSpots(new[] { true, false }, 4, new System.Random(1)), Is.EqualTo(new[] { 0, 1 }));
+        }
+
+        [Test]
+        public void PickWeaponSpots_FixedBows_WhateverThePlayers_NeverSharingASpot()
+        {
+            bool[] isFree = { true, true, true, true, true, true, true, true, false, false, true };
+            for (int players = 1; players <= 4; players++)
+            for (int seed = 0; seed < 10; seed++)
+            {
+                (List<int> swords, List<int> bows) = SpawnRules.PickWeaponSpots(isFree, players, 2, new System.Random(seed));
+                Assert.That(swords.Count, Is.EqualTo(players));
+                Assert.That(bows.Count, Is.EqualTo(2));
+                Assert.That(swords.Concat(bows), Is.Unique);
+                Assert.That(swords.Concat(bows), Has.None.EqualTo(8).And.None.EqualTo(9)); // free spots first
+            }
+        }
+
+        [Test]
+        public void PickWeaponSpots_TooFewSpots_SwordsComeFirst()
+        {
+            (List<int> swords, List<int> bows) = SpawnRules.PickWeaponSpots(new[] { true, true, true }, 2, 2, new System.Random(3));
+            Assert.That(swords.Count, Is.EqualTo(2));
+            Assert.That(bows.Count, Is.EqualTo(1));
         }
 
         [Test]

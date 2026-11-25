@@ -740,6 +740,8 @@ GameObject:
   - component: {fileID: 2805799872209918690}
   - component: {fileID: 2665151568915263341}
   - component: {fileID: 1219303448981825169}
+  - component: {fileID: 4586425704448126590}
+  - component: {fileID: 9116833905593862137}
   m_Layer: 6
   m_Name: PLAYER
   m_TagString: Player
@@ -898,6 +900,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerHealth
   maxHp: 3
   deathDelaySeconds: 2
+  respawnCooldownSeconds: 10
   hitInvulnerabilitySeconds: 0.6
   onPlayerDied: {fileID: 11400000, guid: 0fe4bb3b2938d494983fa7d07be5d184, type: 2}
   spriteRoot: {fileID: 0}
@@ -914,8 +917,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a587e479dc20749b9a0bd2466a5b9fa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerMeleeAttack
-  damage: 1
-  range: 1
+  unarmedDamage: 1
+  range: 2.5
+  gatherRange: 1
   arcDegrees: 150
   cooldown: 0.4
   aimAssist: 1
@@ -1362,6 +1366,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerSword
   heldSword: {fileID: 7122000888038585226}
+  damage: 2
+--- !u!114 &4586425704448126590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679989216986570347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f28c425517e9f4ba48aba4e5860addd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.UI.PlayerDeathScreen
+  screenPrefab: {fileID: 5886508393034615820, guid: 294f8e8a3954dec4ca72f5236fb85304, type: 3}
+  font: {fileID: 11400000, guid: 196614f5af8139649ae54f9512920e81, type: 2}
+  promptMaterial: {fileID: 2100000, guid: c1f1ad481dbbd4cbdb3d51d8524c6de1, type: 2}
+  promptSize: 34
+  sortingOrder: 150
+  waitingText: Reborn in {0}
+  readyText: Press Attack to reborn
+--- !u!114 &9116833905593862137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679989216986570347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df1f35f77586f40a887af92971d9bb63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Player.PlayerBow
+  arrowPrefab: {fileID: 3846658516891773800, guid: f4880d78e251f4a6497f7243b046730c, type: 3}
+  damage: 1
+  cooldown: 2
+  aimRange: 14
+  shotHeight: 2
+  aimMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  bowSprite: {fileID: 21300000, guid: eb6c1756df101479591a1ebdc3a6a359, type: 3}
+  showSeconds: 0.35
 --- !u!1 &759181274004830134
 GameObject:
   m_ObjectHideFlags: 0
