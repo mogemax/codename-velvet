@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77e5b8e25ac0d4266849963a13dbb464, type: 3}
   m_Name: Personaje4
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
-  displayName: Character 4
-  color: {r: 0.95, g: 0.78, b: 0.25, a: 1}
-  portrait: {fileID: 0}
+  displayName: Perrito Morado
+  color: {r: 0.33, g: 0.2, b: 0.62, a: 1}
+  portrait: {fileID: 21300000, guid: c71943b027520cd4c830bc84cf037731, type: 3}
+  playerPrefab: {fileID: 8869829545852977679, guid: ed00e9e09e32f864baf379c45a07a22a, type: 3}

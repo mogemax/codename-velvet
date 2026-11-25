@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77e5b8e25ac0d4266849963a13dbb464, type: 3}
   m_Name: Personaje3
   m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Characters.CharacterDefinition
-  displayName: Character 3
-  color: {r: 0.35, g: 0.78, b: 0.4, a: 1}
-  portrait: {fileID: 0}
+  displayName: Perrito Rojo
+  color: {r: 0.65, g: 0.2, b: 0.18, a: 1}
+  portrait: {fileID: 21300000, guid: 1a753a9abd3c08d4c969b56a38e1aa35, type: 3}
+  playerPrefab: {fileID: 1767844605693317757, guid: 51df3f0919e2c3145b27b160cf7a4f45, type: 3}
