@@ -11,7 +11,7 @@ namespace CodenameVelvet.Map
     /// <summary>
     /// A boat the players build together by bringing it materials. Its trigger is the area from which a player can
     /// use it with Interact: deliver while parts are missing (they appear one by one as it fills up), and once built,
-    /// take everyone to the next level when all of them are there.
+    /// take everyone to the next level when all of them are there. Without a next level it is only repaired and does not sail.
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
     [RequireComponent(typeof(SquashStretch))]
@@ -35,6 +35,7 @@ namespace CodenameVelvet.Map
 
         [Header("Journey")]
         [SerializeField] private MatchFlow matchFlow;
+        [Tooltip("Empty = this boat does not sail from here; it only has to be built.")]
         [SerializeField] private string nextLevel = "Level_02";
 
         private BuildProgress progress;
@@ -42,8 +43,11 @@ namespace CodenameVelvet.Map
 
         public bool IsBuilt => progress.IsComplete;
 
+        /// <summary>Built, and has somewhere to sail to.</summary>
+        public bool CanSail => IsBuilt && !string.IsNullOrEmpty(nextLevel);
+
         /// <summary>Pressing Interact does something: it still needs materials, or it can sail.</summary>
-        public bool CanUse => !IsBuilt || EveryoneIsHere();
+        public bool CanUse => !IsBuilt || (CanSail && EveryoneIsHere());
 
         /// <summary>What has been delivered of each material.</summary>
         public string Status { get; private set; }
@@ -52,7 +56,7 @@ namespace CodenameVelvet.Map
         {
             progress = new BuildProgress(cost);
             squash = GetComponent<SquashStretch>();
-            if (matchFlow == null)
+            if (matchFlow == null && !string.IsNullOrEmpty(nextLevel))
                 Debug.LogWarning($"{name}: Boat has no MatchFlow; it will not sail.", this);
             Refresh();
         }
@@ -64,7 +68,7 @@ namespace CodenameVelvet.Map
         {
             if (IsBuilt)
             {
-                if (matchFlow != null && EveryoneIsHere()) matchFlow.GoToLevel(nextLevel);
+                if (CanSail && matchFlow != null && EveryoneIsHere()) matchFlow.GoToLevel(nextLevel);
                 return;
             }
 

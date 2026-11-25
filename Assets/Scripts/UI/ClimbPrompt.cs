@@ -9,7 +9,8 @@ namespace CodenameVelvet.UI
 {
     /// <summary>
     /// The Interact key, bobbing over the player's head while a ladder can be climbed or a boat can be used (what it
-    /// has so far goes under the key); otherwise, a call to the boss arena while the fight waits for everyone. Lives
+    /// has so far goes under the key); otherwise, a call to the boss arena while the fight waits for everyone, or a
+    /// reminder to repair the boat first near a closed arena. Lives
     /// on an overlay Canvas child of the player, placed through that player's own camera so it also works in split screen.
     /// </summary>
     [DefaultExecutionOrder(100)] // after CameraFollow has moved the camera this frame
@@ -53,19 +54,23 @@ namespace CodenameVelvet.UI
             bool canUseBoat = boat != null && boat.CanUse;
             bool showKey = cam != null && (climb.CanClimb || canUseBoat);
             bool waiting = cam != null && !showKey && boat == null && encounter != null && encounter.WaitingForPlayers;
+            bool gated = cam != null && !showKey && boat == null && encounter != null && encounter.IsGatedFor(climb.transform.position);
 
             // The player's own device: E on keyboard, the north button on a gamepad.
             if (showKey && !key.gameObject.activeSelf)
                 keyLabel.text = input.actions["Interact"].GetBindingDisplayString(group: input.currentControlScheme);
             if (boat != null)
                 label.text = !boat.IsBuilt ? boat.Status
+                    : !boat.CanSail ? "The boat is repaired. Go defeat the boss!"
                     : canUseBoat ? "The boat is ready. Set sail!"
                     : "All players must come to the boat";
             else if (waiting)
                 label.text = "All players must go to the boss arena";
+            else if (gated)
+                label.text = "You must repair the boat first";
 
             key.gameObject.SetActive(showKey);
-            panel.gameObject.SetActive(boat != null || waiting);
+            panel.gameObject.SetActive(boat != null || waiting || gated);
             if (!key.gameObject.activeSelf && !panel.gameObject.activeSelf) return;
 
             Vector2 position = cam.WorldToScreenPoint(climb.transform.position + Vector3.up * height);

@@ -1,3 +1,4 @@
+using CodenameVelvet.Map;
 using CodenameVelvet.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,6 +11,7 @@ namespace CodenameVelvet.Enemies
     /// walls rise around the arena box so nobody can leave, and HUD that doesn't belong in the
     /// fight (the day/night clock) is hidden. Everything is undone when the boss dies.
     /// Players who die during the fight come back inside the arena, where they stood when it started.
+    /// If a Boat is assigned, the same walls keep everyone out until it is built (the boss stays passive).
     /// </summary>
     public class BossEncounter : MonoBehaviour
     {
@@ -25,6 +27,12 @@ namespace CodenameVelvet.Enemies
         [SerializeField, Min(0f)] private float entryMargin = 2f;
         [Tooltip("Optional visible walls, fog, etc. Turned on only during the fight.")]
         [SerializeField] private GameObject[] showDuringFight;
+
+        [Header("Gate")]
+        [Tooltip("Must be built before anyone can enter the arena. Empty = always open.")]
+        [SerializeField] private Boat boat;
+        [Tooltip("How close to the arena a player must be to be told the gate is closed.")]
+        [SerializeField, Min(0f)] private float gateMessageDistance = 8f;
 
         [Header("HUD")]
         [Tooltip("Turned off during the fight (e.g. the day/night label).")]
@@ -43,6 +51,16 @@ namespace CodenameVelvet.Enemies
 
         /// <summary>Some players are in the arena and the fight is waiting for the rest.</summary>
         public bool WaitingForPlayers { get; private set; }
+
+        // Boat.IsBuilt needs the boat's Awake to have run, so this is only read from Update and later.
+        private bool IsGated => boat != null && !boat.IsBuilt;
+
+        /// <summary>The gate is closed and the position is in the arena or close enough to its sides to be told so.</summary>
+        public bool IsGatedFor(Vector3 position)
+        {
+            return IsGated && health != null && health.IsAlive && arenaArea != null
+                && IsInArena(position, -gateMessageDistance);
+        }
 
         private void Awake()
         {
@@ -63,12 +81,22 @@ namespace CodenameVelvet.Enemies
             if (health == null || !health.IsAlive)
             {
                 if (InFight) SetFight(false);
+                if (walls != null) walls.SetActive(false); // it may have died while the gate was closed
                 WaitingForPlayers = false;
                 enabled = false;
                 return;
             }
 
             if (InFight || brain == null) return;
+
+            bool gated = IsGated;
+            if (walls != null) walls.SetActive(gated);
+            if (gated)
+            {
+                SetCanEngage(false);
+                WaitingForPlayers = false;
+                return;
+            }
 
             if (brain.HasTarget)
             {
@@ -101,9 +129,15 @@ namespace CodenameVelvet.Enemies
         {
             if (player.TryGetComponent(out PlayerHealth playerHealth) && !playerHealth.IsAlive) return false;
 
+            return IsInArena(player.transform.position, entryMargin);
+        }
+
+        // A negative margin grows the box, which is how the gate message reaches past its sides.
+        private bool IsInArena(Vector3 position, float margin)
+        {
             Transform area = arenaArea.transform;
-            Vector3 offset = area.InverseTransformPoint(player.transform.position) - arenaArea.center;
-            return ArenaRules.Contains(Vector3.Scale(offset, area.lossyScale), Vector3.Scale(arenaArea.size, area.lossyScale), entryMargin);
+            Vector3 offset = area.InverseTransformPoint(position) - arenaArea.center;
+            return ArenaRules.Contains(Vector3.Scale(offset, area.lossyScale), Vector3.Scale(arenaArea.size, area.lossyScale), margin);
         }
 
         private void SetCanEngage(bool canEngage)

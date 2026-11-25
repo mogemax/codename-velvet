@@ -573,6 +573,7 @@ MonoBehaviour:
   threatPerExtraPlayer: 0.35
   maxThreat: 3
   rosterAsset: {fileID: 11400000, guid: 4654ff5d2c8a04c45aeea8cb05f3b86f, type: 2}
+  matchFlow: {fileID: 0}
   onPhaseChanged: {fileID: 11400000, guid: 349a562cb238c45389d55de7274ca237, type: 2}
   debugLogs: 1
 --- !u!4 &183607016
@@ -760,6 +761,7 @@ MonoBehaviour:
   endScreen: {fileID: 163806943}
   victoryPanel: {fileID: 1448329712}
   menuScene: MainMenu
+  loadingScreen: {fileID: 0}
   secondsBeforeMenu: 4
 --- !u!4 &370101936
 Transform:
@@ -2675,6 +2677,82 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 20.275, z: 0}
+--- !u!1001 &1257890671
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: matchFlow
+      value: 
+      objectReference: {fileID: 370101935}
+    - target: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: nextLevel
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -28.816011
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -64
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290182210497230444, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7220798412340169598, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+      propertyPath: m_Name
+      value: Boat
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+--- !u!114 &1257890672 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 381361919124110489, guid: b0fc650624cabd34495f44fad4f851ff, type: 3}
+  m_PrefabInstance: {fileID: 1257890671}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef7da48bd86ac524095e2cb4b9dfe1ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CodenameVelvet.Map.Boat
 --- !u!1 &1299129071
 GameObject:
   m_ObjectHideFlags: 0
@@ -3402,6 +3480,8 @@ MonoBehaviour:
   wallThickness: 1
   entryMargin: 2
   showDuringFight: []
+  boat: {fileID: 1257890672}
+  gateMessageDistance: 8
   hideDuringFight:
   - {fileID: 1029071272}
   music: {fileID: 568814946}
@@ -4380,3 +4460,4 @@ SceneRoots:
   - {fileID: 1371055503}
   - {fileID: 163806942}
   - {fileID: 1901032935}
+  - {fileID: 1257890671}
