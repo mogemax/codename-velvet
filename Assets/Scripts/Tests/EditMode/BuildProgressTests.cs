@@ -13,6 +13,18 @@ namespace CodenameVelvet.Tests
         });
 
         [Test]
+        public void ToString_PutsThreeMaterialsPerLine()
+        {
+            var progress = new BuildProgress(new[]
+            {
+                new ResourceAmount(ResourceType.Wood, 1), new ResourceAmount(ResourceType.Stone, 2),
+                new ResourceAmount(ResourceType.Rope, 3), new ResourceAmount(ResourceType.Mineral, 4),
+            });
+
+            Assert.That(progress.ToString(), Is.EqualTo("Wood 0/1   Stone 0/2   Rope 0/3\nMineral 0/4"));
+        }
+
+        [Test]
         public void TakeFrom_TakesOnlyWhatIsMissing_AndLeavesTheRest()
         {
             var inventory = new ResourceInventory();

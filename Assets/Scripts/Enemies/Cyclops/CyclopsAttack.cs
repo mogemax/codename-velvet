@@ -47,8 +47,8 @@ namespace CodenameVelvet.Enemies
         [Min(0f)] public float knockbackForce = 8f;
         [Min(0f)] public float knockbackStun = 0.5f;
 
-        [Tooltip("Camera shake at the hit (0 = none, 1 = max), fading with distance from each player.")]
-        [Range(0f, 1f)] public float cameraShake = 0.6f;
+        [Tooltip("Camera shake at the hit (0 = none, 1 = a normal full shake, 2 = huge), fading with distance from each player.")]
+        [Range(0f, 2f)] public float cameraShake = 0.6f;
 
         [Tooltip("Called at the hit with the impact position (VFX, sound).")]
         public UnityEvent<Vector3> onImpact = new UnityEvent<Vector3>();

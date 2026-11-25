@@ -1,4 +1,6 @@
 using CodenameVelvet.Cameras;
+using CodenameVelvet.Map;
+using CodenameVelvet.Player;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -7,12 +9,16 @@ using UnityEngine.Rendering;
 /// camera only slides (it never re-aims while following, except to face a ladder being climbed or in a turned zone). Split screen uses one per player, assigned through
 /// <see cref="SetTarget"/>. Inside a <see cref="CameraFramingZone"/> it pulls back and shifts its focus toward
 /// the zone's focus, and <see cref="CameraShake"/> (when present) is added on top of the framing.
-/// While its camera draws, it tells "Velvet/Lit" (the 3D map) where its player is, so what hides them turns see-through.
+/// A cutscene can borrow the view with <see cref="SetCinematic"/>.
+/// While its camera draws, it tells "Velvet/Lit" (the 3D map) where its player is and, when most of them is hidden, to
+/// turn what hides them see-through.
 /// </summary>
 [RequireComponent(typeof(Camera))]
 public class CameraFollow : MonoBehaviour
 {
     private const float ReferenceAspect = 16f / 9f;
+    private const float SeeThroughSeconds = 0.2f;
+    private const float SeeThroughMargin = 1.2f; // "Velvet/Lit" fully opens what is this far in front of the player
     private static readonly int SeeThroughId = Shader.PropertyToID("_VelvetSeeThrough");
 
     [SerializeField] private Transform target;
@@ -40,6 +46,10 @@ public class CameraFollow : MonoBehaviour
     [Tooltip("How fast it turns to face a ladder or a zone's yaw, and back.")]
     [SerializeField, Min(0.1f)] private float climbBlendSpeed = 4f;
 
+    [Header("See-through map")]
+    [Tooltip("Part of the player that must be hidden before what hides them turns see-through.")]
+    [SerializeField, Range(0.3f, 1f)] private float hiddenPart = 0.7f;
+
     [Header("Optional bounds (keeps the focus over the map)")]
     [SerializeField] private bool useBounds = false;
     [SerializeField] private Vector2 minBounds;
@@ -53,6 +63,12 @@ public class CameraFollow : MonoBehaviour
     private PlayerMovement movement;
     private float climbBlend;
     private float yaw;
+    private PlayerHealth health;
+    private int mapMask;
+    private bool isHidden;
+    private float seeThrough;
+    private Vector3 cinematicPoint;
+    private float cinematicBlend;
 
     /// <summary>Smoothed world point the camera is centered on.</summary>
     public Vector3 FocusPoint => focus;
@@ -62,6 +78,15 @@ public class CameraFollow : MonoBehaviour
     {
         target = newTarget;
         movement = target.GetComponent<PlayerMovement>();
+        health = target.GetComponent<PlayerHealth>();
+    }
+
+    /// <summary>Moves the view from the player (0) to a world point (1), eased at both ends and framed like the
+    /// <see cref="CameraFramingZone"/> there. Stays until called again with 0; works while time is frozen.</summary>
+    public void SetCinematic(Vector3 point, float blend)
+    {
+        cinematicPoint = point;
+        cinematicBlend = Mathf.SmoothStep(0f, 1f, blend);
     }
 
     /// <summary>Jumps straight to the target instead of gliding there (e.g. after a teleport).</summary>
@@ -76,6 +101,7 @@ public class CameraFollow : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         TryGetComponent(out shake);
+        mapMask = LayerMask.GetMask("Ground");
     }
 
     private void OnEnable()
@@ -95,7 +121,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (rendering != cam || target == null) return;
         Vector3 feet = target.position;
-        Shader.SetGlobalVector(SeeThroughId, new Vector4(feet.x, feet.y, feet.z, 1f));
+        Shader.SetGlobalVector(SeeThroughId, new Vector4(feet.x, feet.y, feet.z, seeThrough));
     }
 
     private void CloseSeeThrough(ScriptableRenderContext context, Camera rendering)
@@ -139,6 +165,29 @@ public class CameraFollow : MonoBehaviour
         float followT = 1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
         focus = Vector3.Lerp(focus, DesiredFocus() + zoneShift, followT);
         Apply();
+
+        isHidden = IsTargetHidden();
+        seeThrough = Mathf.MoveTowards(seeThrough, isHidden ? 1f : 0f, Time.unscaledDeltaTime / SeeThroughSeconds);
+    }
+
+    private bool IsTargetHidden()
+    {
+        // Nobody to reveal from a cutscene's view, or while they are down (not drawn).
+        if (cinematicBlend > 0f || (health != null && !health.IsAlive)) return false;
+
+        int hiddenPoints = 0;
+        for (int i = 0; i < OcclusionRules.BodyPoints; i++)
+            if (IsBlocked(OcclusionRules.BodyPoint(i, target.position, transform.right, transform.up))) hiddenPoints++;
+        return OcclusionRules.IsCovered(hiddenPoints, isHidden, hiddenPart);
+    }
+
+    // Only the map (Ground) and boats: water and the boss arena's invisible walls hide nobody.
+    private bool IsBlocked(Vector3 point)
+    {
+        Vector3 toPoint = point - transform.position;
+        Ray ray = new Ray(transform.position, toPoint);
+        float reach = toPoint.magnitude - SeeThroughMargin;
+        return Physics.Raycast(ray, reach, mapMask, QueryTriggerInteraction.Ignore) || Boat.Blocks(ray, reach);
     }
 
     private Vector3 DesiredFocus()
@@ -156,8 +205,19 @@ public class CameraFollow : MonoBehaviour
     {
         ViewAngle.Pitch = pitch;
 
-        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-        Vector3 position = focus - rotation * Vector3.forward * Mathf.Lerp(distance + zoneDistance, climbDistance, climbBlend);
+        Vector3 viewFocus = focus;
+        float viewYaw = yaw;
+        float viewDistance = Mathf.Lerp(distance + zoneDistance, climbDistance, climbBlend);
+        if (cinematicBlend > 0f)
+        {
+            CameraFramingZone zone = CameraFramingZone.Find(cinematicPoint);
+            viewFocus = Vector3.Lerp(focus, cinematicPoint, cinematicBlend);
+            viewYaw = Mathf.LerpAngle(yaw, zone != null ? zone.Yaw : 0f, cinematicBlend);
+            viewDistance = Mathf.Lerp(viewDistance, distance + (zone != null ? zone.ExtraDistance : 0f), cinematicBlend);
+        }
+
+        Quaternion rotation = Quaternion.Euler(pitch, viewYaw, 0f);
+        Vector3 position = viewFocus - rotation * Vector3.forward * viewDistance;
         if (shake != null)
         {
             position += rotation * shake.Offset;

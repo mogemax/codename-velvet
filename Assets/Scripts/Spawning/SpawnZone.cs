@@ -26,7 +26,7 @@ namespace CodenameVelvet.Spawning
     /// <item>On start it fills enemies and nodes (in view is allowed).</item>
     /// <item>A dead enemy is replaced after <see cref="enemyRespawnDelay"/> seconds, somewhere else.</item>
     /// <item>A depleted node comes back alone after <see cref="nodeRespawnSeconds"/>, at a new random spot.</item>
-    /// <item>Respawns never happen in view of any camera or near a player.</item>
+    /// <item>Respawns never happen near a player, nor in view of any camera (unless <see cref="respawnInView"/>).</item>
     /// <item>With <see cref="dayNightEvent"/>: keeps <see cref="dayEnemies"/> by day and, at night, the
     /// area's count scaled by the night threat (never fewer than by day, never more than <see cref="maxEnemies"/>).
     /// At dawn the extra enemies are removed while nobody sees them.</item>
@@ -91,6 +91,10 @@ namespace CodenameVelvet.Spawning
         [Tooltip("Upper limit of resource pieces, whatever the area.")]
         [SerializeField, Min(0)] private int maxNodes = 40;
         [SerializeField, Min(0f)] private float nodeRespawnSeconds = 30f;
+        [Tooltip("Respawns may happen in view, for places the cameras never leave (e.g. a boss arena).")]
+        [SerializeField] private bool respawnInView;
+        [Tooltip("Layers that walk through the nodes, e.g. a boss without pathfinding. Empty = solid for everyone.")]
+        [SerializeField] private LayerMask nodePassThrough;
 
         [Header("Organic spread")]
         [Tooltip("Size (m) of the dense patches and empty clearings. Shared by every zone.")]
@@ -232,11 +236,11 @@ namespace CodenameVelvet.Spawning
             }));
         }
 
-        /// <summary>Spawns one enemy out of sight, unless the target is already met (e.g. dawn came).</summary>
+        /// <summary>Spawns one enemy, unless the target is already met (e.g. dawn came).</summary>
         private bool SpawnIfBelowTarget()
         {
             liveEnemies.RemoveAll(enemy => enemy == null);
-            return liveEnemies.Count >= enemyTarget || TrySpawnEnemy(allowVisible: false);
+            return liveEnemies.Count >= enemyTarget || TrySpawnEnemy(respawnInView);
         }
 
         private void HandleDayNight(DayNightState state)
@@ -320,6 +324,8 @@ namespace CodenameVelvet.Spawning
             bool flip = random.NextDouble() < 0.5;
             foreach (SpriteRenderer sprite in node.GetComponentsInChildren<SpriteRenderer>(true))
                 sprite.flipX = flip;
+            foreach (Collider body in node.GetComponentsInChildren<Collider>(true))
+                body.excludeLayers |= nodePassThrough;
 
             node.ExternalRespawn = true;
             node.Depleted += HandleNodeDepleted;
@@ -327,7 +333,8 @@ namespace CodenameVelvet.Spawning
         }
 
         /// <summary>
-        /// A depleted node comes back alone at a new random spot of the zone (patches respected), out of view.
+        /// A depleted node comes back alone at a new random spot of the zone (patches respected), out of view
+        /// unless <see cref="respawnInView"/>.
         /// Its old spot still counts as occupied until then.
         /// </summary>
         private void HandleNodeDepleted(ResourceNode node)
@@ -335,7 +342,7 @@ namespace CodenameVelvet.Spawning
             StartCoroutine(AfterDelay(nodeRespawnSeconds, () => StartCoroutine(RetryUntil(() =>
             {
                 if (node == null) return true; // destroyed by something else: nothing to restore
-                if (!TryFindSeed(allowVisible: false, spawnedNodes[node], useNoise: true, out Vector3 point)) return false;
+                if (!TryFindSeed(respawnInView, spawnedNodes[node], useNoise: true, out Vector3 point)) return false;
                 node.RespawnAt(point);
                 return true;
             }))));

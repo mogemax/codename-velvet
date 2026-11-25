@@ -1,8 +1,9 @@
 // URP's Lit for the 3D map (same properties and inspector), plus a see-through hole: wherever the surface gets between
 // a player and their camera it dissolves in a screen-door pattern, so the player is never lost behind a rock, a hill
-// or the cave. Per pixel instead of fading the whole object, because one mesh can be both the hill in front of the
-// player and the ground they stand on. Shadows are untouched. Sprite props use OccluderFade instead.
-// Global (set per camera by CameraFollow; unset = no hole): _VelvetSeeThrough = (player's feet, 1 = on).
+// or the cave. CameraFollow only opens it while most of the player is hidden. Per pixel instead of fading the whole
+// object, because one mesh can be both the hill in front of the player and the ground they stand on. Shadows are
+// untouched. Sprite props use OccluderFade instead.
+// Global (set per camera by CameraFollow; unset = no hole): _VelvetSeeThrough = (player's feet, how open 0..1).
 // Opaque materials only. No GBuffer pass: the project renders in Forward+.
 Shader "Velvet/Lit"
 {
@@ -95,7 +96,7 @@ Shader "Velvet/Lit"
 
         void ClipSeeThrough(float4 positionCS)
         {
-            if (_VelvetSeeThrough.w < 0.5)
+            if (_VelvetSeeThrough.w <= 0.0)
                 return;
 
             #if UNITY_REVERSED_Z
@@ -119,7 +120,7 @@ Shader "Velvet/Lit"
             hole *= smoothstep(0.2, 0.8, positionWS.y - _VelvetSeeThrough.y); // never the ground at their feet
 
             uint2 cell = uint2(positionCS.xy) % 4;
-            clip((Bayer[cell.y * 4 + cell.x] + 0.5) / 16.0 - hole * HoleStrength);
+            clip((Bayer[cell.y * 4 + cell.x] + 0.5) / 16.0 - hole * HoleStrength * _VelvetSeeThrough.w);
         }
     ENDHLSL
 

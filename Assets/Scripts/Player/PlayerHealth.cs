@@ -38,6 +38,7 @@ namespace CodenameVelvet.Player
         private Renderer[] hiddenRenderers;
         private bool isDying;
         private float recoverUntil;
+        private float respawnAt;
         private int hitFrame = -1;
 
         /// <summary>
@@ -66,6 +67,12 @@ namespace CodenameVelvet.Player
 
         /// <summary>Where the player comes back after dying: its start position unless changed (e.g. by a boss fight).</summary>
         public Vector3 RespawnPoint { get; set; }
+
+        /// <summary>Seconds down before respawning instead of the usual delay (boss fight). Read at death; null = usual.</summary>
+        public float? DeathDelayOverride { get; set; }
+
+        /// <summary>Seconds until respawning; 0 while alive.</summary>
+        public float RespawnSecondsLeft => isDying ? Mathf.Max(0f, respawnAt - Time.time) : 0f;
 
         private void Awake()
         {
@@ -114,12 +121,17 @@ namespace CodenameVelvet.Player
             return healed;
         }
 
+        /// <summary>While down, changes the wait: respawns this many seconds from now.</summary>
+        public void RespawnIn(float seconds) => respawnAt = Time.time + seconds;
+
         private IEnumerator DeathSequence()
         {
             isDying = true;
+            float delay = DeathDelayOverride ?? deathDelaySeconds;
+            RespawnIn(delay);
 
             if (debugLogs)
-                VelvetLog.Info(LogCategory, this, $"Died, respawning in {deathDelaySeconds}s");
+                VelvetLog.Info(LogCategory, this, $"Died, respawning in {delay}s");
 
             Died?.Invoke();
 
@@ -131,7 +143,9 @@ namespace CodenameVelvet.Player
             StopBody();
             SetVisible(false);
 
-            yield return new WaitForSeconds(deathDelaySeconds);
+            // Not WaitForSeconds: RespawnIn can change it meanwhile.
+            while (Time.time < respawnAt)
+                yield return null;
 
             if (onPlayerDied != null)
                 onPlayerDied.Raise(SlotIndexOrDefault());

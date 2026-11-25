@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 /// <summary>
-/// Generates the procedural PLAYER animations (Idle, Walk, Dash, Climb), builds the Animator Controller with
+/// Generates the procedural PLAYER animations (Idle, Walk, Dash, Climb, Attack), builds the Animator Controller with
 /// PlayerMovement's parameters and assigns it to the prefab.
 ///
 /// Sign convention (character facing right):
@@ -16,7 +16,7 @@ using UnityEngine;
 /// </summary>
 public static partial class VelvetPlayerIdleGenerator
 {
-    const string PrefabPath = "Assets/Assets/CHARACTERS/PLAYER.prefab";
+    const string PrefabPath = "Assets/Assets/CHARACTERS/PLAYER M/PLAYER.prefab";
     const string AnimFolder = "Assets/Animators/Animations";
     const string ControllerPath = "Assets/Animators/PLAYER.controller";
 
@@ -223,6 +223,57 @@ public static partial class VelvetPlayerIdleGenerator
         return c;
     }
 
+    // ATTACK: downward sword swing with the far hand, upper body only (it plays over the walk). Damage lands on the press, so the wind-up is very short.
+    // 0 Neutral · 1 Wind-up (overhead) · 2 Strike · 3 Follow-through · 4 Neutral
+    static ClipDef Attack()
+    {
+        var c = new ClipDef { name = "PLAYER_Attack", duration = 0.38f, loop = false };
+        float[] T = { 0f, 0.06f, 0.13f, 0.22f, 0.38f };
+        c.Keys("BODY", T, new[] { 0f, 7f, -15f, -12f, 0f });
+        c.Keys("HEAD", T, new[] { 0f, 3f,  -5f,  -2f, 0f });
+
+        // Far arm (its hand bone is the odd "R HAND_1"): the elbow cocks overhead and straightens on the strike
+        c.Keys("L ARM 1",  T, new[] { 0f, 150f,  65f,  40f, 0f });
+        c.Keys("L ARM 2",  T, new[] { 0f,  40f,   8f,  12f, 0f });
+        c.Keys("R HAND_1", T, new[] { 0f,  25f, -10f, -15f, 0f });
+
+        // Near arm: thrown back as a counterweight
+        c.Keys("R ARM 1", T, new[] { 0f, -15f, -40f, -32f, 0f });
+        c.Keys("R ARM 2", T, new[] { 0f,  15f,  25f,  20f, 0f });
+        c.Keys("R HAND",  T, new[] { 0f,  -5f, -10f,  -8f, 0f });
+
+        // Ears and cape lag behind (follow-through)
+        foreach (var ear in new[] { "L EAR", "R EAR" })
+        {
+            c.Keys(ear,          T, new[] { 0f, -4f,  8f, 5f, 0f });
+            c.Keys(ear + " TIP", T, new[] { 0f, -6f, 10f, 8f, 0f });
+        }
+        foreach (var side in new[] { "", "L_", "R_" })
+        {
+            c.KeysA(side + "CAPE_1", T, new[] { 0f, -3f, -5f, 3f, 0f });
+            c.KeysA(side + "CAPE_2", T, new[] { 0f, -1f, -3f, 2f, 0f });
+        }
+        return c;
+    }
+
+    [MenuItem("Tools/Velvet/Player Animations/Regenerate Attack Only")]
+    public static void GenerateAttackOnly()
+    {
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        if (controller == null) { Debug.LogError($"[Anim] {ControllerPath} not found."); return; }
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            GameObject root = VelvetGroundSolver.AnimatedRoot(prefabRoot);
+            Transform hip = FindBone(root.transform, "HIP");
+            if (hip == null) { Debug.LogError("[Anim] HIP bone not found."); return; }
+            EnsureAttackLayer(controller, BuildClip(Attack(), root.transform, hip));
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Anim] Attack regenerated.");
+        }
+        finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
+    }
+
     [MenuItem("Tools/Velvet/Player Animations/Regenerate Climb Only")]
     public static void GenerateClimbOnly()
     {
@@ -270,8 +321,9 @@ public static partial class VelvetPlayerIdleGenerator
             AnimationClip walk = BuildClip(Walk(), root.transform, hip);
             AnimationClip dash = BuildClip(Dash(), root.transform, hip);
             AnimationClip climb = BuildClip(Climb(), root.transform, hip);
+            AnimationClip attack = BuildClip(Attack(), root.transform, hip);
 
-            AnimatorController controller = BuildController(idle, walk, dash, climb);
+            AnimatorController controller = BuildController(idle, walk, dash, climb, attack);
 
             var animator = root.GetComponent<Animator>();
             if (animator == null) animator = root.AddComponent<Animator>();
@@ -288,7 +340,7 @@ public static partial class VelvetPlayerIdleGenerator
 
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Anim] Done: Idle, Walk, Dash and Climb assigned to the PLAYER prefab.");
+            Debug.Log("[Anim] Done: Idle, Walk, Dash, Climb and Attack assigned to the PLAYER prefab.");
         }
         finally
         {
@@ -346,7 +398,7 @@ public static partial class VelvetPlayerIdleGenerator
         return clip;
     }
 
-    static AnimatorController BuildController(AnimationClip idle, AnimationClip walk, AnimationClip dash, AnimationClip climb)
+    static AnimatorController BuildController(AnimationClip idle, AnimationClip walk, AnimationClip dash, AnimationClip climb, AnimationClip attack)
     {
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         if (controller == null) controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
@@ -392,8 +444,37 @@ public static partial class VelvetPlayerIdleGenerator
         var t7 = Quick(sClimb.AddTransition(sIdle), 0.12f);
         t7.AddCondition(AnimatorConditionMode.IfNot, 0, "IsClimbing");
 
-        EditorUtility.SetDirty(controller);
+        EnsureAttackLayer(controller, attack);
         return controller;
+    }
+
+    // Upper-body "Attack" layer, so the swing plays over the base layer. An existing layer only gets its clip replaced.
+    static void EnsureAttackLayer(AnimatorController controller, AnimationClip attack)
+    {
+        EnsureParam(controller, "Attack", AnimatorControllerParameterType.Trigger);
+        int index = Array.FindIndex(controller.layers, l => l.name == "Attack");
+        if (index < 0)
+        {
+            controller.AddLayer("Attack");
+            AnimatorControllerLayer[] layers = controller.layers;
+            index = layers.Length - 1;
+            layers[index].defaultWeight = 1f;
+            controller.layers = layers;
+
+            AnimatorStateMachine sm = controller.layers[index].stateMachine;
+            AnimatorState none = sm.AddState("None", new Vector3(300, 0, 0)); // no motion: the base layer shows
+            AnimatorState swing = sm.AddState("Attack", new Vector3(300, 120, 0));
+            sm.defaultState = none;
+            Quick(sm.AddAnyStateTransition(swing), 0.03f).AddCondition(AnimatorConditionMode.If, 0, "Attack");
+            Quick(swing.AddTransition(none), 0.08f).AddCondition(AnimatorConditionMode.If, 0, "IsDashing");
+            AnimatorStateTransition end = Quick(swing.AddTransition(none), 0.1f);
+            end.hasExitTime = true;
+            end.exitTime = 0.85f;
+        }
+        AnimatorState state = Array.Find(controller.layers[index].stateMachine.states, s => s.state.name == "Attack").state;
+        state.motion = attack;
+        EditorUtility.SetDirty(state);
+        EditorUtility.SetDirty(controller);
     }
 
     static AnimatorStateTransition Quick(AnimatorStateTransition t, float duration)

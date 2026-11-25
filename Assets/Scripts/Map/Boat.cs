@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using CodenameVelvet.Core;
 using CodenameVelvet.Core.Debugging;
 using CodenameVelvet.Feedback;
@@ -18,6 +20,7 @@ namespace CodenameVelvet.Map
     public class Boat : MonoBehaviour
     {
         private const string LogCategory = "Boat";
+        private static readonly List<Boat> Active = new List<Boat>();
         private static readonly Vector2 DeliveryKick = new Vector2(0.06f, -0.1f);
 
         // 24 wood (two slots) + stone + rope = exactly the four inventory slots. Eight trees give that wood and,
@@ -40,6 +43,10 @@ namespace CodenameVelvet.Map
 
         private BuildProgress progress;
         private SquashStretch squash;
+        private Renderer[] renderers;
+
+        /// <summary>The last material was delivered: it is built.</summary>
+        public event Action Built;
 
         public bool IsBuilt => progress.IsComplete;
 
@@ -56,12 +63,25 @@ namespace CodenameVelvet.Map
         {
             progress = new BuildProgress(cost);
             squash = GetComponent<SquashStretch>();
+            renderers = GetComponentsInChildren<Renderer>(true);
             if (matchFlow == null && !string.IsNullOrEmpty(nextLevel))
                 Debug.LogWarning($"{name}: Boat has no MatchFlow; it will not sail.", this);
             Refresh();
         }
 
+        private void OnEnable() => Active.Add(this);
+        private void OnDisable() => Active.Remove(this);
         private void Start() => GrassField.ClearAround(transform.position, grassClearRadius);
+
+        /// <summary>True when a visible part of any boat is in the way (the parts have no colliders).</summary>
+        public static bool Blocks(Ray ray, float distance)
+        {
+            // shortcut: boxes of the parts, exact only while boats are not rotated; give them colliders if one ever is.
+            foreach (Boat boat in Active)
+                foreach (Renderer part in boat.renderers)
+                    if (part.isVisible && part.bounds.IntersectRay(ray, out float hit) && hit < distance) return true;
+            return false;
+        }
 
         /// <summary>Sails if it is built; otherwise takes whatever the player carries that is still missing.</summary>
         public void Use(PlayerInventory inventory)
@@ -77,6 +97,7 @@ namespace CodenameVelvet.Map
             Refresh();
             squash.Kick(DeliveryKick);
             VelvetLog.Info(LogCategory, this, IsBuilt ? "Built" : Status);
+            if (IsBuilt) Built?.Invoke();
         }
 
         // Downed players do not count as here: they come back on foot.

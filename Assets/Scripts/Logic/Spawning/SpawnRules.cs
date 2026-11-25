@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CodenameVelvet.Enemies;
 using UnityEngine;
 
@@ -109,6 +110,22 @@ namespace CodenameVelvet.Spawning
             float min = Math.Min(range.x, range.y), max = Math.Max(range.x, range.y);
             float mid = (min + max) * 0.5f;
             return isCenter ? Mathf.Lerp(mid, max, Mathf.Clamp01(t01)) : Mathf.Lerp(min, mid, Mathf.Clamp01(t01));
+        }
+
+        /// <summary>
+        /// Indices of up to <paramref name="count"/> different spots at random: free ones first, blocked ones only
+        /// when the free ones run out.
+        /// </summary>
+        public static List<int> PickSpots(IReadOnlyList<bool> isFree, int count, System.Random random)
+        {
+            if (isFree == null)
+                throw new ArgumentNullException(nameof(isFree));
+
+            return Enumerable.Range(0, isFree.Count)
+                .OrderByDescending(index => isFree[index])
+                .ThenBy(_ => random.Next())
+                .Take(count)
+                .ToList();
         }
 
         /// <summary>

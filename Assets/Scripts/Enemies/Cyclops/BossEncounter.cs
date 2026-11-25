@@ -1,3 +1,6 @@
+using System.Collections;
+using CodenameVelvet.Core;
+using CodenameVelvet.Core.Debugging;
 using CodenameVelvet.Map;
 using CodenameVelvet.Player;
 using UnityEngine;
@@ -10,11 +13,15 @@ namespace CodenameVelvet.Enemies
     /// and takes no damage. Then, the first time the boss sees a player, invisible
     /// walls rise around the arena box so nobody can leave, and HUD that doesn't belong in the
     /// fight (the day/night clock) is hidden. Everything is undone when the boss dies.
-    /// Players who die during the fight come back inside the arena, where they stood when it started.
+    /// Players who die during the fight come back (after a longer wait) inside the arena, where they stood when it
+    /// started. If all of them are down at once it is not game over: the fight starts over, walls still up, with
+    /// everyone back there and the boss at its post, all with full HP.
     /// If a Boat is assigned, the same walls keep everyone out until it is built (the boss stays passive).
     /// </summary>
     public class BossEncounter : MonoBehaviour
     {
+        private const string LogCategory = "Boss";
+
         [Header("Boss")]
         [SerializeField] private CyclopsBrain brain;
         [SerializeField] private EnemyHealth health;
@@ -34,6 +41,14 @@ namespace CodenameVelvet.Enemies
         [Tooltip("How close to the arena a player must be to be told the gate is closed.")]
         [SerializeField, Min(0f)] private float gateMessageDistance = 8f;
 
+        [Header("Deaths")]
+        [Tooltip("Asks this fight to start over when every player is down. Empty = that is game over.")]
+        [SerializeField] private MatchFlow matchFlow;
+        [Tooltip("Seconds a player who dies in the fight waits to come back.")]
+        [SerializeField, Min(0f)] private float fightRespawnSeconds = 10f;
+        [Tooltip("With every player down, seconds until the fight starts over.")]
+        [SerializeField, Min(0f)] private float fightRestartSeconds = 2f;
+
         [Header("HUD")]
         [Tooltip("Turned off during the fight (e.g. the day/night label).")]
         [SerializeField] private GameObject[] hideDuringFight;
@@ -51,6 +66,9 @@ namespace CodenameVelvet.Enemies
 
         /// <summary>Some players are in the arena and the fight is waiting for the rest.</summary>
         public bool WaitingForPlayers { get; private set; }
+
+        /// <summary>Every player is down and the fight is about to start over.</summary>
+        public bool IsRestarting { get; private set; }
 
         // Boat.IsBuilt needs the boat's Awake to have run, so this is only read from Update and later.
         private bool IsGated => boat != null && !boat.IsBuilt;
@@ -73,6 +91,17 @@ namespace CodenameVelvet.Enemies
             }
 
             SetActive(showDuringFight, false);
+        }
+
+        private void OnEnable()
+        {
+            if (matchFlow != null) matchFlow.WipeHandler = HandleWipe;
+        }
+
+        // Also runs when the boss dies (Update disables this): from then on a wipe is game over again.
+        private void OnDisable()
+        {
+            if (matchFlow != null) matchFlow.WipeHandler = null;
         }
 
         private void Update()
@@ -114,6 +143,33 @@ namespace CodenameVelvet.Enemies
                     playerHealth.RespawnPoint = player.transform.position;
         }
 
+        private bool HandleWipe()
+        {
+            if (!InFight || health == null || !health.IsAlive) return false;
+            if (!IsRestarting) StartCoroutine(RestartFight());
+            return true;
+        }
+
+        /// <summary>Everyone is down, so they all come back together when the boss is reset. Until then it is passive.</summary>
+        private IEnumerator RestartFight()
+        {
+            IsRestarting = true;
+            VelvetLog.Info(LogCategory, this, $"Every player is down, the fight starts over in {fightRestartSeconds}s");
+            SetCanEngage(false);
+            foreach (PlayerInput player in PlayerInput.all)
+                if (player.TryGetComponent(out PlayerHealth playerHealth))
+                    playerHealth.RespawnIn(fightRestartSeconds);
+
+            // Scaled time: if the match ends or leaves meanwhile, it freezes and this never resumes.
+            yield return new WaitForSeconds(fightRestartSeconds);
+
+            IsRestarting = false;
+            if (health == null || !health.IsAlive) yield break;
+            health.Initialize(health.MaxHp);
+            brain.ResetToPost();
+            SetCanEngage(true);
+        }
+
         private void CheckPlayers()
         {
             int inside = 0;
@@ -153,7 +209,15 @@ namespace CodenameVelvet.Enemies
             if (walls != null) walls.SetActive(inFight);
             SetActive(showDuringFight, inFight);
             SetActive(hideDuringFight, !inFight);
+            SetDeathDelay(inFight ? fightRespawnSeconds : (float?)null);
             SwitchMusic(inFight);
+        }
+
+        private static void SetDeathDelay(float? seconds)
+        {
+            foreach (PlayerInput player in PlayerInput.all)
+                if (player.TryGetComponent(out PlayerHealth playerHealth))
+                    playerHealth.DeathDelayOverride = seconds;
         }
 
         private void SwitchMusic(bool inFight)

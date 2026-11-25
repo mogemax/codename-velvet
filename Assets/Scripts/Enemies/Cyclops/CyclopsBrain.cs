@@ -76,6 +76,8 @@ namespace CodenameVelvet.Enemies
         [Header("Sound")]
         [Tooltip("Looping footsteps, played while walking.")]
         [SerializeField] private AudioSource footsteps;
+        [Tooltip("Played when it spots a player (not when it switches between players).")]
+        [SerializeField] private AudioSource growl;
 
         [Header("Debug")]
         [SerializeField] private bool debugLogs = true;
@@ -101,6 +103,7 @@ namespace CodenameVelvet.Enemies
 
         private Vector3 spawnPosition;
         private bool hasStarted;
+        private bool hasPost;
         private IDamageable target;
         private Transform targetTransform;
         private Collider targetCollider;
@@ -117,7 +120,7 @@ namespace CodenameVelvet.Enemies
         public bool IsDazed => isDazed;
         /// <summary>True while chasing or attacking a player, i.e. the boss has seen someone.</summary>
         public bool HasTarget => targetTransform != null;
-        /// <summary>While false it ignores every player and cannot be pushed (the fight is not allowed to start yet).</summary>
+        /// <summary>While false it ignores every player, hits nobody and cannot be pushed (the fight has not started, or is about to start over).</summary>
         public bool CanEngage { get; set; } = true;
 
         /// <summary>An attack hit the ground: where, and which attack (for dust, rumble and the like).</summary>
@@ -183,6 +186,23 @@ namespace CodenameVelvet.Enemies
             }
         }
 
+        /// <summary>Back at its post as if the fight had not begun: no target, attack, cooldowns, push or stun.</summary>
+        public void ResetToPost()
+        {
+            StopLoop();
+            // With interpolation the Rigidbody ignores Transform-only moves, so it is moved too.
+            transform.position = spawnPosition;
+            if (rb != null)
+            {
+                rb.position = spawnPosition;
+                rb.linearVelocity = Vector3.zero;
+            }
+            stunnedUntil = 0f;
+            nextAttackTime = 0f;
+            foreach (var a in attacks) if (a != null) a.readyTime = 0f;
+            StartLoop();
+        }
+
         private void StartLoop()
         {
             StopLoop();
@@ -212,7 +232,8 @@ namespace CodenameVelvet.Enemies
             {
                 // Its post is where physics settles it; the exact placed point may be unreachable on foot.
                 await Awaitable.WaitForSecondsAsync(1f, token);
-                spawnPosition = transform.position;
+                if (!hasPost) spawnPosition = transform.position;
+                hasPost = true;
 
                 while (true)
                 {
@@ -380,9 +401,10 @@ namespace CodenameVelvet.Enemies
                 SetDazed(false);
                 isAttacking = false;
                 SetBool(IsAttackingHash, false);
-                attack.readyTime = Time.time + attack.cooldown;
-                nextAttackTime = Time.time + timeBetweenAttacks;
             }
+            // Not when cancelled: a reset clears the cooldowns.
+            attack.readyTime = Time.time + attack.cooldown;
+            nextAttackTime = Time.time + timeBetweenAttacks;
         }
 
         private void SetDazed(bool value)
@@ -401,7 +423,7 @@ namespace CodenameVelvet.Enemies
             Vector3 center = transform.position + forward * attack.impactForwardOffset;
             alreadyHit.Clear();
             int hitCount = 0;
-            int count = Physics.OverlapSphereNonAlloc(center, attack.impactRadius, impactHits, ~0, QueryTriggerInteraction.Ignore);
+            int count = CanEngage ? Physics.OverlapSphereNonAlloc(center, attack.impactRadius, impactHits, ~0, QueryTriggerInteraction.Ignore) : 0;
             for (int i = 0; i < count; i++)
             {
                 Collider hit = impactHits[i];
@@ -459,6 +481,7 @@ namespace CodenameVelvet.Enemies
 
             if (debugLogs && !ReferenceEquals(found, target))
                 VelvetLog.Info(LogCategory, this, $"Detects {foundTransform.name} at {distance:F1}u");
+            if (!HasTarget && growl != null) growl.Play();
             target = found;
             targetTransform = foundTransform;
             targetCollider = foundCollider;

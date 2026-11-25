@@ -155,5 +155,36 @@ namespace CodenameVelvet.Tests
             Assert.That(SpawnRules.ClusterMemberScale(false, range, 0f), Is.EqualTo(0.7f).Within(1e-5f));
             Assert.That(SpawnRules.ClusterMemberScale(false, range, 1f), Is.EqualTo(1f).Within(1e-5f));
         }
+
+        [Test]
+        public void PickSpots_AreDistinct_FreeOnesFirst()
+        {
+            bool[] isFree = { false, true, false, true };
+            for (int seed = 0; seed < 20; seed++)
+            {
+                var random = new System.Random(seed);
+                Assert.That(SpawnRules.PickSpots(isFree, 2, random), Is.EquivalentTo(new[] { 1, 3 }));
+
+                List<int> three = SpawnRules.PickSpots(isFree, 3, random);
+                Assert.That(three, Is.Unique);
+                Assert.That(three.GetRange(0, 2), Is.EquivalentTo(new[] { 1, 3 }));
+            }
+        }
+
+        [Test]
+        public void PickSpots_FewerSpotsThanAsked_ReturnsThemAll()
+        {
+            Assert.That(SpawnRules.PickSpots(new[] { true, false }, 4, new System.Random(1)), Is.EqualTo(new[] { 0, 1 }));
+        }
+
+        [Test]
+        public void PickSpots_IsRandom()
+        {
+            var isFree = new[] { true, true, true, true };
+            var firsts = new HashSet<int>();
+            for (int seed = 0; seed < 50; seed++)
+                firsts.Add(SpawnRules.PickSpots(isFree, 1, new System.Random(seed))[0]);
+            Assert.That(firsts.Count, Is.GreaterThan(1));
+        }
     }
 }

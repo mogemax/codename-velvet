@@ -16,12 +16,13 @@ namespace CodenameVelvet.Core
     /// <item><b>Pause</b>: Esc or any gamepad's Start opens the pause menu (resume, main menu, quit); pressing it
     /// again resumes.</item>
     /// <item><b>Game over</b>: every player is down at the same time. While one is alive, downed players
-    /// respawn as usual (PlayerHealth). Playing solo, dying is game over. The end screen offers to restart the
-    /// level from the start, go to the main menu or quit.</item>
+    /// respawn as usual (PlayerHealth). Playing solo, dying is game over, unless <see cref="WipeHandler"/> takes
+    /// care of it (the boss fight starts over instead). The end screen offers to restart the level from the start,
+    /// go to the main menu or quit.</item>
     /// <item><b>Victory</b>: someone calls <see cref="Victory"/> (the boss on death). Its panel shows and the
     /// menu loads after a few real-time seconds.</item>
     /// </list>
-    /// While a menu or end screen is up the game is frozen (timeScale 0, so nobody respawns or moves) and the
+    /// While a menu, end screen or camera cutscene is up the game is frozen (timeScale 0, so nobody respawns or moves) and the
     /// players' controls are off, so the button that confirms a menu choice doesn't also swing a sword.
     /// </summary>
     public class MatchFlow : MonoBehaviour
@@ -40,9 +41,13 @@ namespace CodenameVelvet.Core
         /// <summary>The players are about to travel to another level: save whatever goes with them.</summary>
         public event Action LeavingLevel;
 
+        /// <summary>Asked when every player is down: true = it takes care of them, so it is not game over.</summary>
+        public Func<bool> WipeHandler { get; set; }
+
         private readonly List<PlayerHealth> players = new List<PlayerHealth>();
         private bool isOver;
         private bool isLeaving;
+        private bool inCutscene;
 
         private void Awake()
         {
@@ -70,7 +75,7 @@ namespace CodenameVelvet.Core
 
         private void Update()
         {
-            if (isOver || isLeaving || pauseMenu == null || !PausePressed())
+            if (isOver || isLeaving || inCutscene || pauseMenu == null || !PausePressed())
                 return;
 
             if (pauseMenu.IsOpen) Resume();
@@ -106,6 +111,17 @@ namespace CodenameVelvet.Core
             Instantiate(loadingScreen).Load(scene);
         }
 
+        /// <summary>
+        /// Freezes the match while a camera cutscene plays (it must use real time) and unfreezes it after.
+        /// Ignored once the match is over or leaving, so a finished match stays frozen.
+        /// </summary>
+        public void SetCutscene(bool playing)
+        {
+            if (isOver || isLeaving || playing == inCutscene) return;
+            inCutscene = playing;
+            Freeze(playing);
+        }
+
         // ---- Pause ---------------------------------------------------------------------------------------------
 
         /// <summary>Read straight from the devices: any player can pause, and it works while their controls are off.</summary>
@@ -135,6 +151,7 @@ namespace CodenameVelvet.Core
             foreach (PlayerHealth player in players)
                 if (player != null && player.IsAlive) return;
 
+            if (!isOver && WipeHandler != null && WipeHandler()) return;
             if (!End("Game over")) return;
             if (endScreen != null) endScreen.Open();
             else StartCoroutine(GoToMenuAfter(secondsBeforeMenu));

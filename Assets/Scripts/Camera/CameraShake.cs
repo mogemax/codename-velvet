@@ -37,7 +37,8 @@ namespace CodenameVelvet.Cameras
                 shake.AddTrauma(strength * shake.Falloff(position));
         }
 
-        public void AddTrauma(float amount) => trauma = Mathf.Clamp01(trauma + Mathf.Max(0f, amount));
+        /// <summary>Hits add up to 1 at most; only a single hit stronger than 1 goes past it.</summary>
+        public void AddTrauma(float amount) => trauma = Mathf.Min(trauma + Mathf.Max(0f, amount), Mathf.Max(1f, trauma, amount));
 
         private void Awake()
         {

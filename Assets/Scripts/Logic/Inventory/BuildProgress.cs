@@ -44,8 +44,9 @@ namespace CodenameVelvet.Inventory
         /// <summary>How many of <paramref name="steps"/> equal construction steps are done.</summary>
         public int StepsDone(int steps) => total == 0 ? steps : steps * delivered.Sum() / total;
 
-        /// <summary>"Wood 5/24   Stone 0/12", in the order of the cost.</summary>
+        /// <summary>"Wood 5/24   Stone 0/12", in the order of the cost, three per line so it fits a split-screen view.</summary>
         public override string ToString() =>
-            string.Join("   ", cost.Select((item, i) => $"{item.type} {delivered[i]}/{item.amount}"));
+            string.Concat(cost.Select((item, i) =>
+                (i == 0 ? "" : i % 3 == 0 ? "\n" : "   ") + $"{item.type} {delivered[i]}/{item.amount}"));
     }
 }

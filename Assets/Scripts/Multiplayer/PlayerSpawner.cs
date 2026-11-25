@@ -42,19 +42,24 @@ namespace CodenameVelvet.Multiplayer
 
         private void OnEnable()
         {
-            if (matchFlow != null) matchFlow.LeavingLevel += SaveInventories;
+            if (matchFlow != null) matchFlow.LeavingLevel += SavePlayers;
         }
 
         private void OnDisable()
         {
-            if (matchFlow != null) matchFlow.LeavingLevel -= SaveInventories;
+            if (matchFlow != null) matchFlow.LeavingLevel -= SavePlayers;
         }
 
-        private void SaveInventories()
+        private void SavePlayers()
         {
             foreach (PlayerInput player in spawned)
-                if (player != null && player.TryGetComponent(out PlayerInventory inventory) && player.TryGetComponent(out PlayerIdentity identity))
+            {
+                if (player == null || !player.TryGetComponent(out PlayerIdentity identity)) continue;
+                if (player.TryGetComponent(out PlayerInventory inventory))
                     rosterAsset.Roster.SetCarried(identity.SlotIndex, inventory.Slots);
+                if (player.TryGetComponent(out PlayerSword sword))
+                    rosterAsset.Roster.SetArmed(identity.SlotIndex, sword.HasSword);
+            }
         }
 
         private void Start()
@@ -78,6 +83,9 @@ namespace CodenameVelvet.Multiplayer
                     .ToArray();
                 Spawn(entry.SlotIndex, entry.CharacterIndex, devices, entry.ControlScheme, viewports[i]);
             }
+
+            if (viewports.Sum(view => view.width * view.height) < 1f)
+                CreateLetterbox();
         }
 
         private void Spawn(int slot, int characterIndex, InputDevice[] devices, string scheme, Rect viewport)
@@ -93,7 +101,7 @@ namespace CodenameVelvet.Multiplayer
                 ? PlayerInput.Instantiate(prefab, slot, scheme, -1, devices)
                 : PlayerInput.Instantiate(prefab, slot);
             // The player's Rigidbody interpolates, so it ignores Transform-only moves: place both.
-            Vector3 position = OnGround(point.position);
+            Vector3 position = OnGround(point.position, LayerMask.GetMask("Ground"));
             player.transform.SetPositionAndRotation(position, prefab.transform.rotation);
             if (player.TryGetComponent(out Rigidbody body))
             {
@@ -108,6 +116,9 @@ namespace CodenameVelvet.Multiplayer
             if (player.TryGetComponent(out PlayerInventory inventory))
                 inventory.Restore(rosterAsset.Roster.GetCarried(slot));
 
+            if (rosterAsset.Roster.IsArmed(slot) && player.TryGetComponent(out PlayerSword sword))
+                sword.Equip();
+
             if (matchFlow != null && player.TryGetComponent(out PlayerHealth health))
                 matchFlow.RegisterPlayer(health);
 
@@ -119,18 +130,30 @@ namespace CodenameVelvet.Multiplayer
         }
 
         /// <summary>
-        /// The ground surface closest in height to a spawn point, so a badly placed point never leaves a player
+        /// The ground surface closest in height to a point, so a badly placed spawn never leaves a player
         /// inside the terrain (a buried point goes up to the surface) or on top of a rock or cave above it.
         /// PlayerHealth respawns there too, since it records its start position.
         /// </summary>
-        private static Vector3 OnGround(Vector3 point)
+        public static Vector3 OnGround(Vector3 point, int groundMask)
         {
             RaycastHit[] hits = Physics.RaycastAll(point + Vector3.up * GroundProbeHeight, Vector3.down,
-                GroundProbeHeight * 2f, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore);
+                GroundProbeHeight * 2f, groundMask, QueryTriggerInteraction.Ignore);
             if (hits.Length == 0) return point;
 
             RaycastHit closest = hits.OrderBy(hit => Mathf.Abs(hit.point.y - point.y)).First();
             return closest.point + Vector3.up * SpawnLift;
+        }
+
+        /// <summary>Paints black the screen no player's camera covers (3 players), or it keeps whatever was drawn before.</summary>
+        private static void CreateLetterbox()
+        {
+            Camera letterbox = new GameObject("Letterbox").AddComponent<Camera>();
+            letterbox.depth = -100f; // under every player's camera
+            letterbox.cullingMask = 0;
+            letterbox.clearFlags = CameraClearFlags.SolidColor;
+            letterbox.backgroundColor = Color.black;
+            // Looks away from the map: SpawnZone counts whatever any camera faces as in view.
+            letterbox.transform.SetPositionAndRotation(Vector3.down * 10000f, Quaternion.Euler(90f, 0f, 0f));
         }
 
         private Camera CreateCamera(Transform target, Rect viewport, bool isFirst)

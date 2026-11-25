@@ -9,7 +9,7 @@ namespace CodenameVelvet.UI
 {
     /// <summary>
     /// The Interact key, bobbing over the player's head while a ladder can be climbed or a boat can be used (what it
-    /// has so far goes under the key); otherwise, a call to the boss arena while the fight waits for everyone, or a
+    /// has so far goes under the key); while down, the seconds left to respawn; otherwise, a call to the boss arena while the fight waits for everyone, or a
     /// reminder to repair the boat first near a closed arena. Lives
     /// on an overlay Canvas child of the player, placed through that player's own camera so it also works in split screen.
     /// </summary>
@@ -32,6 +32,7 @@ namespace CodenameVelvet.UI
 
         private PlayerClimb climb;
         private PlayerBoatBuilder builder;
+        private PlayerHealth health;
         private PlayerInput input;
         private BossEncounter encounter; // only in boss levels
         private Canvas canvas;
@@ -40,6 +41,7 @@ namespace CodenameVelvet.UI
         {
             climb = GetComponentInParent<PlayerClimb>();
             builder = GetComponentInParent<PlayerBoatBuilder>();
+            health = GetComponentInParent<PlayerHealth>();
             input = GetComponentInParent<PlayerInput>();
             encounter = FindFirstObjectByType<BossEncounter>();
             canvas = GetComponent<Canvas>();
@@ -53,6 +55,8 @@ namespace CodenameVelvet.UI
             Boat boat = cam != null ? builder.NearbyBoat : null;
             bool canUseBoat = boat != null && boat.CanUse;
             bool showKey = cam != null && (climb.CanClimb || canUseBoat);
+            // Not while frozen: nobody comes back behind an end screen.
+            bool down = cam != null && !health.IsAlive && Time.timeScale > 0f;
             bool waiting = cam != null && !showKey && boat == null && encounter != null && encounter.WaitingForPlayers;
             bool gated = cam != null && !showKey && boat == null && encounter != null && encounter.IsGatedFor(climb.transform.position);
 
@@ -64,13 +68,17 @@ namespace CodenameVelvet.UI
                     : !boat.CanSail ? "The boat is repaired. Go defeat the boss!"
                     : canUseBoat ? "The boat is ready. Set sail!"
                     : "All players must come to the boat";
+            else if (down)
+                label.text = encounter != null && encounter.IsRestarting
+                    ? "Everyone is down. The fight starts over!"
+                    : $"Respawning in {Mathf.CeilToInt(health.RespawnSecondsLeft)}";
             else if (waiting)
                 label.text = "All players must go to the boss arena";
             else if (gated)
                 label.text = "You must repair the boat first";
 
             key.gameObject.SetActive(showKey);
-            panel.gameObject.SetActive(boat != null || waiting || gated);
+            panel.gameObject.SetActive(boat != null || down || waiting || gated);
             if (!key.gameObject.activeSelf && !panel.gameObject.activeSelf) return;
 
             Vector2 position = cam.WorldToScreenPoint(climb.transform.position + Vector3.up * height);

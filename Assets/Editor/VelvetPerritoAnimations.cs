@@ -128,27 +128,7 @@ public static partial class VelvetPlayerIdleGenerator
         foreach (ClipDef def in new[] { PerritoIdle(), PerritoWalk(), PerritoDash(), PerritoClimb() })
             controller.layers[0].stateMachine.states.First(s => "PERRITO_" + s.state.name == def.name).state.motion = BuildClip(def, root, hip);
 
-        AnimationClip attack = BuildClip(PerritoAttack(), root, hip);
-        EnsureParam(controller, "Attack", AnimatorControllerParameterType.Trigger);
-        if (controller.layers.Length == 1)
-        {
-            controller.AddLayer("Attack");
-            AnimatorControllerLayer[] layers = controller.layers;
-            layers[1].defaultWeight = 1f;
-            controller.layers = layers;
-
-            AnimatorStateMachine sm = controller.layers[1].stateMachine;
-            AnimatorState none = sm.AddState("None", new Vector3(300, 0, 0)); // no motion: the base layer shows
-            AnimatorState swing = sm.AddState("Attack", new Vector3(300, 120, 0));
-            swing.motion = attack;
-            sm.defaultState = none;
-            Quick(sm.AddAnyStateTransition(swing), 0.03f).AddCondition(AnimatorConditionMode.If, 0, "Attack");
-            Quick(swing.AddTransition(none), 0.08f).AddCondition(AnimatorConditionMode.If, 0, "IsDashing");
-            AnimatorStateTransition end = Quick(swing.AddTransition(none), 0.1f);
-            end.hasExitTime = true;
-            end.exitTime = 0.85f;
-        }
-        EditorUtility.SetDirty(controller);
+        EnsureAttackLayer(controller, BuildClip(PerritoAttack(), root, hip));
         AssetDatabase.SaveAssets();
         foreach (string name in new[] { "Walk", "Dash" })
             VelvetGroundSolver.Solve(PerritoPrefab, $"{AnimFolder}/PERRITO_{name}.anim", $"Logs/velvet_ground_perrito_{name}.txt");

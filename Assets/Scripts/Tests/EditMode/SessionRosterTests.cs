@@ -28,6 +28,19 @@ namespace CodenameVelvet.Tests
             Assert.That(roster.ClockSeconds, Is.Zero);
         }
 
+        [Test]
+        public void Armed_IsKeptPerSlot_UntilCleared()
+        {
+            var roster = new SessionRoster();
+            roster.SetArmed(0, true); // no entry: the test player
+
+            Assert.That(roster.IsArmed(0), Is.True);
+            Assert.That(roster.IsArmed(1), Is.False);
+
+            roster.Clear();
+            Assert.That(roster.IsArmed(0), Is.False);
+        }
+
         private static int AddDevice(SessionRoster roster, int deviceId)
         {
             Assert.That(roster.TryAdd(new[] { deviceId }, Gamepad, out int slot), Is.True);
