@@ -34,7 +34,12 @@ public static class VelvetMenuBackgroundSetup
     private const float PlaneDistance = 900f;  // menu canvases sit at 100, cameras see to 1000
     private const int SortingOrder = -100;
 
-    private static readonly string[] Scenes = { "Assets/Scenes/MainMenu.unity", "Assets/Scenes/CharacterMenu.unity" };
+    private static readonly string[] Scenes =
+    {
+        "Assets/Scenes/MainMenu.unity",
+        "Assets/Scenes/SettingsMenu.unity",
+        "Assets/Scenes/CharacterMenu.unity",
+    };
 
     // Texture, its water surface (pixels from its top), height over the water line, speed, bob height, phase.
     private static readonly (string texture, float surface, float y, float speed, float bob, float phase)[] BackLayers =
